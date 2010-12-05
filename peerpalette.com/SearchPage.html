@@ -1,0 +1,18 @@
+{% extends "_base.html" %}
+{% block title %}Peerpalette: {{query|escape}}{% endblock title %}
+{% block content %}
+<div style="padding:10px;"
+{% include "_search.html" %}
+<br/>
+{% if results %}
+  {% for result in results %}
+    <div style="font-size: large;">
+    <span class="{{result.status_class}}">&bull;</span>
+<a href="/startchat?q1={{key}}&q2={{result.key}}">{{result.query|escape}}</a><span class="status_text">&nbsp;-&nbsp;{{result.status_text}}</span>
+    </div>
+  {% endfor %}
+{% else %}
+<span style="color: red;">Nothing found. But others will find you when they search for "<b>{{query|escape}}</b>" in the future.</span>
+{% endif %}
+</div>
+{% endblock content%}

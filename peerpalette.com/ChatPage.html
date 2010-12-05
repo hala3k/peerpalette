@@ -1,0 +1,37 @@
+{% extends "_base.html" %}
+{% block title %}{{title}} - Peerpalette{% endblock title %}
+{% block headtags %}
+<script type="text/javascript">
+$(document).ready(function() {
+  $('#message').focus();
+});
+</script>
+<script type="text/javascript">
+  var chat_id = {{chat_id}};
+  var timestamp = "{{timestamp}}";
+</script>
+{% endblock headtags %}
+{% block content %}
+<div style="height:25px;padding:5px 10px;font-size:20px;">
+<span id="status_bull" class="{{status_class}}">&bull;</span>&nbsp;{{title}}&nbsp;<span id="status_text" "class="status_text">{{status_text}}</span>
+</div>
+<div class="panel" id="log" style="left:5px;right:5px;top:80px;bottom:65px;position:absolute;overflow:auto;">
+{% for message in messages %}
+  <div>
+  {% ifequal message.to.key.id chat_id %}
+    <span class="them">she/he</span>:
+  {% else %}
+    <span class="you">you</span>:
+  {% endifequal %}
+  <span style="white-space:pre">{{message.message_string}}</span>
+  </div>
+{% endfor %}
+</div>
+<div style="left:10px;right:10px;bottom:10px;height:40px;position:absolute; padding:5px;border:1px solid #aaaaaa;">
+  <form>
+    <textarea class="panel" id="message" style="width:100%;height:40px;margin:0;padding:0;border:0;outline: none;font-family: arial, sans-serif;"></textarea>
+  </form>
+</div>
+{% endblock content %}
+{% block footer %}
+{% endblock footer %}

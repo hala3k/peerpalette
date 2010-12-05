@@ -1,0 +1,14 @@
+{% extends "_base.html" %}
+{% block content %}
+    <ul>
+    {% for conversation in conversations %}
+      <li>
+        {% if conversation.read %}
+          <a href="/chat?cid={{conversation.id}}">{{conversation.title}}</a>
+        {% else %}
+          <b><a href="/chat?cid={{conversation.id}}">{{conversation.title}}</a></b>
+        {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+{% endblock content%}

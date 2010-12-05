@@ -1,0 +1,10 @@
+{% extends "_base.html" %}
+{% block content %}
+    <ul>
+    {% for query in queries %}
+      <li>
+        <a href="/search?q={{query.text|urlencode}}">{{query.text|escape}}</a>
+      </li>
+    {% endfor %}
+    </ul>
+{% endblock content%}

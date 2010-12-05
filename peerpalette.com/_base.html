@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+	"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"> 
+  <head>
+    <title>{% block title %}Peerpalette{% endblock title %}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Peerpalette - anonymous people search &amp; chat." />
+    <meta name="keywords" content="chat,anonymous,people,search" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/ajax.js"></script>
+    <style type="text/css">
+      body {
+        font-family: arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .panel {
+        border:1px solid #aaaaaa;
+        margin:5px;
+        padding: 5px;
+      }
+      .menu a {
+        color: #444444;
+      }
+      .you {
+        color: blue;
+        font-weight: bold;
+      }
+      .them {
+        color: red;
+        font-weight: bold;
+      }
+      .error {
+        color: red;
+      }
+      a {
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .online {
+        color:#00d305;
+      }
+      .offline1 {
+        color: #d3d000;
+      }
+      .offline2 {
+        color: #a3a3a3;
+      }
+      .status_text {
+        font-size: medium;
+        color: #555555;
+      }
+      .tabitem {
+        margin-left: 5px;
+        margin-right: 5px;
+      }
+    </style>
+    {% block headtags %}
+    {% endblock headtags %}
+  </head>
+  <body>
+    <div style="position:relative;margin:0; padding: 5px; height:40px;background-color: #ebf0ff;border-bottom:1px #aaaaaa solid;">
+      <a href="/" style="text-decoration:none;color:#0f4482;font-size:30px;font-family:sans-serif;"><img src="static/peerpalette.png" style="border:0;" alt="peerpalette.com"/></a>
+
+      <div class="menu" style="padding:3px;padding-bottom:0;position:absolute;bottom:0;right:10px;background-color: #ffffff;border:1px solid #aaaaaa;border-bottom:0;">
+          <a id="home" class="tabitem" href="/" {% if link_target %}target="{{link_target}}"{% endif %}>home</a>
+          <a id="inbox" class="tabitem" href="/inbox" {% if link_target %}target="{{link_target}}"{% endif %}>inbox{{unread_html}}</a>
+          <a id="history" class="tabitem" href="/history" {% if link_target %}target="{{link_target}}"{% endif %}>history</a>
+      </div>
+    </div>
+    {% block content %}
+    {% endblock content %}
+    {% block footer %}
+      <div style="text-align:center; font-size:small;margin-top:50px;font-family:sans-serif;color:#444;">
+    <div><img src="http://code.google.com/appengine/images/appengine-noborder-120x30.gif" 
+alt="Powered by Google App Engine" /></div>
+        &copy; 2010 peerpalette.com | <a href="/help/privacy">privacy</a>
+      </div>
+    {% endblock footer %}
+  </body>
+</html>

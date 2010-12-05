@@ -1,0 +1,39 @@
+{% extends "_base.html" %}
+{% block headtags %}
+<script type="text/javascript">
+$(document).ready(function() {
+  $('#searchbox').focus();
+});
+</script>
+{% endblock headtags %}
+{% block content %}
+<div style="padding: 10px;font-family:sans-serif;color:#444444;">
+  <p style="font-size:large;">
+  peerpalette.com (<b>prplt.com</b> for short) is a new service to help you chat, get answers, and make new friends. All conversations are anonymous. We use cookies to identify your search history and chat logs and you have the option to clear those. We don't store any sesitive information such as your IP address.
+  </p>
+  <p>
+  To use the service, type something you're intersted about in the search box. Hit the search button to see a list of all people who share your interest and who have searched for the same thing. Click on any of the result to chat anonymously or send an offline message if they're not currently online. Notice that upon doing a search, you will be listed in the search results (anonymously) when someone else does a search for that same query in the future.
+  </p>
+  <p style="color: #aa2222">
+  The service is currently in private beta testing. If you have an invitation code, please type it in the search box to join the beta.
+  </p>
+  <div style="text-align:center;margin-top:50px;">
+  {% include "_search.html" %}
+  </div>
+  <div>
+<br/>
+<b>Try, for example, searching for one these topics:</b>
+<br/>
+<a href="/search?q=video+games">video games</a>,
+<a href="/search?q=comics">comics</a>,
+<a href="/search?q=photography">photography</a>,
+<a href="/search?q=programming">programming</a>,
+<a href="/search?q=books">books</a>,
+<a href="/search?q=gadgets">gadgets</a>,
+<a href="/search?q=cooking">cooking</a>,
+<a href="/search?q=politics">politics</a>,
+<a href="/search?q=gossip">gossip</a>
+  </div>
+</div>
+{% endblock content%}
+
