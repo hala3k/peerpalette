@@ -5,19 +5,16 @@ from google.appengine.ext import db
 
 import models
 import common
+import search
+
 import os
 import cgi
-
 import datetime
-
-def doSearch(q, user):
-  return db.Query(models.Query).filter('query_string =', q).order('-date_time')
-
 
 class SearchPage(webapp.RequestHandler):
   def get(self):
     user = common.get_user()
-    q = self.request.get('q').lower()
+    q = self.request.get('q')
 
     if not q:
       self.redirect("/")
@@ -30,8 +27,20 @@ class SearchPage(webapp.RequestHandler):
     if user.beta == None:
       self.response.out.write(common.show_error(user, "Sorry. The service is in private beta testing. Please check back later or enter your invitation code in the search box if you have one."))
       return
-   
-    results = doSearch(q, user)
+
+    clean_string = search.clean_query_string(q)
+    query_hash = search.get_query_hash(clean_string)
+    keyword_hashes = search.get_keyword_hashes(clean_string)
+
+    query = db.Query(models.Query).filter('user =', user).filter('query_hash =', query_hash).get()
+    if not query:
+      query = models.Query(user = user, query_string = q, query_hash = query_hash)
+      query.put()
+      query_index = models.QueryIndex(query = query, keyword_hashes = keyword_hashes, user = user)
+      query_index.put()
+
+    result_keys = search.do_search(user, keyword_hashes)
+    results = db.get(result_keys)
 
     result_values = []
     for result in results:
@@ -43,13 +52,6 @@ class SearchPage(webapp.RequestHandler):
       status_class = common.get_status_class(user_status)
 
       result_values.append({"query" : result.query_string, "key" : result.key(), "status_text" : status_text, "status_class" : status_class})
-
-    query = db.Query(models.Query).filter('user =', user).filter('query_string =', q).get()
-    if not query:
-      query = models.Query(user = user, query_string = q)
-
-    query.date_time = datetime.datetime.now()
-    query.put()
 
     template_values = {
       "results" : result_values,

@@ -10,6 +10,24 @@ import config
 
 import logging
 
+import google.appengine.api.memcache
+memcache_client = None
+
+def get_memcache():
+  if not memcache_client:
+    memcache_client = memcache.Client()
+  return memcache_client
+
+def get_online_users():
+  u = get_memcache().get('online_users')
+  if not u:
+    t = datetime.datetime.now() - datetime.timedelta(seconds = 60)
+    q = db.Query(models.User, keys_only = True).filter('last_been_online >', t)
+    u = set(q.fetch())
+    get_memcache().add('online_users', u, 40)
+
+  return u
+
 def get_user(update_status = True):
   session = get_current_session()
   if not session.has_key("user"):

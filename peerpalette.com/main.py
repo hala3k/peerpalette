@@ -8,6 +8,7 @@ from ChatPage import ChatPage
 from ChatPage import StartChatPage
 from InboxPage import InboxPage
 from HistoryPage import HistoryPage
+from IndexWorkers import UpdateIndexWorker
 import Ajax
 
 application = webapp.WSGIApplication(
@@ -19,6 +20,7 @@ application = webapp.WSGIApplication(
                                       ('/getunread', Ajax.GetUnread),
                                       ('/inbox', InboxPage),
                                       ('/history', HistoryPage),
+                                      ('/update_index', UpdateIndexWorker),
                                       ('/chat', ChatPage)],
                                      debug=True)
 
