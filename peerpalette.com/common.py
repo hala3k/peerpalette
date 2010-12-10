@@ -11,43 +11,30 @@ import config
 import logging
 
 import google.appengine.api.memcache
-memcache_client = None
-
-def get_memcache():
-  if not memcache_client:
-    memcache_client = memcache.Client()
-  return memcache_client
 
 def get_online_users():
-  u = get_memcache().get('online_users')
+  u = memcache.get('online_users')
   if not u:
     t = datetime.datetime.now() - datetime.timedelta(seconds = 60)
     q = db.Query(models.User, keys_only = True).filter('last_been_online >', t)
     u = set(q.fetch())
-    get_memcache().add('online_users', u, 40)
+    memcache.add('online_users', u, 40)
 
   return u
 
 def get_user(update_status = True):
+  user = None
   session = get_current_session()
-  if not session.has_key("user"):
-    user = models.User(last_been_online = datetime.datetime.now())
-    user.put()
-    session["user"] = str(user.key())
-    return user
-    
-  user = models.User.get(session["user"])
+  if session.has_key("user"):
+    user = models.User.get(session["user"])
+
   if not user:
     user = models.User(last_been_online = datetime.datetime.now())
     user.put()
     session["user"] = str(user.key())
-    return user
-
-  difference = datetime.datetime.now() - user.last_been_online
-  if difference.seconds >= 40:
+  elif update_status and (datetime.datetime.now() - user.last_been_online).seconds >= 40:
     user.last_been_online = datetime.datetime.now()
     user.put()
-
   return user
 
 def show_error(user, error, description = ""):
