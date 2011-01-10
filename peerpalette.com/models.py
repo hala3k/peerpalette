@@ -1,10 +1,13 @@
 from google.appengine.ext import db
+import datetime
 
 class User(db.Model):
   beta = db.StringProperty()
   join_date = db.DateTimeProperty(auto_now_add = True)
   last_been_online = db.DateTimeProperty()
   index_status = db.IntegerProperty(default = 0)
+  unread_chat = db.ListProperty(db.Key)
+  unread_timestamp = db.ListProperty(datetime.datetime)
 
 class Query(db.Model):
   user = db.ReferenceProperty(User)
@@ -14,13 +17,13 @@ class Query(db.Model):
 
 class UserChat(db.Model):
   user = db.ReferenceProperty(User)
+  query = db.ReferenceProperty(Query, collection_name = "userchat_my_set")
+  peer = db.ReferenceProperty(User, required = True, collection_name = "userchat_peer_set")
   peer_chat = db.SelfReferenceProperty()
   peer_query = db.ReferenceProperty(Query, collection_name = "userchat_peer_set")
-  my_query = db.ReferenceProperty(Query, collection_name = "userchat_my_set")
   title = db.StringProperty(required = True)
   date_time = db.DateTimeProperty(auto_now_add = True)
-  last_updated = db.DateTimeProperty(auto_now_add = True)
-  unread = db.IntegerProperty(default = -1)
+  last_updated = db.DateTimeProperty()
 
 class Message(db.Model):
   to = db.ReferenceProperty(UserChat)

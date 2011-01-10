@@ -16,14 +16,16 @@ from threading import Thread
 from django.utils import simplejson
 
 
-def update_recipient(user_chat, amount, last_updated):
-    if user_chat.unread < 0:
-      user_chat.unread = amount
-    else:
-      user_chat.unread += amount
-    user_chat.last_updated = last_updated
-    user_chat.put()
-
+def update_recipient_user(user_id, chat_key, timestamp):
+    u = models.User.get_by_id(user_id)
+    try:
+      i = u.unread_chat.index(chat_key)
+      u.unread_timestamp[i] = timestamp
+    except:
+      i = len(u.unread_chat)
+      u.unread_chat[i:] = [chat_key]
+      u.unread_timestamp[i:] = [timestamp]
+    u.put()
 
 class SendMessage(webapp.RequestHandler):
   def post(self):
@@ -44,7 +46,13 @@ class SendMessage(webapp.RequestHandler):
     message = models.Message(to = my_chat.peer_chat, message_string = msg)
     message.put()
 
-    db.run_in_transaction(update_recipient, my_chat.peer_chat, amount=1, last_updated = datetime.datetime.now())
+    if not my_chat.last_updated:
+      my_chat.last_updated = datetime.datetime.now()
+      my_chat.put()
+
+    my_chat.peer_chat.last_updated = datetime.datetime.now()
+    my_chat.peer_chat.put()
+    db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), my_chat.peer_chat.key(), datetime.datetime.now())
 
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write('{"status": "ok"}')
@@ -52,8 +60,8 @@ class SendMessage(webapp.RequestHandler):
 
 class ReceiveMessages(webapp.RequestHandler):
   def get(self):
-    user = common.get_user()
     my_chat = models.UserChat.get_by_id(int(self.request.get("cid")))
+    user = common.get_user(my_chat.key())
     timestamp = self.request.get("timestamp")
 
     if not my_chat:
@@ -66,8 +74,9 @@ class ReceiveMessages(webapp.RequestHandler):
        self.response.out.write('{"status": "error"}')
        return
 
-    timestamp = common.str2datetime(timestamp)
-    if not timestamp:
+    try:
+      timestamp = common.str2datetime(timestamp)
+    except:
       self.response.headers['Content-Type'] = 'application/json'
       self.response.out.write('{"status": "error"}')
       return
@@ -101,18 +110,8 @@ class ReceiveMessages(webapp.RequestHandler):
 class GetUnread(webapp.RequestHandler):
   def get(self):
     user = common.get_user()
-    timestamp = self.request.get("timestamp")
-    if timestamp == "":
-      timestamp = datetime.datetime.now() - datetime.timedelta(seconds = config.UNREAD_THRESHOLD)
-    else:
-      timestamp = common.str2datetime(timestamp)
-
-    if not timestamp:
-      self.response.headers['Content-Type'] = 'application/json'
-      self.response.out.write('{"status": "error"}')
-      return
 
     unread_count = common.get_unread_count(user)
     
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.out.write(simplejson.dumps({"status" : "ok", "timestamp" : str(datetime.datetime.now() - datetime.timedelta(seconds = config.UNREAD_THRESHOLD)), "unread": unread_count}))
+    self.response.out.write(simplejson.dumps({"status" : "ok", "unread": unread_count}))

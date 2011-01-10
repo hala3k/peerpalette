@@ -24,9 +24,9 @@ class SearchPage(webapp.RequestHandler):
       user.beta = q
       user.put()
 
-    if user.beta == None:
-      self.response.out.write(common.show_error(user, "Sorry. The service is in private beta testing. Please check back later or enter your invitation code in the search box if you have one."))
-      return
+#    if user.beta == None:
+#      self.response.out.write(common.show_error(user, "Sorry. The service is in private beta testing. Please check back later or enter your invitation code in the search box if you have one."))
+#      return
 
     clean_string = search.clean_query_string(q)
     query_hash = search.get_query_hash(clean_string)

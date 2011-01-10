@@ -17,11 +17,13 @@ class InboxPage(webapp.RequestHandler):
     
     conversations = []
     for conv in convs:
-      if conv.unread > 0:
+      if not conv.last_updated:
+        continue
+      try:
+        i = user.unread_chat.index(conv.key())
         conversations.append({"title" : conv.title, "id" : conv.key().id(), "read" : False})
-      elif conv.unread == 0:
+      except:
         conversations.append({"title" : conv.title, "id" : conv.key().id(), "read" : True})
-
 
     template_values = {
       "conversations" : conversations,

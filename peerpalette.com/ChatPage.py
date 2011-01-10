@@ -38,6 +38,8 @@ class StartChatPage(webapp.RequestHandler):
       my_query = query2
       peer_query = query1
 
+    peer = peer_query.user
+
     # TODO test if the user has an existing coversation with that query
     existing = db.Query(models.UserChat).filter('user =', user).filter('peer_query =', peer_query).get()
     if existing:
@@ -48,9 +50,9 @@ class StartChatPage(webapp.RequestHandler):
     peer_title = "incoming: " + my_query.query_string + " (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
 
     # TODO create a new chat and chat participant objects and forward to the chat page
-    my_chat = models.UserChat(user = user, peer_query = peer_query, my_query = my_query, title = my_title)
+    my_chat = models.UserChat(user = user, peer = peer, peer_query = peer_query, my_query = my_query, title = my_title)
     my_chat.put()
-    peer_chat = models.UserChat(user = peer_query.user, peer_query = my_query, my_query = peer_query, title = peer_title, peer_chat = my_chat)
+    peer_chat = models.UserChat(user = peer, peer = user, peer_query = my_query, my_query = peer_query, title = peer_title, peer_chat = my_chat)
     peer_chat.put()
     my_chat.peer_chat = peer_chat
     my_chat.put()
@@ -60,10 +62,10 @@ class StartChatPage(webapp.RequestHandler):
 
 class ChatPage(webapp.RequestHandler):
   def get(self):
-    user = common.get_user()
     chat_id = int(self.request.get('cid'))
- 
     my_chat = models.UserChat.get_by_id(chat_id)
+
+    user = common.get_user(my_chat.key())
  
     if not my_chat:
       self.response.out.write("error")
@@ -73,12 +75,11 @@ class ChatPage(webapp.RequestHandler):
       self.response.out.write("error")
       return
 
-    my_chat.unread = 0
-    my_chat.put()
-
     messages = db.Query(models.Message).filter('to =', my_chat.peer_chat).order('date_time').fetch(500)
     messages.extend(db.Query(models.Message).filter('to =', my_chat).order('date_time').fetch(500))
     timestamp = my_chat.last_updated
+    if not timestamp:
+      timestamp = datetime.datetime.now()
 
     messages.sort(compare_message_dates)
 

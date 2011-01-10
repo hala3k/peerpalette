@@ -22,19 +22,38 @@ def get_online_users():
 
   return u
 
-def get_user(update_status = True):
+def _update_user(user_key, clear_unread = None):
+  user = models.User.get(user_key)
+
+  if clear_unread:
+    try:
+      i = user.unread_chat.index(clear_unread)
+      del user.unread_chat[i]
+      del user.unread_timestamp[i]
+      user.last_been_online = datetime.datetime.now()
+      user.put()
+      return user
+    except:
+      pass
+
+  if (datetime.datetime.now() - user.last_been_online).seconds >= 40:
+    user.last_been_online = datetime.datetime.now()
+    user.put()
+
+  return user
+
+def get_user(clear_unread = None):
   user = None
   session = get_current_session()
+
   if session.has_key("user"):
-    user = models.User.get(session["user"])
+    user = db.run_in_transaction(_update_user, session["user"], clear_unread)
 
   if not user:
     user = models.User(last_been_online = datetime.datetime.now())
     user.put()
     session["user"] = str(user.key())
-  elif update_status and (datetime.datetime.now() - user.last_been_online).seconds >= 40:
-    user.last_been_online = datetime.datetime.now()
-    user.put()
+
   return user
 
 def show_error(user, error, description = ""):
@@ -47,13 +66,13 @@ def show_error(user, error, description = ""):
     return template.render(path, template_values)
 
 def get_unread_count(user):
-  unreadThreshold = datetime.datetime.now() - datetime.timedelta(seconds = config.UNREAD_THRESHOLD)
-  unreadQuery = db.Query(models.UserChat).filter('user =', user).filter('unread >', 0).fetch(101)
+  unread_threshold = datetime.datetime.now() - datetime.timedelta(seconds = config.UNREAD_THRESHOLD)
+
   unread_count = 0
-  for unreadChat in unreadQuery:
-    # exclude very recent messages that might be going to an already open chat session
-    if unreadChat.last_updated <= unreadThreshold:
+  for t in user.unread_timestamp:
+    if t < unread_threshold:
       unread_count += 1
+
   return unread_count
 
 def get_unread_count_html(user):
