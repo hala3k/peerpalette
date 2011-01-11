@@ -13,8 +13,8 @@ function refresh_unread_text(unread_count) {
 
 function refresh_chat_status(status_class, status_text) {
   $('#status_text').text(status_text);
-  $('#status_bull').removeClass();
-  $('#status_bull').addClass(status_class);
+  $('#status').removeClass('online offline inactive');
+  $('#status').addClass(status_class);
 }
 
 function notify(msg, clear) {

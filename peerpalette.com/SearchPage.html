@@ -7,8 +7,7 @@
 {% if results %}
   {% for result in results %}
     <div style="font-size: large;">
-    <span class="{{result.status_class}}">&bull;</span>
-<a href="/startchat?q1={{key}}&q2={{result.key}}">{{result.query|escape}}</a><span class="status_text">&nbsp;-&nbsp;{{result.status_text}}</span>
+<a href="/startchat?q1={{key}}&q2={{result.key}}" class="{{result.status_class}}">{{result.query|escape}}</a><span class="status_text">&nbsp;-&nbsp;{{result.status_text}}</span>
     </div>
   {% endfor %}
 {% else %}

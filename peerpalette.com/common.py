@@ -107,9 +107,9 @@ def get_status_class(status):
   if status < 1:
     return "online"
   elif status < 60 * 25:
-    return "offline1"
+    return "offline"
 
-  return "offline2"
+  return "inactive"
 
 # source: http://stackoverflow.com/questions/531157/parsing-datetime-strings-with-microseconds
 def str2datetime(s):

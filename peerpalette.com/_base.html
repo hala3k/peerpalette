@@ -40,15 +40,6 @@
       a:hover {
         text-decoration: underline;
       }
-      .online {
-        color:#00d305;
-      }
-      .offline1 {
-        color: #d3d000;
-      }
-      .offline2 {
-        color: #a3a3a3;
-      }
       .status_text {
         font-size: medium;
         color: #555555;
@@ -56,6 +47,24 @@
       .tabitem {
         margin-left: 5px;
         margin-right: 5px;
+      }
+      .online {
+        padding-left: 14px;
+        background-image: url(/static/online.png);
+        background-repeat: no-repeat;
+        background-position: 0% 50%;
+      }
+      .offline {
+        padding-left: 14px;
+        background-image: url(/static/offline.png);
+        background-repeat: no-repeat;
+        background-position: 0% 50%;
+      }
+      .inactive {
+        padding-left: 14px;
+        background-image: url(/static/inactive.png);
+        background-repeat: no-repeat;
+        background-position: 0% 50%;
       }
     </style>
     {% block headtags %}

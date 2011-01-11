@@ -12,8 +12,8 @@ $(document).ready(function() {
 </script>
 {% endblock headtags %}
 {% block content %}
-<div style="height:25px;padding:5px 10px;font-size:20px;">
-<span id="status_bull" class="{{status_class}}">&bull;</span>&nbsp;{{title}}&nbsp;<span id="status_text" "class="status_text">{{status_text}}</span>
+<div style="height:25px;margin:5px 10px;font-size:20px;" class="{{status_class}}" id="status">
+</span>{{title}}&nbsp;<span id="status_text" "class="status_text">{{status_text}}</span>
 </div>
 <div class="panel" id="log" style="left:5px;right:5px;top:80px;bottom:65px;position:absolute;overflow:auto;">
 {% for message in messages %}
