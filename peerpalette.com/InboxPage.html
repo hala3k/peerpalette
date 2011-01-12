@@ -1,14 +1,14 @@
 {% extends "_base.html" %}
 {% block content %}
-    <ul>
+<div style="padding:10px;">
     {% for conversation in conversations %}
-      <li>
+      <div>
         {% if conversation.read %}
-          <a href="/chat?cid={{conversation.id}}">{{conversation.title}}</a>
+          <a href="/chat?cid={{conversation.id}}" class="{{conversation.status_class}}">{{conversation.title}}</a>
         {% else %}
-          <b><a href="/chat?cid={{conversation.id}}">{{conversation.title}}</a></b>
+          <b><a href="/chat?cid={{conversation.id}}" class="{{conversation.status_class}}">{{conversation.title}}</a></b>
         {% endif %}
-      </li>
+      </div>
     {% endfor %}
-    </ul>
+</div>
 {% endblock content%}
