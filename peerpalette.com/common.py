@@ -15,10 +15,10 @@ import google.appengine.api.memcache
 def get_online_users():
   u = memcache.get('online_users')
   if not u:
-    t = datetime.datetime.now() - datetime.timedelta(seconds = 60)
+    t = datetime.datetime.now() - datetime.timedelta(seconds = OFFLINE_THRESHOLD)
     q = db.Query(models.User, keys_only = True).filter('last_been_online >', t)
     u = set(q.fetch())
-    memcache.add('online_users', u, 40)
+    memcache.add('online_users', u, STATUS_UPDATE_THRESHOLD)
 
   return u
 
@@ -36,7 +36,7 @@ def _update_user(user_key, clear_unread = None):
     except:
       pass
 
-  if (datetime.datetime.now() - user.last_been_online).seconds >= 40:
+  if (datetime.datetime.now() - user.last_been_online).seconds >= config.STATUS_UPDATE_THRESHOLD:
     user.last_been_online = datetime.datetime.now()
     user.put()
 
@@ -87,26 +87,20 @@ def get_unread_count_html(user):
 
 def get_user_status(user):
   timediff = datetime.datetime.now() - user.last_been_online
-  return (timediff.seconds / 60) + (timediff.days * 24 * 60)
+  return (timediff.seconds) + (timediff.days * 24 * 60 * 60)
 
 def get_status_text(status):
-  if status < 1:
+  if status < config.OFFLINE_THRESHOLD:
     return "online"
-  elif status < 60:
-    return "offline, minute(s) ago"
-  elif status < 60 * 25:
-    return "offline, hour(s) ago"
-  elif status < 60 * 24 * 7:
-    return "offline, day(s) ago"
-  elif status < 60 * 24 * 30:
-    return "offline, week(s) ago"
+  elif status < config.INACTIVE_THRESHOLD:
+    return "offline"
 
-  return "offline, month(s) ago"
+  return "inactive"
 
 def get_status_class(status):
-  if status < 1:
+  if status < config.OFFLINE_THRESHOLD:
     return "online"
-  elif status < 60 * 25:
+  elif status < config.INACTIVE_THRESHOLD:
     return "offline"
 
   return "inactive"

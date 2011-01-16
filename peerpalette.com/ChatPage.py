@@ -62,10 +62,10 @@ class StartChatPage(webapp.RequestHandler):
 
 class ChatPage(webapp.RequestHandler):
   def get(self):
-    chat_id = int(self.request.get('cid'))
-    my_chat = models.UserChat.get_by_id(chat_id)
+    chat_id = long(self.request.get('cid'))
 
-    user = common.get_user(my_chat.key())
+    my_chat = models.UserChat.get_by_id(chat_id)
+    user = common.get_user(chat_id)
  
     if not my_chat:
       self.response.out.write("error")
@@ -75,12 +75,11 @@ class ChatPage(webapp.RequestHandler):
       self.response.out.write("error")
       return
 
-    messages = db.Query(models.Message).filter('to =', my_chat.peer_chat).order('date_time').fetch(500)
-    messages.extend(db.Query(models.Message).filter('to =', my_chat).order('date_time').fetch(500))
-    timestamp = my_chat.last_updated
-    if not timestamp:
-      timestamp = datetime.datetime.now()
+    q = db.Query(models.Message).filter('to =', my_chat).order('date_time')
+    messages = q.fetch(500)
+    cur = q.cursor()
 
+    messages.extend(db.Query(models.Message).filter('to =', my_chat.peer_chat).order('date_time').fetch(500))
     messages.sort(compare_message_dates)
 
     # peer status
@@ -89,7 +88,7 @@ class ChatPage(webapp.RequestHandler):
     status_text = common.get_status_text(peer_status)
 
     template_values = {
-      "timestamp" : timestamp,
+      "cursor" : cur,
       "title" : my_chat.title,
       "status_text" : status_text,
       "status_class" : status_class,

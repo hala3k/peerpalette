@@ -6,7 +6,7 @@ class User(db.Model):
   join_date = db.DateTimeProperty(auto_now_add = True)
   last_been_online = db.DateTimeProperty()
   index_status = db.IntegerProperty(default = 0)
-  unread_chat = db.ListProperty(db.Key)
+  unread_chat = db.ListProperty(long)
   unread_timestamp = db.ListProperty(datetime.datetime)
 
 class Query(db.Model):

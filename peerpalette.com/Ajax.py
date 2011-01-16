@@ -2,6 +2,11 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
+from google.appengine.api import memcache
+from django.utils import simplejson
+
+import datetime
+import time
 
 import config
 import models
@@ -9,28 +14,21 @@ import common
 import os
 import cgi
 
-import datetime
-import time
-from threading import Thread
-
-from django.utils import simplejson
-
-
-def update_recipient_user(user_id, chat_key, timestamp):
+def update_recipient_user(user_id, chat_id, timestamp):
     u = models.User.get_by_id(user_id)
     try:
-      i = u.unread_chat.index(chat_key)
+      i = u.unread_chat.index(chat_id)
       u.unread_timestamp[i] = timestamp
     except:
       i = len(u.unread_chat)
-      u.unread_chat[i:] = [chat_key]
+      u.unread_chat[i:] = [chat_id]
       u.unread_timestamp[i:] = [timestamp]
     u.put()
 
 class SendMessage(webapp.RequestHandler):
   def post(self):
     user = common.get_user()
-    my_chat = models.UserChat.get_by_id(int(self.request.get("cid")))
+    my_chat = models.UserChat.get_by_id(long(self.request.get("cid")))
 
     if not my_chat:
        self.response.headers['Content-Type'] = 'application/json'
@@ -52,7 +50,7 @@ class SendMessage(webapp.RequestHandler):
 
     my_chat.peer_chat.last_updated = datetime.datetime.now()
     my_chat.peer_chat.put()
-    db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), my_chat.peer_chat.key(), datetime.datetime.now())
+    db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), my_chat.peer_chat.key().id(), datetime.datetime.now())
 
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write('{"status": "ok"}')
@@ -60,51 +58,58 @@ class SendMessage(webapp.RequestHandler):
 
 class ReceiveMessages(webapp.RequestHandler):
   def get(self):
-    my_chat = models.UserChat.get_by_id(int(self.request.get("cid")))
-    user = common.get_user(my_chat.key())
-    timestamp = self.request.get("timestamp")
+    chat_id = long(self.request.get("cid"))
+    user = common.get_user(chat_id)
+    cur = self.request.get("cursor")
 
-    if not my_chat:
-       self.response.headers['Content-Type'] = 'application/json'
-       self.response.out.write('{"status": "error"}')
-       return
-
-    if my_chat.user.key() != user.key():
-       self.response.headers['Content-Type'] = 'application/json'
-       self.response.out.write('{"status": "error"}')
-       return
-
+    keys = memcache.get_multi(["user_key", "peer_key"], key_prefix = "chat_" + str(chat_id) + "_")
     try:
-      timestamp = common.str2datetime(timestamp)
-    except:
+      user_key = keys["user_key"]
+      peer_key = keys["peer_key"]
+    except KeyError:
+      my_chat = models.UserChat.get_by_id(chat_id)
+      user_key = my_chat.user.key()
+      peer_key = my_chat.peer.key()
+      memcache.set_multi({"user_key" : user_key, "peer_key" : peer_key}, key_prefix = "chat_" + str(chat_id) + "_")
+
+    if user_key != user.key():
       self.response.headers['Content-Type'] = 'application/json'
       self.response.out.write('{"status": "error"}')
       return
 
-    # other info like new chats and chat status
-    unread_count = common.get_unread_count(user)
-
     # peer status
-    user_status = common.get_user_status(my_chat.peer_chat.user)
-    status_class = common.get_status_class(user_status)
-    status_text = common.get_status_text(user_status)
+    peer = models.User.get(peer_key)
+    peer_status = common.get_user_status(peer)
+    status_class = common.get_status_class(peer_status)
+    status_text = common.get_status_text(peer_status)
     
     new_messages = []
-    new_messages_query = db.Query(models.Message).filter('to =', my_chat).filter('date_time >', timestamp).fetch(101)
+    chat_key = db.Key.from_path("UserChat", chat_id)
+    new_messages_query = db.Query(models.Message).filter('to =', chat_key).order('date_time')
+    new_messages_query.with_cursor(start_cursor=cur)
+    messages = new_messages_query.fetch(10)
 
-    for msg in new_messages_query:
-      timestamp = msg.date_time
-      new_messages.append(msg.message_string)
+    if messages:
+      for msg in new_messages_query:
+        new_messages.append(msg.message_string)
 
-    if len(new_messages) > 0:
-      my_chat.unread = 0
-      my_chat.put()
       self.response.headers['Content-Type'] = 'application/json'
-      self.response.out.write(simplejson.dumps({"status": "ok", "messages": new_messages, "timestamp" : str(timestamp), "unread": unread_count, "status_class" : status_class, "status_text" : status_text}))
+      self.response.out.write(simplejson.dumps({\
+        "status": "ok", "messages": new_messages,\
+        "cursor" : str(new_messages_query.cursor()),\
+        "unread": common.get_unread_count(user),\
+        "status_class" : status_class,\
+        "status_text" : status_text\
+      }))
       return
 
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.out.write(simplejson.dumps({"status": "ok", "unread": unread_count, "status_class" : status_class, "status_text" : status_text}))
+    self.response.out.write(simplejson.dumps({
+      "status": "ok",\
+      "unread": common.get_unread_count(user),\
+      "status_class" : status_class,\
+      "status_text" : status_text\
+    }))
 
 
 class GetUnread(webapp.RequestHandler):

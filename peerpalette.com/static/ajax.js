@@ -45,10 +45,8 @@ function update2() {
   $.ajax({
     url: "/getunread",
     type: "GET",
-    data: ({timestamp: timestamp}),
     success: function(result){
       if (result["status"] == "ok") {
-        timestamp = result["timestamp"];
         refresh_unread_text(result["unread"])
       }
       setTimeout("update2();", 5000);
@@ -63,12 +61,12 @@ function update() {
   $.ajax({
     url: "/receivemessages",
     type: "GET",
-    data: ({cid : chat_id, timestamp: timestamp}),
+    data: ({cid : chat_id, cursor: cursor}),
     success: function(result) {
       if (result["status"] == "ok") {
         if ("messages" in result) {
           var messages = result["messages"];
-          timestamp = result["timestamp"];
+          cursor = result["cursor"];
           for (var i = 0; i < messages.length; ++ i) {
             $("#log").append('<div><span class="them">she/he</span>: <span style="white-space:pre">' + messages[i] + '</span></div>');
           }

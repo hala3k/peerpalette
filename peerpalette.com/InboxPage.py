@@ -29,7 +29,7 @@ class InboxPage(webapp.RequestHandler):
       status_class = common.get_status_class(status)
 
       try:
-        i = user.unread_chat.index(conv.key())
+        i = user.unread_chat.index(conv.key().id())
         conversations.append({"title" : conv.title, "id" : conv.key().id(), "read" : False, "status_class" : status_class})
       except:
         conversations.append({"title" : conv.title, "id" : conv.key().id(), "read" : True, "status_class" : status_class})
