@@ -83,9 +83,9 @@ class ChatPage(webapp.RequestHandler):
     messages.sort(compare_message_dates)
 
     # peer status
-    peer_status = common.get_user_status(my_chat.peer_chat.user)
-    status_class = common.get_status_class(peer_status)
-    status_text = common.get_status_text(peer_status)
+    idle_time = common.get_user_idle_time(common.get_user_status(my_chat.peer.key()))
+    status_class = common.get_status_class(idle_time)
+    status_text = common.get_status_text(idle_time)
 
     template_values = {
       "cursor" : cur,

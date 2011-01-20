@@ -32,6 +32,7 @@ class SearchPage(webapp.RequestHandler):
     query_hash = search.get_query_hash(clean_string)
     keyword_hashes = search.get_keyword_hashes(clean_string)
 
+    # TODO use get_or_insert
     query = db.Query(models.Query).filter('user =', user).filter('query_hash =', query_hash).get()
     if not query:
       query = models.Query(user = user, query_string = q, query_hash = query_hash)
@@ -42,14 +43,18 @@ class SearchPage(webapp.RequestHandler):
     result_keys = search.do_search(user, keyword_hashes)
     results = db.get(result_keys)
 
+    user_keys = [r.user.key() for r in results]
+    users_status = common.get_user_status(user_keys)
+
     result_values = []
-    for result in results:
+    for i in range(len(results)):
+      result = results[i]
       if result.user.key() == user.key():
         continue
 
-      user_status = common.get_user_status(result.user)
-      status_text = common.get_status_text(user_status)
-      status_class = common.get_status_class(user_status)
+      idle_time = common.get_user_idle_time(users_status[i])
+      status_text = common.get_status_text(idle_time)
+      status_class = common.get_status_class(idle_time)
 
       result_values.append({"query" : result.query_string, "key" : result.key(), "status_text" : status_text, "status_class" : status_class})
 

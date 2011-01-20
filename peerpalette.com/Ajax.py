@@ -78,10 +78,9 @@ class ReceiveMessages(webapp.RequestHandler):
       return
 
     # peer status
-    peer = models.User.get(peer_key)
-    peer_status = common.get_user_status(peer)
-    status_class = common.get_status_class(peer_status)
-    status_text = common.get_status_text(peer_status)
+    idle_time = common.get_user_idle_time(common.get_user_status(peer_key))
+    status_class = common.get_status_class(idle_time)
+    status_text = common.get_status_text(idle_time)
     
     new_messages = []
     chat_key = db.Key.from_path("UserChat", chat_id)

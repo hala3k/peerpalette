@@ -1,16 +1,14 @@
+from google.appengine.ext import db
+from google.appengine.ext.webapp import template
+from google.appengine.api import memcache
+
 from gaesessions import get_current_session
 import models
 import datetime
 
-from google.appengine.ext import db
-from google.appengine.ext.webapp import template
 import os
-
 import config
-
 import logging
-
-import google.appengine.api.memcache
 
 def get_online_users():
   u = memcache.get('online_users')
@@ -22,23 +20,17 @@ def get_online_users():
 
   return u
 
-def _update_user(user_key, clear_unread = None):
+def _update_user(user_key, clear_unread):
   user = models.User.get(user_key)
 
-  if clear_unread:
-    try:
-      i = user.unread_chat.index(clear_unread)
-      del user.unread_chat[i]
-      del user.unread_timestamp[i]
-      user.last_been_online = datetime.datetime.now()
-      user.put()
-      return user
-    except:
-      pass
-
-  if (datetime.datetime.now() - user.last_been_online).seconds >= config.STATUS_UPDATE_THRESHOLD:
-    user.last_been_online = datetime.datetime.now()
+  try:
+    i = user.unread_chat.index(clear_unread)
+    del user.unread_chat[i]
+    del user.unread_timestamp[i]
     user.put()
+    return user
+  except: # TODO use specific exception
+    pass
 
   return user
 
@@ -47,12 +39,21 @@ def get_user(clear_unread = None):
   session = get_current_session()
 
   if session.has_key("user"):
-    user = db.run_in_transaction(_update_user, session["user"], clear_unread)
+    if clear_unread:
+      user = db.run_in_transaction(_update_user, session["user"], clear_unread)
+    else:
+      user = models.User.get(session["user"])
 
-  if not user:
-    user = models.User(last_been_online = datetime.datetime.now())
+  if user is None:
+    user = models.User()
     user.put()
     session["user"] = str(user.key())
+
+  last_been_online = memcache.get("last_been_online_%d" % user.key().id())
+  if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.STATUS_UPDATE_THRESHOLD:
+    status = models.UserStatus(key_name = str(user.key().id()))
+    status.put()
+    memcache.set("last_been_online_%d" % user.key().id(), datetime.datetime.now())
 
   return user
 
@@ -85,8 +86,21 @@ def get_unread_count_html(user):
 
   return ""
 
-def get_user_status(user):
-  timediff = datetime.datetime.now() - user.last_been_online
+def get_user_status(user_keys):
+  if type(user_keys).__name__ == 'list':
+    ids = []
+    for u in user_keys:
+      ids.append(str(u.id()))
+  else:
+    ids = str(user_keys.id())
+
+  return models.UserStatus.get_by_key_name(ids)
+
+def get_user_idle_time(user_status):
+  if user_status is None:
+    return 5184000
+
+  timediff = datetime.datetime.now() - user_status.last_been_online
   return (timediff.seconds) + (timediff.days * 24 * 60 * 60)
 
 def get_status_text(status):

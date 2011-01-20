@@ -19,14 +19,15 @@ class InboxPage(webapp.RequestHandler):
     conversations = []
 
     peer_keys = [conv.peer.key() for conv in convs]
-    peers = dict(zip(peer_keys, db.get(peer_keys)))
+    peers_status = common.get_user_status(peer_keys)
 
-    for conv in convs:
+    for i in range(len(convs)):
+      conv = convs[i]
       if not conv.last_updated:
         continue
 
-      status = common.get_user_status(peers[conv.peer.key()])
-      status_class = common.get_status_class(status)
+      idle_time = common.get_user_idle_time(peers_status[i])
+      status_class = common.get_status_class(idle_time)
 
       try:
         i = user.unread_chat.index(conv.key().id())
