@@ -15,6 +15,8 @@ class Query(db.Model):
   query_string = db.StringProperty(required = True)
   query_hash = db.IntegerProperty(required = True)
   date_time = db.DateTimeProperty(auto_now_add = True)
+  keyword_hashes = db.ListProperty(item_type = long)
+  rating = db.FloatProperty(default = 1.0)
 
 class UserChat(db.Model):
   user = db.ReferenceProperty(User)
@@ -30,12 +32,4 @@ class Message(db.Model):
   to = db.ReferenceProperty(UserChat)
   message_string = db.TextProperty()
   date_time = db.DateTimeProperty(auto_now_add = True)
-
-class QueryIndex(db.Model):
-  query = db.ReferenceProperty(Query)
-  user = db.ReferenceProperty(User)
-  rating = db.FloatProperty(default = 1.0)
-  user_status = db.IntegerProperty(default = 0, indexed = False)
-  timestamp = db.DateTimeProperty(auto_now_add = True, indexed = False)
-  keyword_hashes = db.ListProperty(item_type = long)
 

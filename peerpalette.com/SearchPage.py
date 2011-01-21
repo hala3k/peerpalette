@@ -35,13 +35,10 @@ class SearchPage(webapp.RequestHandler):
     # TODO use get_or_insert
     query = db.Query(models.Query).filter('user =', user).filter('query_hash =', query_hash).get()
     if not query:
-      query = models.Query(user = user, query_string = q, query_hash = query_hash)
+      query = models.Query(user = user, query_string = q, query_hash = query_hash, keyword_hashes = keyword_hashes)
       query.put()
-      query_index = models.QueryIndex(query = query, keyword_hashes = keyword_hashes, user = user)
-      query_index.put()
 
-    result_keys = search.do_search(user, keyword_hashes)
-    results = db.get(result_keys)
+    results = search.do_search(user, keyword_hashes)
 
     user_keys = [r.user.key() for r in results]
     users_status = common.get_user_status(user_keys)
