@@ -13,7 +13,6 @@ class UserStatus(db.Model):
 class Query(db.Model):
   user = db.ReferenceProperty(User)
   query_string = db.StringProperty(required = True)
-  query_hash = db.IntegerProperty(required = True)
   date_time = db.DateTimeProperty(auto_now_add = True)
   keyword_hashes = db.ListProperty(item_type = long)
   rating = db.FloatProperty(default = 1.0)

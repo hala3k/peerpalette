@@ -29,14 +29,10 @@ class SearchPage(webapp.RequestHandler):
 #      return
 
     clean_string = search.clean_query_string(q)
-    query_hash = search.get_query_hash(clean_string)
     keyword_hashes = search.get_keyword_hashes(clean_string)
-
-    # TODO use get_or_insert
-    query = db.Query(models.Query).filter('user =', user).filter('query_hash =', query_hash).get()
-    if not query:
-      query = models.Query(user = user, query_string = q, query_hash = query_hash, keyword_hashes = keyword_hashes)
-      query.put()
+    key_name = str(search.get_query_hash(user.key().id(), clean_string))
+    query = models.Query(key_name = key_name, user = user, query_string = q, keyword_hashes = keyword_hashes)
+    query.put()
 
     results = search.do_search(user, keyword_hashes)
 

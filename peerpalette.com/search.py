@@ -10,8 +10,8 @@ def get_keyword_hashes(clean_string):
 def clean_query_string(q):
   return q.lower()
 
-def get_query_hash(clean_string):
-  return hash(clean_string)
+def get_query_hash(user_id, clean_string):
+  return hash(str(user_id) + clean_string)
 
 def index_query(query, keyword_hashes):
   query_index = models.QueryIndex(query = query, keyword_hashes = keyword_hashes)
