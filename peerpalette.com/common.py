@@ -8,7 +8,8 @@ import datetime
 
 import os
 import config
-import logging
+import hashlib
+import base64
 
 def get_online_users():
   u = memcache.get('online_users')
@@ -126,3 +127,14 @@ def str2datetime(s):
     if len(parts) > 1:
       return dt.replace(microsecond=int(parts[1]))
     return dt
+
+def get_hash(string):
+  hsh = base64.urlsafe_b64encode(hashlib.md5(string).digest())
+  return hsh.rstrip('=')
+
+def get_query_key_name(user_id, clean_string):
+  return get_hash(str(user_id) + ':' + clean_string)
+
+def get_chat_key_name(user_id, peer_query_key_name):
+  return get_hash(str(user_id) + ':' + peer_query_key_name)
+
