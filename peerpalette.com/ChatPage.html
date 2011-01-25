@@ -7,7 +7,7 @@ $(document).ready(function() {
 });
 </script>
 <script type="text/javascript">
-  var chat_id = {{chat_id}};
+  var chat_key_name = "{{chat_key_name}}";
   var cursor = "{{cursor}}";
 </script>
 {% endblock headtags %}
@@ -18,7 +18,7 @@ $(document).ready(function() {
 <div class="panel" id="log" style="left:5px;right:5px;top:80px;bottom:65px;position:absolute;overflow:auto;">
 {% for message in messages %}
   <div>
-  {% ifequal message.to.key.id chat_id %}
+  {% ifequal message.chat_key_name chat_key_name %}
     <span class="them">she/he</span>:
   {% else %}
     <span class="you">you</span>:

@@ -21,8 +21,8 @@ application = webapp.WSGIApplication(
                                       ('/inbox', InboxPage),
                                       ('/history', HistoryPage),
                                       ('/update_index', UpdateIndexWorker),
-                                      ('/chat', ChatPage)],
-                                     debug=True)
+                                      ('/chat/(.*)', ChatPage)],
+                                     debug=False)
 
 def main():
     run_wsgi_app(application)

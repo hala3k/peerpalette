@@ -4,6 +4,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from django.utils import simplejson
+from google.appengine.api import datastore_errors
 
 import datetime
 import time
@@ -14,21 +15,21 @@ import common
 import os
 import cgi
 
-def update_recipient_user(user_id, chat_id, timestamp):
+def update_recipient_user(user_id, chat_key_name, timestamp):
     u = models.User.get_by_id(user_id)
     try:
-      i = u.unread_chat.index(chat_id)
+      i = u.unread_chat.index(chat_key_name)
       u.unread_timestamp[i] = timestamp
     except:
       i = len(u.unread_chat)
-      u.unread_chat[i:] = [chat_id]
+      u.unread_chat[i:] = [chat_key_name]
       u.unread_timestamp[i:] = [timestamp]
     u.put()
 
 class SendMessage(webapp.RequestHandler):
   def post(self):
     user = common.get_user()
-    my_chat = models.UserChat.get_by_id(long(self.request.get("cid")))
+    my_chat = models.UserChat.get_by_key_name(self.request.get("chat_key_name"))
 
     if not my_chat:
        self.response.headers['Content-Type'] = 'application/json'
@@ -40,17 +41,34 @@ class SendMessage(webapp.RequestHandler):
        self.response.out.write('{"status": "error"}')
        return
 
+    peer_chat_key = common.get_ref_key(my_chat, 'peer_chat')
+
     msg = self.request.get("msg")
-    message = models.Message(to = my_chat.peer_chat, message_string = msg)
+    message = models.Message(to = peer_chat_key, message_string = msg)
     message.put()
 
     if not my_chat.last_updated:
       my_chat.last_updated = datetime.datetime.now()
       my_chat.put()
 
-    my_chat.peer_chat.last_updated = datetime.datetime.now()
-    my_chat.peer_chat.put()
-    db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), my_chat.peer_chat.key().id(), datetime.datetime.now())
+    try:
+      peer_chat = my_chat.peer_chat
+    except datastore_errors.Error, e:
+      if e.args[0] == "ReferenceProperty failed to be resolved":
+        peer_chat = None
+      else:
+        raise
+
+    if not peer_chat:
+      peer_title = "in: " + my_chat.query.query_string + " (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
+
+      peer_chat = models.UserChat(key_name = peer_chat_key.id_or_name(), user = my_chat.peer, peer = user, peer_query = my_chat.query, my_query = my_chat.peer_query, title = peer_title, peer_chat = my_chat, last_updated = datetime.datetime.now())
+      peer_chat.put()
+      db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), peer_chat.key().id_or_name(), datetime.datetime.now())
+    else:
+      peer_chat.last_updated = datetime.datetime.now()
+      peer_chat.put()
+      db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), peer_chat.key().id_or_name(), datetime.datetime.now())
 
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write('{"status": "ok"}')
@@ -58,19 +76,19 @@ class SendMessage(webapp.RequestHandler):
 
 class ReceiveMessages(webapp.RequestHandler):
   def get(self):
-    chat_id = long(self.request.get("cid"))
-    user = common.get_user(chat_id)
+    chat_key_name = self.request.get('chat_key_name')
+    user = common.get_user(chat_key_name)
     cur = self.request.get("cursor")
 
-    keys = memcache.get_multi(["user_key", "peer_key"], key_prefix = "chat_" + str(chat_id) + "_")
+    keys = memcache.get_multi(["user_key", "peer_key"], key_prefix = "chat_" + chat_key_name + "_")
     try:
       user_key = keys["user_key"]
       peer_key = keys["peer_key"]
     except KeyError:
-      my_chat = models.UserChat.get_by_id(chat_id)
+      my_chat = models.UserChat.get_by_key_name(chat_key_name)
       user_key = my_chat.user.key()
       peer_key = my_chat.peer.key()
-      memcache.set_multi({"user_key" : user_key, "peer_key" : peer_key}, key_prefix = "chat_" + str(chat_id) + "_")
+      memcache.set_multi({"user_key" : user_key, "peer_key" : peer_key}, key_prefix = "chat_" + chat_key_name + "_")
 
     if user_key != user.key():
       self.response.headers['Content-Type'] = 'application/json'
@@ -83,7 +101,7 @@ class ReceiveMessages(webapp.RequestHandler):
     status_text = common.get_status_text(idle_time)
     
     new_messages = []
-    chat_key = db.Key.from_path("UserChat", chat_id)
+    chat_key = db.Key.from_path("UserChat", chat_key_name)
     new_messages_query = db.Query(models.Message).filter('to =', chat_key).order('date_time')
     new_messages_query.with_cursor(start_cursor=cur)
     messages = new_messages_query.fetch(10)

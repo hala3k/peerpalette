@@ -61,7 +61,7 @@ function update() {
   $.ajax({
     url: "/receivemessages",
     type: "GET",
-    data: ({cid : chat_id, cursor: cursor}),
+    data: ({chat_key_name : chat_key_name, cursor: cursor}),
     success: function(result) {
       if (result["status"] == "ok") {
         if ("messages" in result) {
@@ -94,7 +94,7 @@ function update() {
 }
 
 $(document).ready(function() {
-  if (typeof chat_id  == "undefined") {
+  if (typeof chat_key_name  == "undefined") {
     // we're not in a chat window, so only pull inbox
     window.timestamp = "";
     setTimeout("update2();", 5000);
@@ -113,7 +113,7 @@ $(document).ready(function() {
           $.ajax({
             url: "/sendmessage",
             type: "POST",
-            data: ({cid : chat_id, msg: text}),
+            data: ({chat_key_name : chat_key_name, msg: text}),
             success: function(msg) {
               $("#log").append('<div><span class="you">you</span>: <span style="white-space:pre">' + text + '</span></div>');
               $('#log').animate({scrollTop: $('#log')[0].scrollHeight});

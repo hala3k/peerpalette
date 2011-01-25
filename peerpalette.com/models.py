@@ -4,7 +4,7 @@ import datetime
 class User(db.Model):
   beta = db.StringProperty()
   join_date = db.DateTimeProperty(auto_now_add = True)
-  unread_chat = db.ListProperty(long)
+  unread_chat = db.StringListProperty()
   unread_timestamp = db.ListProperty(datetime.datetime)
 
 class UserStatus(db.Model):

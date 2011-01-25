@@ -49,11 +49,11 @@ class SearchPage(webapp.RequestHandler):
       status_text = common.get_status_text(idle_time)
       status_class = common.get_status_class(idle_time)
 
-      result_values.append({"query" : result.query_string, "key" : result.key(), "status_text" : status_text, "status_class" : status_class})
+      result_values.append({"query" : result.query_string, "key" : result.key().id_or_name(), "status_text" : status_text, "status_class" : status_class})
 
     template_values = {
       "results" : result_values,
-      "key" : query.key(),
+      "key" : query.key().id_or_name(),
       "query" : q,
       "unread_html" : common.get_unread_count_html(user),
     }

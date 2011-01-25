@@ -30,10 +30,10 @@ class InboxPage(webapp.RequestHandler):
       status_class = common.get_status_class(idle_time)
 
       try:
-        i = user.unread_chat.index(conv.key().id())
-        conversations.append({"title" : conv.title, "id" : conv.key().id(), "read" : False, "status_class" : status_class})
+        i = user.unread_chat.index(conv.key().id_or_name())
+        conversations.append({"title" : conv.title, "key_name" : conv.key().id_or_name(), "read" : False, "status_class" : status_class})
       except:
-        conversations.append({"title" : conv.title, "id" : conv.key().id(), "read" : True, "status_class" : status_class})
+        conversations.append({"title" : conv.title, "key_name" : conv.key().id_or_name(), "read" : True, "status_class" : status_class})
 
     template_values = {
       "conversations" : conversations,

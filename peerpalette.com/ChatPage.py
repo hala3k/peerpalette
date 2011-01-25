@@ -17,69 +17,56 @@ def compare_message_dates(message1, message2):
 class StartChatPage(webapp.RequestHandler):
   def get(self):
     user = common.get_user()
-    query1 = models.Query.get(self.request.get("q1"))
-    query2 = models.Query.get(self.request.get("q2"))
+    queries = models.Query.get_by_key_name(self.request.get_all('q'))
 
-    # TODO test if one of the queries is for the user
-    if query1.user.key() != user.key() and query2.user.key() != user.key():
-      self.response.out.write("error1")
-      return
+    if len(queries) != 2 \
+      or queries[0].user.key() == queries[1].user.key() \
+      or (queries[0].user.key() != user.key() and queries.user.key() != user.key()):
+      self.response.out.write('error')
 
-    # TODO test if the two queries match
-    if query1.query_string != query2.query_string:
-      self.response.out.write("error2")
-      return
+    # TODO test if the two queries match (one is a subset of the other)
 
     # subject_query is the query that the user found
-    if query1.user.key() == user.key():
-      my_query = query1
-      peer_query = query2
+    if queries[0].user.key() == user.key():
+      my_query = queries[0]
+      peer_query = queries[1]
     else:
-      my_query = query2
-      peer_query = query1
-
-    peer = peer_query.user
+      my_query = queries[1]
+      peer_query = queries[0]
 
     # TODO test if the user has an existing coversation with that query
-    existing = db.Query(models.UserChat).filter('user =', user).filter('peer_query =', peer_query).get()
-    if existing:
-      self.redirect("/chat?cid=" + str(existing.key().id()))
+    chat_key_name = common.get_chat_key_name(user.key().id(), peer_query.key().id_or_name())
+    existing_chat = models.Query.get_by_key_name(chat_key_name)
+    if existing_chat:
+      self.redirect('/chat/' + chat_key_name)
       return
 
+    peer = peer_query.user
+    peer_chat_key_name = common.get_chat_key_name(peer.key().id(), my_query.key().id_or_name())
+
     my_title = peer_query.query_string + " (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
-    peer_title = "incoming: " + my_query.query_string + " (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
 
-    # TODO create a new chat and chat participant objects and forward to the chat page
-    my_chat = models.UserChat(user = user, peer = peer, peer_query = peer_query, my_query = my_query, title = my_title)
-    my_chat.put()
-    peer_chat = models.UserChat(user = peer, peer = user, peer_query = my_query, my_query = peer_query, title = peer_title, peer_chat = my_chat)
-    peer_chat.put()
-    my_chat.peer_chat = peer_chat
+    my_chat = models.UserChat(key_name = chat_key_name, user = user, peer = peer, peer_query = peer_query, query = my_query, title = my_title, peer_chat = db.Key.from_path('UserChat', peer_chat_key_name))
     my_chat.put()
 
-    self.redirect("/chat?cid=" + str(my_chat.key().id()))
+    self.redirect('/chat/' + chat_key_name)
 
 
 class ChatPage(webapp.RequestHandler):
-  def get(self):
-    chat_id = long(self.request.get('cid'))
-
-    my_chat = models.UserChat.get_by_id(chat_id)
-    user = common.get_user(chat_id)
+  def get(self, chat_key_name):
+    my_chat = db.get(db.Key.from_path('UserChat', chat_key_name))
+    user = common.get_user(chat_key_name)
  
-    if not my_chat:
+    if not my_chat or my_chat.user.key() != user.key():
       self.response.out.write("error")
       return
 
-    if my_chat.user.key() != user.key():
-      self.response.out.write("error")
-      return
-
-    q = db.Query(models.Message).filter('to =', my_chat).order('date_time')
+    q = db.Query(models.Message).filter('to =', my_chat.key()).order('date_time')
     messages = q.fetch(500)
     cur = q.cursor()
 
-    messages.extend(db.Query(models.Message).filter('to =', my_chat.peer_chat).order('date_time').fetch(500))
+    peer_chat_key = common.get_ref_key(my_chat, 'peer_chat')
+    messages.extend(db.Query(models.Message).filter('to =', peer_chat_key).order('date_time').fetch(500))
     messages.sort(compare_message_dates)
 
     # peer status
@@ -92,8 +79,8 @@ class ChatPage(webapp.RequestHandler):
       "title" : my_chat.title,
       "status_text" : status_text,
       "status_class" : status_class,
-      "chat_id" : chat_id,
-      "messages" : messages,
+      "chat_key_name" : chat_key_name,
+      "messages" : [{'message_string': msg.message_string, 'chat_key_name': common.get_ref_key(msg, 'to').id_or_name()} for msg in messages],
       "unread_html" : common.get_unread_count_html(user),
       "link_target" : "_blank",
     }

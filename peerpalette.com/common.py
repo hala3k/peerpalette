@@ -138,3 +138,6 @@ def get_query_key_name(user_id, clean_string):
 def get_chat_key_name(user_id, peer_query_key_name):
   return get_hash(str(user_id) + ':' + peer_query_key_name)
 
+def get_ref_key(inst, prop_name):
+  return getattr(inst.__class__, prop_name).get_value_for_datastore(inst)
+

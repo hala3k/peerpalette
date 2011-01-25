@@ -4,9 +4,9 @@
     {% for conversation in conversations %}
       <div>
         {% if conversation.read %}
-          <a href="/chat?cid={{conversation.id}}" class="{{conversation.status_class}}">{{conversation.title}}</a>
+          <a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title}}</a>
         {% else %}
-          <b><a href="/chat?cid={{conversation.id}}" class="{{conversation.status_class}}">{{conversation.title}}</a></b>
+          <b><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title}}</a></b>
         {% endif %}
       </div>
     {% endfor %}
