@@ -15,11 +15,11 @@ def index_query(query, keyword_hashes):
   query_index.put()
   return keyword_hashes
 
-def do_search(user, keyword_hashes):
+def get_search_query(user, keyword_hashes):
   results = db.Query(models.Query)
   for k in keyword_hashes:
     results.filter('keyword_hashes =', k)
   results.order('rating')
 
-  return results.fetch(100)
+  return results
 
