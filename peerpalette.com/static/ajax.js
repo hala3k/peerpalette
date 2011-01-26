@@ -114,7 +114,7 @@ $(document).ready(function() {
             type: "POST",
             data: ({chat_key_name : chat_key_name, msg: text}),
             success: function(msg) {
-              $("#log").append('<div><span class="you">you</span>: <span style="white-space:pre">' + text + '</span></div>');
+              $("#log").append($('<div><span class="you">you</span>: </div>').append($('<span style="white-space:pre"/>').text(text)));
               $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
             },
             error: function(arg1, arg2, arg3) {
