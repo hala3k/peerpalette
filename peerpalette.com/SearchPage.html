@@ -6,9 +6,9 @@
 <br/>
 {% if results %}
   {% for result in results %}
-    <div style="font-size: large;">
-<a href="/startchat?q={{key}}&q={{result.key}}" class="{{result.status_class}}">{{result.query|escape}}</a>
-    </div>
+  <div style="font-size: large;">
+    <a href="/startchat?q={{key}}&q={{result.key}}" class="{{result.status_class}}">{{result.query|escape}}</a>
+  </div>
   {% endfor %}
 {% else %}
   {% if with_cursor %}
@@ -18,9 +18,9 @@
   {% endif %}
 {% endif %}
 {% if cursor %}
-<div style="margin-top:1em">
-<a href="/search?q={{query}}&cursor={{cursor}}">More...</a>
-</div>
+  <div style="margin-top:1em">
+    <a href="/search?q={{query}}&cursor={{cursor}}">More...</a>
+  </div>
 {% endif %}
 </div>
 {% endblock content%}

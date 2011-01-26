@@ -1,14 +1,27 @@
 {% extends "_base.html" %}
 {% block content %}
 <div style="padding:10px;">
-    {% for conversation in conversations %}
-      <div>
-        {% if conversation.read %}
-          <a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title}}</a>
-        {% else %}
-          <b><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title}}</a></b>
-        {% endif %}
-      </div>
-    {% endfor %}
+{% if conversations %}
+  {% for conversation in conversations %}
+  <div>
+    {% if conversation.read %}
+    <a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title}}</a>
+    {% else %}
+    <b><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title}}</a></b>
+    {% endif %}
+  </div>
+  {% endfor %}
+{% else %}
+  {% if with_cursor %}
+  <span style="color: red;">No more chat sessions in your inbox. Return to <a href="/inbox">first page</a>.</span>
+  {% else %}
+  <span style="color: red;">You don't have any chat sessions yet. Try a <a href="/random">random chat</a>.</span>
+  {% endif %}
+{% endif %}
+{% if cursor %}
+  <div style="margin-top:1em">
+    <a href="/inbox?cursor={{cursor}}">More...</a>
+  </div>
+{% endif %}
 </div>
 {% endblock content%}

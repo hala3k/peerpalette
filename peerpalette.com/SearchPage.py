@@ -46,7 +46,6 @@ class SearchPage(webapp.RequestHandler):
     results_counter = 0
     results = []
     cursor = None
-    more = False
 
     for r in search_query:
       user_key = common.get_ref_key(r, 'user')
@@ -57,7 +56,6 @@ class SearchPage(webapp.RequestHandler):
       results.append({'query': r.query_string, 'key': r.key().id_or_name(), 'user_key': user_key})
       if results_counter >= config.ITEMS_PER_PAGE:
         cursor = search_query.cursor()
-        more = True
         break
       
     user_keys = [r['user_key'] for r in results]
