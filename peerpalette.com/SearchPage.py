@@ -66,9 +66,7 @@ class SearchPage(webapp.RequestHandler):
     for i in range(len(results)):
       result = results[i]
       idle_time = common.get_user_idle_time(users_status[i])
-      status_text = common.get_status_text(idle_time)
       status_class = common.get_status_class(idle_time)
-      result['status_text'] = status_text
       result['status_class'] = status_class
 
     template_values = {

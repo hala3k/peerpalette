@@ -14,7 +14,7 @@ import datetime
 class InboxPage(webapp.RequestHandler):
   def get(self):
     user = common.get_user()
-    convs = db.Query(models.UserChat).filter('user =', user).order('-last_updated').fetch(config.ITEMS_PER_PAGE);
+    convs = db.Query(models.UserChat).filter('user =', user).order('-last_updated').fetch(config.ITEMS_PER_PAGE)
     
     conversations = []
 

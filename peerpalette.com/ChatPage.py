@@ -72,12 +72,10 @@ class ChatPage(webapp.RequestHandler):
     # peer status
     idle_time = common.get_user_idle_time(common.get_user_status(my_chat.peer.key()))
     status_class = common.get_status_class(idle_time)
-    status_text = common.get_status_text(idle_time)
 
     template_values = {
       "cursor" : cur,
       "title" : my_chat.title,
-      "status_text" : status_text,
       "status_class" : status_class,
       "chat_key_name" : chat_key_name,
       "messages" : [{'message_string': msg.message_string, 'chat_key_name': common.get_ref_key(msg, 'to').id_or_name()} for msg in messages],

@@ -104,14 +104,6 @@ def get_user_idle_time(user_status):
   timediff = datetime.datetime.now() - user_status.last_been_online
   return (timediff.seconds) + (timediff.days * 24 * 60 * 60)
 
-def get_status_text(status):
-  if status < config.OFFLINE_THRESHOLD:
-    return "online"
-  elif status < config.INACTIVE_THRESHOLD:
-    return "offline"
-
-  return "inactive"
-
 def get_status_class(status):
   if status < config.OFFLINE_THRESHOLD:
     return "online"

@@ -98,7 +98,6 @@ class ReceiveMessages(webapp.RequestHandler):
     # peer status
     idle_time = common.get_user_idle_time(common.get_user_status(peer_key))
     status_class = common.get_status_class(idle_time)
-    status_text = common.get_status_text(idle_time)
     
     new_messages = []
     chat_key = db.Key.from_path("UserChat", chat_key_name)
@@ -116,7 +115,6 @@ class ReceiveMessages(webapp.RequestHandler):
         "cursor" : str(new_messages_query.cursor()),\
         "unread": common.get_unread_count(user),\
         "status_class" : status_class,\
-        "status_text" : status_text\
       }))
       return
 
@@ -125,7 +123,6 @@ class ReceiveMessages(webapp.RequestHandler):
       "status": "ok",\
       "unread": common.get_unread_count(user),\
       "status_class" : status_class,\
-      "status_text" : status_text\
     }))
 
 

@@ -11,8 +11,7 @@ function refresh_unread_text(unread_count) {
     $("#inbox").append("<b>(" + unread_count + ")</b>");
 }
 
-function refresh_chat_status(status_class, status_text) {
-  $('#status_text').text(status_text);
+function refresh_chat_status(status_class) {
   $('#status').removeClass('online offline inactive');
   $('#status').addClass(status_class);
 }
@@ -80,7 +79,7 @@ function update() {
           refresh_unread_text(result["unread"])
 
         if ("status_class" in result)
-          refresh_chat_status(result['status_class'], result['status_text']);
+          refresh_chat_status(result['status_class']);
       }
 
       setTimeout("update();", 1000);
