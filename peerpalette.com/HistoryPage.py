@@ -5,23 +5,39 @@ from google.appengine.ext import db
 
 import models
 import common
+import config
+
 import os
 import cgi
-
 import datetime
 
 class HistoryPage(webapp.RequestHandler):
   def get(self):
     user = common.get_user()
-    qQueries = db.Query(models.Query).filter('user =', user).order('-date_time')
+    queries_query = db.Query(models.Query).filter('user =', user).order('-date_time')
+    cur = self.request.get('cursor')
+    if cur:
+      queries_query.with_cursor(start_cursor = cur)
+      with_cursor = True
+    else:
+      with_cursor = False
 
     queries = []
-    for query in qQueries:
-      queries.append({"text" : query.query_string, "id" : query.key().id()})
+    counter = 0
+    cursor = None
+    for query in queries_query:
+      queries.append({"text" : query.query_string})
+      counter += 1
+
+      if counter >= config.ITEMS_PER_PAGE:
+        cursor = queries_query.cursor()
+        break
 
     template_values = {
       "queries" : queries,
       "unread_html" : common.get_unread_count_html(user),
+      "cursor" : cursor,
+      "with_cursor" : with_cursor,
     }
     path = os.path.join(os.path.dirname(__file__), 'HistoryPage.html')
     self.response.out.write(template.render(path, template_values))

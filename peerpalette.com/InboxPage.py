@@ -38,7 +38,6 @@ class InboxPage(webapp.RequestHandler):
 
       if counter >= config.ITEMS_PER_PAGE:
         cursor = convs_query.cursor()
-        more = True
         break
 
     peer_keys = [c['peer_key'] for c in conversations]
