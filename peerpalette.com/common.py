@@ -140,6 +140,9 @@ def get_query_key_name(user_id, clean_string):
 def get_chat_key_name(user_id, peer_query_key_name):
   return get_hash(str(user_id) + ':' + peer_query_key_name)
 
+def get_random_chat_key_name(user_id, peer_id):
+  return get_hash("random:" + str(user_id) + ":" + str(peer_id))
+
 def get_ref_key(inst, prop_name):
   return getattr(inst.__class__, prop_name).get_value_for_datastore(inst)
 
@@ -156,3 +159,4 @@ def calc_query_rating(query, user_idle_time):
   age = timediff.days / 30
   rating -= min(age, 2)
   return rating
+

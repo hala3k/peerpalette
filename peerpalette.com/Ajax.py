@@ -60,9 +60,16 @@ class SendMessage(webapp.RequestHandler):
         raise
 
     if not peer_chat:
-      peer_title = "in: " + my_chat.query.query_string + " (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
+      my_query_key = common.get_ref_key(my_chat, 'query')
+      peer_query_key = common.get_ref_key(my_chat, 'peer_query')
+      peer_key = common.get_ref_key(my_chat, 'peer')
 
-      peer_chat = models.UserChat(key_name = peer_chat_key.id_or_name(), user = my_chat.peer, peer = user, peer_query = my_chat.query, my_query = my_chat.peer_query, title = peer_title, peer_chat = my_chat, last_updated = datetime.datetime.now())
+      if my_query_key is None:
+        peer_title = "random chat (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
+      else:
+        peer_title = "in: " + my_chat.query.query_string + " (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
+
+      peer_chat = models.UserChat(key_name = peer_chat_key.id_or_name(), user = peer_key, peer = user, peer_query = my_chat.query, my_query = peer_query_key, title = peer_title, peer_chat = my_chat, last_updated = datetime.datetime.now())
       peer_chat.put()
       db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), peer_chat.key().id_or_name(), datetime.datetime.now())
     else:

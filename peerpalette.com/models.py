@@ -35,3 +35,6 @@ class Message(db.Model):
   message_string = db.TextProperty()
   date_time = db.DateTimeProperty(auto_now_add = True)
 
+class RandomChatQueue(db.Model):
+  peer = db.ReferenceProperty(User)
+

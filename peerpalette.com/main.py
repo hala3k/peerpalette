@@ -8,6 +8,7 @@ from ChatPage import ChatPage
 from ChatPage import StartChatPage
 from InboxPage import InboxPage
 from HistoryPage import HistoryPage
+from RandomChat import RandomChat
 import QueriesRating
 import Ajax
 
@@ -22,6 +23,7 @@ application = webapp.WSGIApplication(
                                       ('/history', HistoryPage),
                                       ('/update_user_queries_rating', QueriesRating.UpdateUserQueriesRating),
                                       ('/update_queries_rating/([01])', QueriesRating.UpdateQueriesRating),
+                                      ('/random', RandomChat),
                                       ('/chat/(.*)', ChatPage)],
                                      debug=False)
 
