@@ -1,0 +1,8 @@
+cron:
+- description: update query ratings for offline users
+  url: /update_queries_rating/0
+  schedule: every 1 minutes synchronized
+- description: update query ratings for inactive users
+  url: /update_queries_rating/1
+  schedule: every 24 hours synchronized
+

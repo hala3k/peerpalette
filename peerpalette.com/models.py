@@ -10,6 +10,9 @@ class User(db.Model):
 class UserStatus(db.Model):
   last_been_online = db.DateTimeProperty(auto_now = True)
 
+class UserIndexStatus(db.Model):
+  index_status = db.IntegerProperty(default = -1)
+
 class Query(db.Model):
   user = db.ReferenceProperty(User)
   query_string = db.StringProperty(required = True)

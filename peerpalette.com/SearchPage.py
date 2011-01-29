@@ -33,6 +33,7 @@ class SearchPage(webapp.RequestHandler):
     keyword_hashes = search.get_keyword_hashes(clean_string)
     key_name = common.get_query_key_name(user.key().id(), clean_string)
     query = models.Query(key_name = key_name, user = user, query_string = q, keyword_hashes = keyword_hashes)
+    query.rating = common.calc_query_rating(query, 0)
     query.put()
 
     search_query = search.get_search_query(user, keyword_hashes)

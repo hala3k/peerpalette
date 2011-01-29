@@ -1,6 +1,7 @@
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 from google.appengine.api import memcache
+from google.appengine.api import taskqueue
 
 from gaesessions import get_current_session
 import models
@@ -51,10 +52,19 @@ def get_user(clear_unread = None):
     session["user"] = str(user.key())
 
   last_been_online = memcache.get("last_been_online_%d" % user.key().id())
+
+  if last_been_online is None:
+    user_status = models.UserStatus.get_by_key_name(str(user.key().id()))
+    if user_status:
+      last_been_online = user_status.last_been_online
+
   if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.STATUS_UPDATE_THRESHOLD:
     status = models.UserStatus(key_name = str(user.key().id()))
     status.put()
-    memcache.set("last_been_online_%d" % user.key().id(), datetime.datetime.now())
+    memcache.set("last_been_online_%d" % user.key().id(), datetime.datetime.now(), time = config.OFFLINE_THRESHOLD)
+
+  if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.OFFLINE_THRESHOLD:
+    taskqueue.add(name = "update-user-queries-rating-%d" % user.key().id(), url='/update_user_queries_rating', params={'uid': user.key().id()}, method = 'GET')
 
   return user
 
@@ -133,3 +143,16 @@ def get_chat_key_name(user_id, peer_query_key_name):
 def get_ref_key(inst, prop_name):
   return getattr(inst.__class__, prop_name).get_value_for_datastore(inst)
 
+def calc_query_rating(query, user_idle_time):
+  if user_idle_time < config.OFFLINE_THRESHOLD:
+    rating = 6
+  elif user_idle_time < config.INACTIVE_THRESHOLD:
+    rating = 3
+  else:
+    rating = 0
+  num_keywords = len(query.keyword_hashes)
+  rating -= num_keywords * 0.2
+  timediff = datetime.datetime.now() - query.date_time
+  age = timediff.days / 30
+  rating -= min(age, 2)
+  return rating
