@@ -64,7 +64,8 @@ def get_user(clear_unread = None):
     memcache.set("last_been_online_%d" % user.key().id(), datetime.datetime.now(), time = config.OFFLINE_THRESHOLD)
 
   if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.OFFLINE_THRESHOLD:
-    taskqueue.add(name = "update-user-queries-rating-%d" % user.key().id(), url='/update_user_queries_rating', params={'uid': user.key().id()}, method = 'GET')
+    #taskqueue.add(name = "update-user-queries-rating-%d" % user.key().id(), url='/update_user_queries_rating', params={'uid': user.key().id()}, method = 'GET')
+    taskqueue.add(url='/update_user_queries_rating', params={'uid': user.key().id()}, method = 'GET')
 
   return user
 

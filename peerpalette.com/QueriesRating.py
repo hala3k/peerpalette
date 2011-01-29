@@ -53,5 +53,6 @@ class UpdateQueriesRating(webapp.RequestHandler):
     for user_status in users_status:
       idle_time = common.get_user_idle_time(user_status)
       if idle_time >= threshold:
-        taskqueue.add(name = "update-user-queries-rating-%s" % user_status.key().name(), url='/update_user_queries_rating', params={'uid': user_status.key().name()}, method = 'GET')
+        #taskqueue.add(name = "update-user-queries-rating-%s" % user_status.key().name(), url='/update_user_queries_rating', params={'uid': user_status.key().name()}, method = 'GET')
+        taskqueue.add(url='/update_user_queries_rating', params={'uid': user_status.key().name()}, method = 'GET')
 

@@ -25,10 +25,10 @@ application = webapp.WSGIApplication(
                                       ('/update_queries_rating/([01])', QueriesRating.UpdateQueriesRating),
                                       ('/random', RandomChat),
                                       ('/chat/(.*)', ChatPage)],
-                                     debug=False)
+                                     debug=True)
 
 def main():
-    run_wsgi_app(application)
+  run_wsgi_app(application)
 
 if __name__ == "__main__":
-    main()
+  main()
