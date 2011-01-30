@@ -69,6 +69,13 @@
         background-repeat: no-repeat;
         background-position: 0% 50%;
       }
+      .error {
+        background-color: #faa;
+        border: 1px solid #a00;
+        padding: 5px;
+        margin: 5px;
+        color: black;
+      }
     </style>
     {% block headtags %}
     {% endblock headtags %}
@@ -83,6 +90,11 @@
           <a id="history" class="tabitem" href="/history" {% if link_target %}target="{{link_target}}"{% endif %}>history</a>
       </div>
     </div>
+    {% if error %}
+    <div class="error">
+    {{error}}
+    </div>
+    {% endif %}
     {% block content %}
     {% endblock content %}
     {% block footer %}
