@@ -18,7 +18,7 @@ import cgi
 def _random_chat(user, queue_keys):
   queue = db.get(queue_keys)
   for q in queue:
-    if q.peer is None:
+    if q is not None and common.get_ref_key(q, 'peer') is None:
       q.peer = user
       q.put()
       return db.Key.from_path('User', long(q.key().name()))
@@ -27,35 +27,45 @@ def _random_chat(user, queue_keys):
   r.put()
   return None
 
+def random_chat(user):
+  queue = db.Query(models.RandomChatQueue, keys_only = True).filter('peer =', None).fetch(10)
+  peer_key = db.run_in_transaction(_random_chat, user, queue)
+
+  if peer_key is None:
+    time.sleep(1)
+    q = models.RandomChatQueue.get(db.Key.from_path('RandomChatQueue', str(user.key().id_or_name())))
+    peer_key = common.get_ref_key(q, 'peer')
+    if peer_key:
+      db.delete(q)
+
+  if peer_key is None:
+    db.delete(db.Key.from_path('RandomChatQueue', str(user.key().id_or_name())))
+    return None
+
+  chat_key_name = common.get_random_chat_key_name(user.key().id(), peer_key.id())
+  peer_chat_key_name = common.get_random_chat_key_name(peer_key.id(), user.key().id())
+
+  my_title = "random chat (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
+
+  my_chat = models.UserChat(key_name = chat_key_name, user = user, peer = peer_key, peer_query = None, query = None, title = my_title, peer_chat = db.Key.from_path('UserChat', peer_chat_key_name))
+  my_chat.put()
+  return chat_key_name
+
 class RandomChat(webapp.RequestHandler):
   def get(self):
     user = common.get_user()
-    queue = db.Query(models.RandomChatQueue, keys_only = True).filter('peer =', None).fetch(10)
-    peer_key = db.run_in_transaction(_random_chat, user, queue)
-
-    tries = 0
-    while peer_key is None:
-      if tries > 5:
-        db.delete(db.Key.from_path('RandomChatQueue', str(user.key().id_or_name())))
-        break
-      tries += 1
-      time.sleep(1)
-      q = models.RandomChatQueue.get(db.Key.from_path('RandomChatQueue', str(user.key().id_or_name())))
-      peer_key = common.get_ref_key(q, 'peer')
-      if peer_key:
-        db.delete(q)
-
-    if peer_key is None:
-      self.redirect('/?error=random_peer_not_found')
+    chat_key_name = random_chat(user)
+    if chat_key_name:
+      self.redirect('/chat/%s' % chat_key_name)
       return
+    self.redirect('/random')
 
-    chat_key_name = common.get_random_chat_key_name(user.key().id(), peer_key.id())
-    peer_chat_key_name = common.get_random_chat_key_name(peer_key.id(), user.key().id())
-
-    my_title = "random chat (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
-
-    my_chat = models.UserChat(key_name = chat_key_name, user = user, peer = peer_key, peer_query = None, query = None, title = my_title, peer_chat = db.Key.from_path('UserChat', peer_chat_key_name))
-    my_chat.put()
-
-    self.redirect('/chat/' + chat_key_name)
+  def post(self):
+    user = common.get_user()
+    chat_key_name = random_chat(user)
+    if chat_key_name:
+      self.response.set_status(201)
+      self.response.out.write('/chat/%s' % chat_key_name)
+      return
+    self.response.set_status(204)
 

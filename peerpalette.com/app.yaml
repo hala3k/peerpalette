@@ -1,5 +1,5 @@
-application: peerpalette
-version: 1-0-test
+application: peerpalette-test
+version: 1
 runtime: python
 api_version: 1
 

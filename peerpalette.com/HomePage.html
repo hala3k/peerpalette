@@ -1,8 +1,31 @@
 {% extends "_base.html" %}
 {% block headtags %}
 <script type="text/javascript">
+function start_random_chat() {
+  $.ajax({
+    url: "/random",
+    type: "post",
+    success: function(data, textStatus, rqst) {
+      if (rqst.status == 201)
+        window.location.href = data;
+      else
+        setTimeout("start_random_chat()", 1000);
+    },
+    error: function(arg1, arg2, arg3) {
+      alert("Cannot start random chat at this moment");
+      $("#random_button").attr("value", "Random Chat");
+    }
+  });
+}
+
 $(document).ready(function() {
-  $('#searchbox').focus();
+  $("#searchbox").focus();
+  $("#random_form").submit(function() {
+    $("#random_button").attr("disabled", "true");
+    $("#random_button").attr("value", "Waiting...");
+    start_random_chat();
+    return false;
+  });
 });
 </script>
 {% endblock headtags %}
@@ -24,8 +47,8 @@ $(document).ready(function() {
     or
   </div>
   <div style="text-align:center;">
-    <form action="/random" method="get">
-    <input type="submit" value="Random Chat" style="padding:10px"/>
+    <form id="random_form" action="/random" method="get">
+    <input id="random_button" type="submit" value="Random Chat" style="padding:10px"/>
     </form>
   </div>
   <div>
