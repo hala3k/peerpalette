@@ -67,7 +67,7 @@ function update() {
           var messages = result["messages"];
           cursor = result["cursor"];
           for (var i = 0; i < messages.length; ++ i) {
-            $("#log").append('<div><span class="them">she/he</span>: <span style="white-space:pre">' + messages[i] + '</span></div>');
+            $("#log").append($('<div><span class="them">she/he</span>: </div>').append($('<span style="white-space:pre"/>').text(messages[i])));
           }
           $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
           if (!hasfocus) {
