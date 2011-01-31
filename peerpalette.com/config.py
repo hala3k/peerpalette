@@ -10,3 +10,5 @@ STATUS_OFFLINE = 1
 STATUS_INACTIVE = 2
 
 errors = {'random_peer_not_found' : "Could not found a random peer at the moment. Please try again in a minute."}
+
+RATING_STEPS = 5

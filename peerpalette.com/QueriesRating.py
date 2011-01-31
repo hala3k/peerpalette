@@ -19,10 +19,10 @@ class UpdateUserQueriesRating(webapp.RequestHandler):
     for uid in uids:
       user_key = db.Key.from_path('User', long(uid))
       idle_time = common.get_user_idle_time(common.get_user_status(user_key))
-      queries_query = db.Query(models.Query).filter('user =', user_key)
+      queries_query = db.Query(models.QueryIndex).ancestor(user_key)
       queries = queries_query.fetch(1000)
       for q in queries:
-        q.rating = common.calc_query_rating(q, idle_time)
+        q.rating = common.calc_query_rating(idle_time, len(q.keyword_hashes), q.date_time)
 
       db.put(queries)
 

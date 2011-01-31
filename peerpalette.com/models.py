@@ -1,4 +1,5 @@
 from google.appengine.ext import db
+import config
 import datetime
 
 class User(db.Model):
@@ -17,8 +18,11 @@ class Query(db.Model):
   user = db.ReferenceProperty(User)
   query_string = db.StringProperty(required = True)
   date_time = db.DateTimeProperty(auto_now_add = True)
+
+class QueryIndex(db.Model):
   keyword_hashes = db.ListProperty(item_type = long)
-  rating = db.FloatProperty(default = 1.0)
+  rating = db.IntegerProperty(default = config.RATING_STEPS - 1)
+  date_time = db.DateTimeProperty(auto_now_add = True, indexed = False)
 
 class UserChat(db.Model):
   user = db.ReferenceProperty(User)

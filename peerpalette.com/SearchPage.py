@@ -32,44 +32,61 @@ class SearchPage(webapp.RequestHandler):
     clean_string = search.clean_query_string(q)
     keyword_hashes = search.get_keyword_hashes(clean_string)
     key_name = common.get_query_key_name(user.key().id(), clean_string)
-    query = models.Query(key_name = key_name, user = user, query_string = q, keyword_hashes = keyword_hashes)
-    query.rating = common.calc_query_rating(query, 0)
+    query = models.Query(key_name = key_name, user = user, query_string = q, num_keywords = len(keyword_hashes))
     query.put()
+    query_index = models.QueryIndex(parent = user, key_name = key_name, keyword_hashes = keyword_hashes, date_time = query.date_time)
+    query_index.rating = common.calc_query_rating(0, len(keyword_hashes), query.date_time)
+    query_index.put()
 
-    search_query = search.get_search_query(user, keyword_hashes)
+    step = config.RATING_STEPS - 1
     cur = self.request.get('cursor')
+    cursor = None
     if cur:
-      search_query.with_cursor(start_cursor = cur)
+      cursor = cur[1:]
+      step = int(cur[0:1])
       with_cursor = True
     else:
       with_cursor = False
 
+    search_query = search.get_search_query(user, keyword_hashes, step)
+    if cursor:
+      search_query.with_cursor(start_cursor = cursor)
+
     results_counter = 0
-    results = []
+    result_keys = []
     cursor = None
 
-    for r in search_query:
-      user_key = common.get_ref_key(r, 'user')
-      if user_key == user.key():
-        continue
+    while results_counter <= config.ITEMS_PER_PAGE:
+      for r in search_query:
+        user_key = r.parent()
+        if user_key == user.key():
+          continue
+        results_counter += 1
+        result_keys.append(db.Key.from_path('Query', r.id_or_name()))
+        if results_counter >= config.ITEMS_PER_PAGE:
+          cursor = str(step) + search_query.cursor()
+          break
 
-      results_counter += 1
-      results.append({'query': r.query_string, 'key': r.key().id_or_name(), 'user_key': user_key})
-      if results_counter >= config.ITEMS_PER_PAGE:
-        cursor = search_query.cursor()
+      if step <= 0:
         break
+
+      step -= 1
+      search_query = search.get_search_query(user, keyword_hashes, step)
       
-    user_keys = [r['user_key'] for r in results]
+    results = models.Query.get(result_keys)
+    result_values = [{'query': r.query_string, 'key': r.key().id_or_name(), 'user_key': common.get_ref_key(r, 'user')} for r in results]
+
+    user_keys = [r['user_key'] for r in result_values]
     users_status = common.get_user_status(user_keys)
 
-    for i in range(len(results)):
-      result = results[i]
+    for i in range(len(result_values)):
+      result = result_values[i]
       idle_time = common.get_user_idle_time(users_status[i])
       status_class = common.get_status_class(idle_time)
       result['status_class'] = status_class
 
     template_values = {
-      "results" : results,
+      "results" : result_values,
       "key" : query.key().id_or_name(),
       "query" : q,
       "unread_html" : common.get_unread_count_html(user),

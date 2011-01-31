@@ -17,36 +17,6 @@ indexes:
 
 - kind: Query
   properties:
-  - name: keyword_hashes
-  - name: keyword_hashes
-  - name: keyword_hashes
-  - name: keyword_hashes
-  - name: rating
-    direction: desc
-
-- kind: Query
-  properties:
-  - name: keyword_hashes
-  - name: keyword_hashes
-  - name: keyword_hashes
-  - name: rating
-    direction: desc
-
-- kind: Query
-  properties:
-  - name: keyword_hashes
-  - name: keyword_hashes
-  - name: rating
-    direction: desc
-
-- kind: Query
-  properties:
-  - name: keyword_hashes
-  - name: rating
-    direction: desc
-
-- kind: Query
-  properties:
   - name: user
   - name: date_time
     direction: desc

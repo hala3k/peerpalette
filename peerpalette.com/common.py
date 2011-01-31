@@ -147,17 +147,21 @@ def get_random_chat_key_name(user_id, peer_id):
 def get_ref_key(inst, prop_name):
   return getattr(inst.__class__, prop_name).get_value_for_datastore(inst)
 
-def calc_query_rating(query, user_idle_time):
+def calc_query_rating(user_idle_time, num_keywords, query_time):
   if user_idle_time < config.OFFLINE_THRESHOLD:
-    rating = 6
+    u = 1
   elif user_idle_time < config.INACTIVE_THRESHOLD:
-    rating = 3
+    u = 0.5
   else:
-    rating = 0
-  num_keywords = len(query.keyword_hashes)
-  rating -= num_keywords * 0.2
-  timediff = datetime.datetime.now() - query.date_time
-  age = timediff.days / 30
-  rating -= min(age, 2)
-  return rating
+    u = 0
+  k = min(num_keywords / config.MAX_KEYWORDS, 1)
+
+  timediff = datetime.datetime.now() - query_time
+  a = min(timediff.days / 30, 1)
+
+  rating = (u * 0.7)
+  rating += (1 - k) * 0.1
+  rating += (1 - a) * 0.2
+
+  return int(min(rating * config.RATING_STEPS, config.RATING_STEPS - 1))
 
