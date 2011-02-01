@@ -45,7 +45,7 @@ def random_chat(user):
   chat_key_name = common.get_random_chat_key_name(user.key().id(), peer_key.id())
   peer_chat_key_name = common.get_random_chat_key_name(peer_key.id(), user.key().id())
 
-  my_title = "random chat (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
+  my_title = "random chat"
 
   my_chat = models.UserChat(key_name = chat_key_name, user = user, peer = peer_key, peer_query = None, query = None, title = my_title, peer_chat = db.Key.from_path('UserChat', peer_chat_key_name))
   my_chat.put()
