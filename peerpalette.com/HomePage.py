@@ -17,9 +17,5 @@ class HomePage(webapp.RequestHandler):
       "unread_alert" : unread[1],
     }
 
-    error_id = self.request.get('error')
-    if error_id:
-      template_values['error'] = config.errors[error_id]
-
     path = os.path.join(os.path.dirname(__file__), 'HomePage.html')
     self.response.out.write(template.render(path, template_values))

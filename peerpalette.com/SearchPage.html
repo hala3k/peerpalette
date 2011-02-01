@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 {% block title %}Peerpalette: {{query|escape}}{% endblock title %}
 {% block content %}
-<div style="padding:10px;">
+<div id="content" style="padding:10px;">
 {% include "_search.html" %}
 <br/>
 {% if results %}
