@@ -11,6 +11,7 @@ import config
 import os
 import cgi
 import datetime
+import random
 
 class SearchPage(webapp.RequestHandler):
   def get(self):
@@ -56,17 +57,21 @@ class SearchPage(webapp.RequestHandler):
     result_keys = []
     cursor = None
 
+    random.seed()
     while results_counter <= config.ITEMS_PER_PAGE:
+      keys = []
       for r in search_query:
         user_key = r.parent()
         if user_key == user.key():
           continue
         results_counter += 1
-        result_keys.append(db.Key.from_path('Query', r.id_or_name()))
+        keys.append(db.Key.from_path('Query', r.id_or_name()))
         if results_counter >= config.ITEMS_PER_PAGE:
           cursor = str(step) + search_query.cursor()
           break
 
+        random.shuffle(keys)
+        result_keys.extend(keys)
       if step <= 0:
         break
 
