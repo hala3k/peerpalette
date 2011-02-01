@@ -31,6 +31,7 @@ class UserChat(db.Model):
   peer_chat = db.SelfReferenceProperty()
   peer_query = db.ReferenceProperty(Query, collection_name = "userchat_peer_set")
   title = db.StringProperty(required = True)
+  excerpt = db.StringProperty(indexed = False)
   date_time = db.DateTimeProperty(auto_now_add = True)
   last_updated = db.DateTimeProperty()
 

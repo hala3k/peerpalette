@@ -23,24 +23,31 @@ class InboxPage(webapp.RequestHandler):
       with_cursor = False
     
     conversations = []
+    peer_keys = []
     counter = 0
     cursor = None
     for conv in convs_query:
       if not conv.last_updated:
         continue
       counter += 1
+      c = {'title' : conv.title, 'key_name' : conv.key().id_or_name()}
 
       try:
         i = user.unread_chat.index(conv.key().id_or_name())
-        conversations.append({"title" : conv.title, "key_name" : conv.key().id_or_name(), "read" : False, "peer_key" : common.get_ref_key(conv, 'peer')})
+        c['read'] = False
       except:
-        conversations.append({"title" : conv.title, "key_name" : conv.key().id_or_name(), "read" : True, "peer_key" : common.get_ref_key(conv, 'peer')})
+        c['read'] = True
+
+      if conv.excerpt:
+        c['excerpt'] = conv.excerpt
+
+      conversations.append(c)
+      peer_keys.append(common.get_ref_key(conv, 'peer'))
 
       if counter >= config.ITEMS_PER_PAGE:
         cursor = convs_query.cursor()
         break
 
-    peer_keys = [c['peer_key'] for c in conversations]
     peers_status = common.get_user_status(peer_keys)
 
     for i in range(len(conversations)):

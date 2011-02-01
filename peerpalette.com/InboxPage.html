@@ -3,11 +3,13 @@
 <div id="content" style="padding:10px;">
 {% if conversations %}
   {% for conversation in conversations %}
-  <div>
+  <div style="clear:left">
     {% if conversation.read %}
-    <a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title}}</a>
+    <div style="float:left;margin-right:0.5em;"><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title|escape}}</a></div>
+      {% if conversation.excerpt %}<span class="excerpt">{{conversation.excerpt|escape}}</span>{% endif %}
     {% else %}
-    <b><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title}}</a></b>
+    <div style="float:left;margin-right:0.5em;"><b><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title|escape}}</a></b></div>
+    {% if conversation.excerpt %}<span class="excerpt">{{conversation.excerpt|escape}}</span>{% endif %}
     {% endif %}
   </div>
   {% endfor %}

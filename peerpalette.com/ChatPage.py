@@ -44,7 +44,7 @@ class StartChatPage(webapp.RequestHandler):
     peer = peer_query.user
     peer_chat_key_name = common.get_chat_key_name(peer.key().id(), my_query.key().id_or_name())
 
-    my_title = peer_query.query_string + " (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
+    my_title = peer_query.query_string
 
     my_chat = models.UserChat(key_name = chat_key_name, user = user, peer = peer, peer_query = peer_query, query = my_query, title = my_title, peer_chat = db.Key.from_path('UserChat', peer_chat_key_name))
     my_chat.put()

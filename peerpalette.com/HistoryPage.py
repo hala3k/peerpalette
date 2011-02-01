@@ -26,7 +26,7 @@ class HistoryPage(webapp.RequestHandler):
     counter = 0
     cursor = None
     for query in queries_query:
-      queries.append({"text" : query.query_string})
+      queries.append({"text" : query.query_string.encode('utf-8')})
       counter += 1
 
       if counter >= config.ITEMS_PER_PAGE:

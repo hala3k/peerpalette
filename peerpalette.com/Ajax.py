@@ -64,15 +64,17 @@ class SendMessage(webapp.RequestHandler):
       peer_key = common.get_ref_key(my_chat, 'peer')
 
       if my_query_key is None:
-        peer_title = "random chat (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
+        peer_title = "random chat"
       else:
-        peer_title = "in: " + my_chat.query.query_string + " (" + datetime.datetime.now().strftime('%Y-%m-%d %H:%M') + ")"
+        peer_title = "in: " + my_chat.query.query_string
 
       peer_chat = models.UserChat(key_name = peer_chat_key.id_or_name(), user = peer_key, peer = user, peer_query = my_chat.query, my_query = peer_query_key, title = peer_title, peer_chat = my_chat, last_updated = datetime.datetime.now())
+      peer_chat.excerpt = msg
       peer_chat.put()
       db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), peer_chat.key().id_or_name(), datetime.datetime.now())
     else:
       peer_chat.last_updated = datetime.datetime.now()
+      peer_chat.excerpt = msg
       peer_chat.put()
       db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), peer_chat.key().id_or_name(), datetime.datetime.now())
 
@@ -119,7 +121,8 @@ class ReceiveMessages(webapp.RequestHandler):
 
       self.response.headers['Content-Type'] = 'application/json'
       self.response.out.write(simplejson.dumps({\
-        "status": "ok", "messages": new_messages,\
+        "status": "ok",\
+        "messages": new_messages,\
         "cursor" : str(new_messages_query.cursor()),\
         "unread_count": unread[0],\
         "unread_alert": unread[1],\
