@@ -70,16 +70,20 @@ class SearchPage(webapp.RequestHandler):
           cursor = str(step) + search_query.cursor()
           break
 
-        random.shuffle(keys)
-        result_keys.extend(keys)
+      random.shuffle(keys)
+      result_keys.extend(keys)
+
       if step <= 0:
         break
 
       step -= 1
       search_query = search.get_search_query(user, keyword_hashes, step)
-      
+
     results = models.Query.get(result_keys)
     result_values = [{'query': r.query_string, 'key': r.key().id_or_name(), 'user_key': common.get_ref_key(r, 'user')} for r in results]
+
+    existing_chat_keys = [common.get_chat_key_name(user.key().id(), r.key().id_or_name()) for r in results]
+    existing_chats = models.UserChat.get_by_key_name(existing_chat_keys)
 
     user_keys = [r['user_key'] for r in result_values]
     users_status = common.get_user_status(user_keys)
@@ -89,6 +93,8 @@ class SearchPage(webapp.RequestHandler):
       idle_time = common.get_user_idle_time(users_status[i])
       status_class = common.get_status_class(idle_time)
       result['status_class'] = status_class
+      if existing_chats[i]:
+        result['existing_chat'] = existing_chats[i].key().id_or_name()
 
     unread = common.get_unread(user)
 
