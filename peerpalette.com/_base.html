@@ -8,7 +8,15 @@
     <meta name="keywords" content="chat,anonymous,people,search" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type='text/javascript' src='/static/jquery.blink.js'></script>
     <script type="text/javascript" src="/static/ajax.js"></script>
+{% if unread_alert %}
+<script type="text/javascript">
+$(document).ready(function() {
+  unread_alert();
+});
+</script>
+{% endif %}
     <style type="text/css">
       body {
         font-family: arial, sans-serif;
@@ -86,7 +94,13 @@
 
       <div class="menu" style="padding:3px;padding-bottom:0;position:absolute;bottom:0;right:10px;background-color: #ffffff;border:1px solid #aaaaaa;border-bottom:0;">
           <a id="home" class="tabitem" href="/" {% if link_target %}target="{{link_target}}"{% endif %}>home</a>
-          <a id="inbox" class="tabitem" href="/inbox" {% if link_target %}target="{{link_target}}"{% endif %}>inbox{{unread_html}}</a>
+          <a id="inbox" class="tabitem" href="/inbox" {% if link_target %}target="{{link_target}}"{% endif %}>
+{% ifnotequal unread_count 0 %}
+          inbox<b>({{unread_count}})</b>
+{% else %}
+          inbox
+{% endifnotequal %}
+          </a>
           <a id="history" class="tabitem" href="/history" {% if link_target %}target="{{link_target}}"{% endif %}>history</a>
       </div>
     </div>

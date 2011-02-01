@@ -73,13 +73,16 @@ class ChatPage(webapp.RequestHandler):
     idle_time = common.get_user_idle_time(common.get_user_status(my_chat.peer.key()))
     status_class = common.get_status_class(idle_time)
 
+    unread = common.get_unread(user)
+
     template_values = {
       "cursor" : cur,
       "title" : my_chat.title,
       "status_class" : status_class,
       "chat_key_name" : chat_key_name,
       "messages" : [{'message_string': msg.message_string, 'chat_key_name': common.get_ref_key(msg, 'to').id_or_name()} for msg in messages],
-      "unread_html" : common.get_unread_count_html(user),
+      "unread_count" : unread[0],
+      "unread_alert" : unread[1],
       "link_target" : "_blank",
     }
 

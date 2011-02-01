@@ -19,7 +19,6 @@ def update_recipient_user(user_id, chat_key_name, timestamp):
     u = models.User.get_by_id(user_id)
     try:
       i = u.unread_chat.index(chat_key_name)
-      u.unread_timestamp[i] = timestamp
     except:
       i = len(u.unread_chat)
       u.unread_chat[i:] = [chat_key_name]
@@ -112,6 +111,8 @@ class ReceiveMessages(webapp.RequestHandler):
     new_messages_query.with_cursor(start_cursor=cur)
     messages = new_messages_query.fetch(10)
 
+    unread = common.get_unread(user)
+
     if messages:
       for msg in new_messages_query:
         new_messages.append(msg.message_string)
@@ -120,7 +121,8 @@ class ReceiveMessages(webapp.RequestHandler):
       self.response.out.write(simplejson.dumps({\
         "status": "ok", "messages": new_messages,\
         "cursor" : str(new_messages_query.cursor()),\
-        "unread": common.get_unread_count(user),\
+        "unread_count": unread[0],\
+        "unread_alert": unread[1],\
         "status_class" : status_class,\
       }))
       return
@@ -128,7 +130,8 @@ class ReceiveMessages(webapp.RequestHandler):
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(simplejson.dumps({
       "status": "ok",\
-      "unread": common.get_unread_count(user),\
+      "unread_count": unread[0],\
+      "unread_alert": unread[1],\
       "status_class" : status_class,\
     }))
 
@@ -137,7 +140,7 @@ class GetUnread(webapp.RequestHandler):
   def get(self):
     user = common.get_user()
 
-    unread_count = common.get_unread_count(user)
+    unread = common.get_unread(user)
     
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.out.write(simplejson.dumps({"status" : "ok", "unread": unread_count}))
+    self.response.out.write(simplejson.dumps({"status" : "ok", "unread_count": unread[0], "unread_alert": unread[1]}))

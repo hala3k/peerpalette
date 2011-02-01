@@ -78,25 +78,19 @@ def show_error(user, error, description = ""):
     path = os.path.join(os.path.dirname(__file__), 'ErrorPage.html')
     return template.render(path, template_values)
 
-def get_unread_count(user):
+def get_unread(user):
   unread_threshold = datetime.datetime.now() - datetime.timedelta(seconds = config.UNREAD_THRESHOLD)
+  alert_threshold = datetime.datetime.now() - datetime.timedelta(seconds = config.ALERT_THRESHOLD)
 
   unread_count = 0
+  unread_alert = False
   for t in user.unread_timestamp:
     if t < unread_threshold:
       unread_count += 1
+      if t > alert_threshold:
+        unread_alert = True
 
-  return unread_count
-
-def get_unread_count_html(user):
-  unread_count = get_unread_count(user)
-
-  if unread_count > 100:
-    return "<b>(100+)</b>"
-  elif unread_count > 0:
-    return "<b>(" + str(unread_count) + ")</b>"
-
-  return ""
+  return (unread_count, unread_alert)
 
 def get_user_status(user_keys):
   if type(user_keys).__name__ == 'list':

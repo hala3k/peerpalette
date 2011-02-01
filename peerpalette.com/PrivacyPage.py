@@ -10,8 +10,11 @@ class PrivacyPage(webapp.RequestHandler):
   def get(self):
     user = common.get_user()
 
+    unread = common.get_unread(user)
+
     template_values = {
-      "unread_html" : common.get_unread_count_html(user),
+      "unread_count" : unread[0],
+      "unread_alert" : unread[1],
     }
 
     path = os.path.join(os.path.dirname(__file__), 'PrivacyPage.html')

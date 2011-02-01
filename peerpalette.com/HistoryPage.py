@@ -33,9 +33,12 @@ class HistoryPage(webapp.RequestHandler):
         cursor = queries_query.cursor()
         break
 
+    unread = common.get_unread(user)
+
     template_values = {
       "queries" : queries,
-      "unread_html" : common.get_unread_count_html(user),
+      "unread_count" : unread[0],
+      "unread_alert" : unread[1],
       "cursor" : cursor,
       "with_cursor" : with_cursor,
     }

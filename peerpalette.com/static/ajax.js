@@ -3,12 +3,23 @@ var newUnreadMessages = 0;
 var hasfocus = true;
 var notifyTimeout;
 
+var unread_alert_disabled = false;
+function unread_alert() {
+  if (!unread_alert_disabled) {
+    unread_alert_disabled = true;
+    $("#inbox").blink({maxBlinks: 6, blinkPeriod: 200, speed: 'fast', onBlink: function(){}, onMaxBlinks: function(){}});
+    setTimeout("unread_alert_disabled = false;", 4000);
+  }
+}
+
 function refresh_unread_text(unread_count) {
-  $("#inbox").text("inbox");
-  if (unread_count > 100)
-    $("#inbox").append("<b>(100+)</b>");
-  else if (unread_count > 0)
-    $("#inbox").append("<b>(" + unread_count + ")</b>");
+  current_html = $("#inbox").html();
+  new_html = "inbox";
+
+  if (unread_count > 0)
+    new_html += "<b>(" + unread_count + ")</b>";
+
+  $("#inbox").html(new_html);
 }
 
 function refresh_chat_status(status_class) {
@@ -46,12 +57,14 @@ function update2() {
     type: "GET",
     success: function(result){
       if (result["status"] == "ok") {
-        refresh_unread_text(result["unread"])
+        refresh_unread_text(result["unread_count"])
+        if (result["unread_alert"])
+          unread_alert();
       }
-      setTimeout("update2();", 5000);
+      setTimeout("update2();", 3000);
     },
     error: function(er, textStatus, errorThrown){
-      setTimeout("update2();", 5000);
+      setTimeout("update2();", 3000);
     }
   });
 }
@@ -75,8 +88,11 @@ function update() {
             notify(newUnreadMessages);
           }
         }
-        if ("unread" in result)
-          refresh_unread_text(result["unread"])
+        if ("unread_count" in result)
+          refresh_unread_text(result["unread_count"])
+
+        if (result["unread_alert"])
+          unread_alert();
 
         if ("status_class" in result)
           refresh_chat_status(result['status_class']);
@@ -96,7 +112,7 @@ $(document).ready(function() {
   if (typeof chat_key_name  == "undefined") {
     // we're not in a chat window, so only pull inbox
     window.timestamp = "";
-    setTimeout("update2();", 5000);
+    setTimeout("update2();", 3000);
   }
   else {
     $("#message").keypress(function(event) {
