@@ -126,7 +126,7 @@ def str2datetime(s):
     return dt
 
 def get_hash(string):
-  hsh = base64.urlsafe_b64encode(hashlib.md5(string).digest())
+  hsh = base64.urlsafe_b64encode(hashlib.md5(string.encode('utf-8')).digest())
   return hsh.rstrip('=')
 
 def get_query_key_name(user_id, clean_string):
