@@ -8,7 +8,11 @@
   {% for result in results %}
   <div style="font-size: large;">
     {% if result.existing_chat %}
+      {% if result.existing_chat_unread %}
+    <a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat"><b>{{result.query|escape}}</b></span></a>
+      {% else %}
     <a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat">{{result.query|escape}}</span></a>
+      {% endif %}
     {% else %}
     <a href="/startchat?q={{key}}&q={{result.key}}" class="{{result.status_class}}">{{result.query|escape}}</a>
     {% endif %}

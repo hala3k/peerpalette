@@ -95,6 +95,8 @@ class SearchPage(webapp.RequestHandler):
       result['status_class'] = status_class
       if existing_chats[i]:
         result['existing_chat'] = existing_chats[i].key().id_or_name()
+        if existing_chats[i].key().id_or_name() in user.unread_chat:
+          result['existing_chat_unread'] = True
 
     unread = common.get_unread(user)
 
