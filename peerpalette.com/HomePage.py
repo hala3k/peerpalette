@@ -5,6 +5,8 @@ from google.appengine.api import memcache
 
 import config
 import common
+import models
+
 import os
 import random
 
@@ -33,12 +35,27 @@ class HomePage(webapp.RequestHandler):
 
     user = common.get_user()
 
+    conversations = models.UserChat.get_by_key_name(user.unread_chat)
+    peer_keys = [common.get_ref_key(c, 'peer') for c in conversations]
+    peers_status = common.get_user_status(peer_keys)
+
+    conversations_value = []
+    for i in range(len(conversations)):
+      conv = conversations[i]
+      idle_time = common.get_user_idle_time(peers_status[i])
+      status_class = common.get_status_class(idle_time)
+      c = {'title' : conv.title, 'key_name' : conv.key().id_or_name(), 'status_class' : status_class}
+      if conv.excerpt:
+        c['excerpt'] = conv.excerpt
+      conversations_value.append(c)
+
     unread = common.get_unread(user)
 
     template_values = {
       "unread_count" : unread[0],
       "unread_alert" : unread[1],
       "topics" : topics,
+      "conversations" : conversations_value,
     }
 
     path = os.path.join(os.path.dirname(__file__), 'HomePage.html')

@@ -53,6 +53,19 @@ $(document).ready(function() {
       <a href="/search?q={{t|urlencode}}" style="margin-right:0.5em;">{{t|escape}}</a>
     {% endfor %}
   </div>
+  {% if conversations %}
+  <div>
+    <br/>
+    <b>New messages:</b>
+    <br/>
+    {% for conversation in conversations %}
+    <div style="clear:left">
+      <div style="float:left;margin-right:0.5em;"><b><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title|escape}}</a></b></div>
+    {% if conversation.excerpt %}<span class="excerpt">{{conversation.excerpt|escape}}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 </div>
 {% endblock content%}
 
