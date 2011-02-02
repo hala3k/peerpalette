@@ -9,13 +9,13 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="240"
+   width="300"
    height="40"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.0 r9654"
    sodipodi:docname="peerpalette.svg"
-   inkscape:export-filename="/home/zaid/Desktop/peerpalette.png"
+   inkscape:export-filename="/home/zaid/peerpalette/peerpalette.com/static/peerpalette.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -92,9 +92,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.3272983"
-     inkscape:cx="-91.090326"
-     inkscape:cy="44.348907"
+     inkscape:zoom="1.8770833"
+     inkscape:cx="157.05185"
+     inkscape:cy="34.747427"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -166,5 +166,17 @@
          style="fill:none;stroke:#0f4482;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
          inkscape:connector-curvature="0" />
     </g>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#821e10;fill-opacity:1;stroke:none;font-family:Sans"
+       x="236.7858"
+       y="1024.3844"
+       id="text3001"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="236.7858"
+         y="1024.3844"
+         style="font-size:12px;fill:#821e10;fill-opacity:1"
+         id="tspan3005">PRPLT.com</tspan></text>
   </g>
 </svg>
