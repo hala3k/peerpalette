@@ -1,0 +1,33 @@
+{% extends "_base.html" %}
+{% block headtags %}
+{% endblock headtags %}
+{% block content %}
+<div id="content" style="padding: 10px;font-family:sans-serif;color:#444444;padding-left:auto;padding-right:auto;">
+{% if not submitted %}
+  <div style="width:600px;margin-left:auto;margin-right:auto;background-color:#eee;padding:10px;border:1px solid #aaa;">
+    If you expect a reply, please provide your email address.
+    <br/><br/>
+    <form method="post">
+      <table style="margin-left: auto; margin-right: auto;">
+        <tr>
+          <td style="vertical-align: top">Message:</td>
+          <td><textarea name="message" type="text" rows="10" cols=50></textarea></td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top">Email (optional):</td>
+          <td><input name="email" type="text" size=30/></td>
+        </tr>
+      </table>
+      <div style="text-align: center;">
+      <input type="submit" value="Send" style="padding: 5px 10px;"/>
+      </div>
+    </div>
+  </form>
+</div>
+{% else %}
+<div id="content">
+<span style="color: #171">Thank you for your feedback. Click <a href="/">here</a> to go home, or start a <a href="/random">random chat</a></span>.
+</div>
+{% endif %}
+{% endblock content%}
+

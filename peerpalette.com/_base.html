@@ -107,16 +107,16 @@ $(document).ready(function() {
 {% endifnotequal %}
           </a>
           <a id="history" class="tabitem" href="/history" {% if link_target %}target="{{link_target}}"{% endif %}>history</a>
-          <a id="feedback" class="tabitem" href="/feedback" {% if link_target %}target="{{link_target}}"{% endif %} style="color:#3a3"><b>feedback</b></a>
+          <a id="feedback" class="tabitem" href="/feedback" {% if link_target %}target="{{link_target}}"{% endif %} style="color:#171">feedback</a>
       </div>
     </div>
     {% block content %}
     {% endblock content %}
     {% block footer %}
       <div style="text-align:center; font-size:small;margin-top:50px;font-family:sans-serif;color:#444;">
+        &copy;2011 peerpalette.com | <a href="/privacy">privacy</a>
     <div><img src="http://code.google.com/appengine/images/appengine-noborder-120x30.gif" 
 alt="Powered by Google App Engine" /></div>
-        &copy; 2011 peerpalette.com | <a href="/privacy">privacy</a>
       </div>
     {% endblock footer %}
   </body>

@@ -10,12 +10,14 @@ from InboxPage import InboxPage
 from HistoryPage import HistoryPage
 from RandomChat import RandomChat
 from PrivacyPage import PrivacyPage
+from FeedbackPage import FeedbackPage
 import QueriesRating
 import Ajax
 
 application = webapp.WSGIApplication(
                                      [('/', HomePage),
                                       ('/privacy', PrivacyPage),
+                                      ('/feedback', FeedbackPage),
                                       ('/search', SearchPage),
                                       ('/startchat', StartChatPage),
                                       ('/sendmessage', Ajax.SendMessage),
