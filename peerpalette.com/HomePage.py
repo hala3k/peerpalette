@@ -10,6 +10,14 @@ import models
 import os
 import random
 
+def get_num_online_users():
+  num = memcache.get('num_online_users')
+  if num is None:
+    from google.appengine.ext import db
+    num = db.Query(models.UserIndexStatus, keys_only = True).filter('index_status =', 0).count()
+    memcache.set('num_online_users', num, 60)
+  return num
+
 class HomePage(webapp.RequestHandler):
   def get(self):
     twitter_trends = memcache.get("twitter_trends")
@@ -56,6 +64,7 @@ class HomePage(webapp.RequestHandler):
       "unread_alert" : unread[1],
       "topics" : topics,
       "conversations" : conversations_value,
+      "num_online_users" : get_num_online_users(),
     }
 
     path = os.path.join(os.path.dirname(__file__), 'HomePage.html')
