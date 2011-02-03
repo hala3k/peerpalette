@@ -28,19 +28,19 @@ def _random_chat(user, queue_keys):
   return None
 
 def random_chat(user):
-  queue = db.Query(models.RandomChatQueue, keys_only = True).filter('peer =', None).fetch(10)
-  peer_key = db.run_in_transaction(_random_chat, user, queue)
-
-  if peer_key is None:
-    time.sleep(1)
-    q = models.RandomChatQueue.get(db.Key.from_path('RandomChatQueue', str(user.key().id_or_name())))
+  peer_key = None
+  q = models.RandomChatQueue.get_by_key_name(str(user.key().id()))
+  if q:
     peer_key = common.get_ref_key(q, 'peer')
-    if peer_key:
-      db.delete(q)
+  else:
+    queue = db.Query(models.RandomChatQueue, keys_only = True).filter('peer =', None).fetch(10)
+    peer_key = db.run_in_transaction(_random_chat, user, queue)
 
   if peer_key is None:
-    db.delete(db.Key.from_path('RandomChatQueue', str(user.key().id_or_name())))
     return None
+
+  if q:
+    db.delete(q)
 
   chat_key_name = common.get_random_chat_key_name(user.key().id(), peer_key.id())
   peer_chat_key_name = common.get_random_chat_key_name(peer_key.id(), user.key().id())
@@ -58,6 +58,7 @@ class RandomChat(webapp.RequestHandler):
     if chat_key_name:
       self.redirect('/chat/%s' % chat_key_name)
       return
+    time.sleep(1)
     self.redirect('/random')
 
   def post(self):

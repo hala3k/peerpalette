@@ -1,23 +1,6 @@
 {% extends "_base.html" %}
 {% block headtags %}
 <script type="text/javascript">
-function start_random_chat() {
-  $.ajax({
-    url: "/random",
-    type: "post",
-    success: function(data, textStatus, rqst) {
-      if (rqst.status == 201)
-        window.location.href = data;
-      else
-        setTimeout("start_random_chat()", 500);
-    },
-    error: function(arg1, arg2, arg3) {
-      alert("Cannot start random chat at this moment");
-      $("#random_button").attr("value", "Random Chat");
-    }
-  });
-}
-
 $(document).ready(function() {
   $("#searchbox").focus();
   $("#random_form").submit(function() {
