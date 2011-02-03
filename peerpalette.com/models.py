@@ -3,7 +3,6 @@ import config
 import datetime
 
 class User(db.Model):
-  beta = db.StringProperty()
   join_date = db.DateTimeProperty(auto_now_add = True)
   unread_chat = db.StringListProperty(indexed = False)
   unread_timestamp = db.ListProperty(datetime.datetime, indexed = False)

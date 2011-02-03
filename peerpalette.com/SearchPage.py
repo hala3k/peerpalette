@@ -22,14 +22,6 @@ class SearchPage(webapp.RequestHandler):
       self.redirect("/")
       return
 
-    if q == "prplt.com":
-      user.beta = q
-      user.put()
-
-#    if user.beta == None:
-#      self.response.out.write(common.show_error(user, "Sorry. The service is in private beta testing. Please check back later or enter your invitation code in the search box if you have one."))
-#      return
-
     clean_string = search.clean_query_string(q)
     keyword_hashes = search.get_keyword_hashes(clean_string)
     key_name = common.get_query_key_name(user.key().id(), clean_string)
