@@ -8,7 +8,7 @@ class User(db.Model):
   unread_timestamp = db.ListProperty(datetime.datetime, indexed = False)
 
 class UserStatus(db.Model):
-  last_been_online = db.DateTimeProperty(auto_now = True)
+  last_been_online = db.DateTimeProperty(auto_now = True, indexed = False)
 
 class UserIndexStatus(db.Model):
   index_status = db.IntegerProperty(default = -1)
@@ -29,7 +29,7 @@ class UserChat(db.Model):
   peer = db.ReferenceProperty(User, required = True, collection_name = "userchat_peer_set")
   peer_chat = db.SelfReferenceProperty()
   peer_query = db.ReferenceProperty(Query, collection_name = "userchat_peer_set")
-  title = db.StringProperty(required = True)
+  title = db.StringProperty(required = True, indexed = False)
   excerpt = db.StringProperty(indexed = False)
   date_time = db.DateTimeProperty(auto_now_add = True)
   last_updated = db.DateTimeProperty()
