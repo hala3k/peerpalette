@@ -28,7 +28,7 @@ function refresh_chat_status(status_class) {
 }
 
 function notify(msg, clear) {
-  if (!title)
+  if (typeof title == "undefined")
     title = $(document).attr("title");
 
   var t = "(" + msg + ")" + title;
@@ -85,7 +85,7 @@ function update() {
           $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
           if (!hasfocus) {
             ++ newUnreadMessages;
-            notify(newUnreadMessages);
+            notify(newUnreadMessages, true);
           }
         }
         if ("unread_count" in result)
