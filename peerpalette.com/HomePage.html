@@ -9,7 +9,7 @@ function start_random_chat() {
       if (rqst.status == 201)
         window.location.href = data;
       else
-        setTimeout("start_random_chat()", 1000);
+        setTimeout("start_random_chat()", 500);
     },
     error: function(arg1, arg2, arg3) {
       alert("Cannot start random chat at this moment");
