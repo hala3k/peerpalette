@@ -19,7 +19,7 @@ $(document).ready(function() {
 {% for message in messages %}
   <div>
   {% ifequal message.chat_key_name chat_key_name %}
-    <span class="them">she/he</span>:
+    <span class="them">s/he</span>:
   {% else %}
     <span class="you">you</span>:
   {% endifequal %}
