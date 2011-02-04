@@ -15,17 +15,24 @@ import datetime
 
 class UpdateUserQueriesRating(webapp.RequestHandler):
   def get(self):
-    uids = self.request.get_all('uid')
-    for uid in uids:
-      user_key = db.Key.from_path('User', long(uid))
-      idle_time = common.get_user_idle_time(common.get_user_status(user_key))
-      queries_query = db.Query(models.QueryIndex).ancestor(user_key)
-      queries = queries_query.fetch(1000)
-      for q in queries:
-        q.rating = common.calc_query_rating(idle_time, len(q.keyword_hashes), q.date_time)
+    uid = self.request.get('uid')
+    cur = self.request.get('cursor')
+    if not uid:
+      return
 
-      db.put(queries)
+    user_key = db.Key.from_path('User', long(uid))
+    idle_time = common.get_user_idle_time(common.get_user_status(user_key))
+    queries_query = db.Query(models.QueryIndex).ancestor(user_key)
+    if cur:
+      queries_query.with_cursor(cur)
+    queries = queries_query.fetch(10)
 
+    for q in queries:
+      q.rating = common.calc_query_rating(idle_time, len(q.keyword_hashes), q.date_time)
+
+    db.put(queries)
+
+    if len(queries) < 10:
       index_key = db.Key.from_path('UserIndexStatus', uid)
       if idle_time < config.OFFLINE_THRESHOLD:
         index_status = models.UserIndexStatus(key_name = uid, index_status = config.STATUS_ONLINE)
@@ -35,8 +42,8 @@ class UpdateUserQueriesRating(webapp.RequestHandler):
         index_status.put()
       else:
         db.delete(db.Key.from_path('UserIndexStatus', uid))
-
-      self.response.out.write('ok')
+    else:
+      taskqueue.add(url='/update_user_queries_rating', params={'uid': uid, 'cursor' : queries_query.cursor()},  method = 'GET')
 
 class UpdateQueriesRating(webapp.RequestHandler):
   def get(self, index_status):
@@ -53,6 +60,5 @@ class UpdateQueriesRating(webapp.RequestHandler):
     for user_status in users_status:
       idle_time = common.get_user_idle_time(user_status)
       if idle_time >= threshold:
-        #taskqueue.add(name = "update-user-queries-rating-%s" % user_status.key().name(), url='/update_user_queries_rating', params={'uid': user_status.key().name()}, method = 'GET')
         taskqueue.add(url='/update_user_queries_rating', params={'uid': user_status.key().name()}, method = 'GET')
 

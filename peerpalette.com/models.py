@@ -15,7 +15,7 @@ class UserIndexStatus(db.Model):
 
 class Query(db.Model):
   user = db.ReferenceProperty(User)
-  query_string = db.StringProperty(required = True)
+  query_string = db.StringProperty(required = True, indexed = False)
   date_time = db.DateTimeProperty(auto_now_add = True)
 
 class QueryIndex(db.Model):
