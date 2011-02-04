@@ -80,7 +80,7 @@ function update() {
           var messages = result["messages"];
           cursor = result["cursor"];
           for (var i = 0; i < messages.length; ++ i) {
-            $("#log").append($('<div><span class="them">s/he</span>: </div>').append($('<span style="white-space:pre"/>').text(messages[i])));
+            $("#log").append($('<div><span class="them">s/he</span>: </div>').append($('<span style="white-space:pre-wrap"/>').text(messages[i])));
           }
           $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
           if (!hasfocus) {
@@ -130,7 +130,7 @@ $(document).ready(function() {
             type: "POST",
             data: ({chat_key_name : chat_key_name, msg: text}),
             success: function(msg) {
-              $("#log").append($('<div><span class="you">you</span>: </div>').append($('<span style="white-space:pre"/>').text(text)));
+              $("#log").append($('<div><span class="you">you</span>: </div>').append($('<span style="white-space:pre-wrap"/>').text(text)));
               $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
             },
             error: function(arg1, arg2, arg3) {

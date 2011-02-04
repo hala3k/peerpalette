@@ -23,7 +23,7 @@ $(document).ready(function() {
   {% else %}
     <span class="you">you</span>:
   {% endifequal %}
-  <span style="white-space:pre">{{message.message_string|escape}}</span>
+  <span style="white-space:pre-wrap">{{message.message_string|escape}}</span>
   </div>
 {% endfor %}
 </div>
