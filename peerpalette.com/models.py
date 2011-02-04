@@ -21,7 +21,6 @@ class Query(db.Model):
 class QueryIndex(db.Model):
   keyword_hashes = db.ListProperty(item_type = long)
   rating = db.IntegerProperty(default = config.RATING_STEPS - 1)
-  date_time = db.DateTimeProperty(auto_now_add = True, indexed = False)
 
 class UserChat(db.Model):
   user = db.ReferenceProperty(User)

@@ -27,7 +27,7 @@ class SearchPage(webapp.RequestHandler):
     key_name = common.get_query_key_name(user.key().id(), clean_string)
     query = models.Query(key_name = key_name, user = user, query_string = q, num_keywords = len(keyword_hashes))
     query.put()
-    query_index = models.QueryIndex(parent = user, key_name = key_name, keyword_hashes = keyword_hashes, date_time = query.date_time)
+    query_index = models.QueryIndex(key_name = key_name, keyword_hashes = keyword_hashes)
     query_index.rating = common.calc_query_rating(0, len(keyword_hashes), query.date_time)
     query_index.put()
 

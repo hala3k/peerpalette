@@ -22,15 +22,20 @@ class UpdateUserQueriesRating(webapp.RequestHandler):
 
     user_key = db.Key.from_path('User', long(uid))
     idle_time = common.get_user_idle_time(common.get_user_status(user_key))
-    queries_query = db.Query(models.QueryIndex).ancestor(user_key)
+    queries_query = db.Query(models.Query).filter('user =', user_key).order('-date_time')
+
     if cur:
       queries_query.with_cursor(cur)
     queries = queries_query.fetch(10)
 
+    indexes = []
     for q in queries:
-      q.rating = common.calc_query_rating(idle_time, len(q.keyword_hashes), q.date_time)
+      clean_string = search.clean_query_string(q.query_string)
+      keyword_hashes = search.get_keyword_hashes(clean_string)
+      query_index = models.QueryIndex(key_name = str(q.key().id_or_name()), keyword_hashes = keyword_hashes, rating = common.calc_query_rating(0, len(keyword_hashes), q.date_time))
+      indexes.append(query_index)
 
-    db.put(queries)
+    db.put(indexes)
 
     if len(queries) < 10:
       index_key = db.Key.from_path('UserIndexStatus', uid)
