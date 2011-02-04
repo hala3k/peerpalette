@@ -41,4 +41,5 @@ class Message(db.Model):
 
 class RandomChatQueue(db.Model):
   peer = db.ReferenceProperty(User)
+  timestamp = db.DateTimeProperty(auto_now_add = True, indexed = False)
 

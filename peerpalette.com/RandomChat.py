@@ -15,26 +15,33 @@ import common
 import os
 import cgi
 
-def _random_chat(user, queue_keys):
-  queue = db.get(queue_keys)
-  for q in queue:
-    if q is not None and common.get_ref_key(q, 'peer') is None:
-      q.peer = user
-      q.put()
-      return db.Key.from_path('User', long(q.key().name()))
-
-  r = models.RandomChatQueue(key_name = str(user.key().id()))
-  r.put()
-  return None
-
 def random_chat(user):
+  def hookup(user, queue_key):
+    q = db.get(queue_key)
+    timediff = datetime.datetime.now() - q.timestamp
+    if q is not None:
+      if q.timestamp < (datetime.datetime.now() - datetime.timedelta(seconds = config.RANDOM_CHAT_WAIT)):
+        db.delete(q)
+        return False
+      if common.get_ref_key(q, 'peer') is None:
+        q.peer = user
+        q.put()
+        return True
+    return False
+
   peer_key = None
   q = models.RandomChatQueue.get_by_key_name(str(user.key().id()))
   if q:
     peer_key = common.get_ref_key(q, 'peer')
   else:
-    queue = db.Query(models.RandomChatQueue, keys_only = True).filter('peer =', None).fetch(10)
-    peer_key = db.run_in_transaction(_random_chat, user, queue)
+    peers = db.Query(models.RandomChatQueue, keys_only = True).filter('peer =', None)
+    for p in peers:
+      if db.run_in_transaction(hookup, user, p):
+        peer_key = db.Key.from_path('User', long(p.name()))
+        break
+    if not peer_key:
+      q = models.RandomChatQueue(key_name = str(user.key().id_or_name()))
+      q.put()
 
   if peer_key is None:
     return None
