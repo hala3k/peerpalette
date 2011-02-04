@@ -42,7 +42,7 @@ class SendMessage(webapp.RequestHandler):
 
     peer_chat_key = common.get_ref_key(my_chat, 'peer_chat')
 
-    msg = self.request.get("msg")
+    msg = self.request.get("msg")[:400]
     message = models.Message(to = peer_chat_key, message_string = msg)
     message.put()
 
@@ -74,7 +74,7 @@ class SendMessage(webapp.RequestHandler):
       db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), peer_chat.key().id_or_name(), datetime.datetime.now())
     else:
       peer_chat.last_updated = datetime.datetime.now()
-      peer_chat.excerpt = msg
+      peer_chat.excerpt = msg.splitlines()[0][:80]
       peer_chat.put()
       db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), peer_chat.key().id_or_name(), datetime.datetime.now())
 
