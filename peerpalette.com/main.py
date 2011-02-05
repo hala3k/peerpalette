@@ -11,7 +11,8 @@ from HistoryPage import HistoryPage
 from RandomChat import RandomChat
 from PrivacyPage import PrivacyPage
 from FeedbackPage import FeedbackPage
-import QueriesRating
+from UpdateQueriesAgeIndex import UpdateQueriesAgeIndex
+from CleanupOnlineUsers import CleanupOnlineUsers
 import Ajax
 
 application = webapp.WSGIApplication(
@@ -25,8 +26,8 @@ application = webapp.WSGIApplication(
                                       ('/getunread', Ajax.GetUnread),
                                       ('/inbox', InboxPage),
                                       ('/history', HistoryPage),
-                                      ('/update_user_queries_rating', QueriesRating.UpdateUserQueriesRating),
-                                      ('/update_queries_rating/([01])', QueriesRating.UpdateQueriesRating),
+                                      ('/update_queries_age_index/([012])', UpdateQueriesAgeIndex),
+                                      ('/cleanup_online_users', CleanupOnlineUsers),
                                       ('/random', RandomChat),
                                       ('/chat/(.*)', ChatPage)],
                                      debug=True)

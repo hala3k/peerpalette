@@ -59,14 +59,13 @@ def get_user(clear_unread = None):
       last_been_online = user_status.last_been_online
 
   if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.STATUS_UPDATE_THRESHOLD:
-    status = models.UserStatus(key_name = str(user.key().id()))
+    status = models.UserStatus(key_name = str(user.key().id_or_name()))
     status.put()
     memcache.set("last_been_online_%d" % user.key().id(), datetime.datetime.now(), time = config.OFFLINE_THRESHOLD)
 
   if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.OFFLINE_THRESHOLD:
-    #taskqueue.add(name = "update-user-queries-rating-%d" % user.key().id(), url='/update_user_queries_rating', params={'uid': user.key().id()}, method = 'GET')
-    taskqueue.add(url='/update_user_queries_rating', params={'uid': user.key().id()}, method = 'GET')
-
+    online_user = models.OnlineUser(key_name = str(user.key().id_or_name()))
+    online_user.put()
   return user
 
 def show_error(user, error, description = ""):
@@ -157,5 +156,5 @@ def calc_query_rating(user_idle_time, num_keywords, query_time):
   rating += (1 - k) * 0.1
   rating += (1 - a) * 0.2
 
-  return int(min(rating * config.RATING_STEPS, config.RATING_STEPS - 1))
+  return rating
 

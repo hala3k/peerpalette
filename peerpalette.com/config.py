@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 UNREAD_THRESHOLD = 2
 ALERT_THRESHOLD = 6
 OFFLINE_THRESHOLD = 15
@@ -10,8 +12,10 @@ STATUS_ONLINE = 0
 STATUS_OFFLINE = 1
 STATUS_INACTIVE = 2
 
-errors = {'random_peer_not_found' : "Could not found a random peer at the moment. Please try again in a minute."}
-
-RATING_STEPS = 5
-
 RANDOM_CHAT_WAIT = 2
+
+TOTAL_RESULTS = 100
+
+AGE_INDEX_THRESHOLDS = {0 : timedelta(days = 2), 1 : timedelta(days = 9), 2 : timedelta(days = 40)}
+AGE_INDEX_STEPS = len(AGE_INDEX_THRESHOLDS)
+

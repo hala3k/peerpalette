@@ -6,29 +6,21 @@
 <br/>
 {% if results %}
   {% for result in results %}
-  <div style="font-size: large;">
+  <div style="clear:left">
     {% if result.existing_chat %}
       {% if result.existing_chat_unread %}
-    <a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat"><b>{{result.query|escape}}</b></span></a>
+    <div style="float:left;margin-right:0.5em;"><a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat"><b>{{result.query|escape}}</b></span></a></div>
       {% else %}
-    <a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat">{{result.query|escape}}</span></a>
+    <div style="float:left;margin-right:0.5em;"><a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat">{{result.query|escape}}</span></a></div>
       {% endif %}
+      {% if result.excerpt %}<span class="excerpt">{{result.excerpt|escape}}</span>{% endif %}
     {% else %}
-    <a href="/startchat?q={{key}}&q={{result.key}}" class="{{result.status_class}}">{{result.query|escape}}</a>
+    <div style="float:left;margin-right:0.5em;"><a href="/startchat?q={{key}}&q={{result.key}}" class="{{result.status_class}}">{{result.query|escape}}</a></div>
     {% endif %}
   </div>
   {% endfor %}
 {% else %}
-  {% if with_cursor %}
-  <span style="color: red;">No more results. Try refining your search query.</span>
-  {% else %}
   <span style="color: red;">Nothing here yet. But someone will find you when they search for this topic in the future. Meanwhile, why not enjoy a <a href="/random" onclick="random_chat_start(true);return false;">random chat</a>?</span>
-  {% endif %}
-{% endif %}
-{% if cursor %}
-  <div style="margin-top:1em">
-    <a href="/search?q={{query}}&cursor={{cursor}}">More...</a>
-  </div>
 {% endif %}
 </div>
 {% endblock content%}

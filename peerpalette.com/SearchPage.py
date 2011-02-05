@@ -22,73 +22,66 @@ class SearchPage(webapp.RequestHandler):
       self.redirect("/")
       return
 
+    random.seed()
+
     clean_string = search.clean_query_string(q)
     keyword_hashes = search.get_keyword_hashes(clean_string)
     key_name = common.get_query_key_name(user.key().id(), clean_string)
-    query = models.Query(key_name = key_name, user = user, query_string = q, num_keywords = len(keyword_hashes))
+    query = models.Query(key_name = key_name, user = user, query_string = q, keyword_hashes = keyword_hashes, age_index = 0)
     query.put()
-    query_index = models.QueryIndex(key_name = key_name, keyword_hashes = keyword_hashes)
-    query_index.rating = common.calc_query_rating(0, len(keyword_hashes), query.date_time)
-    query_index.put()
 
-    step = config.RATING_STEPS - 1
-    cur = self.request.get('cursor')
-    cursor = None
-    if cur:
-      cursor = cur[1:]
-      step = int(cur[0:1])
-      with_cursor = True
-    else:
-      with_cursor = False
+    age_index = 0
+    search_query = search.get_search_query(user, keyword_hashes, age_index)
 
-    search_query = search.get_search_query(user, keyword_hashes, step)
-    if cursor:
-      search_query.with_cursor(start_cursor = cursor)
+    results = []
+    user_keys = []
+    while len(results) < 100:
+      num_fetch = config.TOTAL_RESULTS - len(results)
+      res = []
+      while len(res) == 0:
+        if age_index >= config.AGE_INDEX_STEPS - 1:
+          break
+        res = search_query.fetch(num_fetch + 4)
+        age_index += 1
+        search_query = search.get_search_query(user, keyword_hashes, age_index)
 
-    results_counter = 0
-    result_keys = []
-    cursor = None
+      if len(res) == 0:
+        break;
 
-    random.seed()
-    while results_counter <= config.ITEMS_PER_PAGE:
-      keys = []
-      for r in search_query:
-        user_key = r.parent()
+      for r in res:
+        user_key = common.get_ref_key(r, 'user')
         if user_key == user.key():
           continue
-        results_counter += 1
-        keys.append(db.Key.from_path('Query', r.id_or_name()))
-        if results_counter >= config.ITEMS_PER_PAGE:
-          cursor = str(step) + search_query.cursor()
-          break
+        user_keys.append(user_key)
+        results.append(r)
 
-      random.shuffle(keys)
-      result_keys.extend(keys)
+    users_status = common.get_user_status(user_keys)
+    for i in range(len(results)):
+      st = users_status[i]
+      r = results[i]
+      r.idle_time = common.get_user_idle_time(st)
+      r.rating = common.calc_query_rating(r.idle_time, len(r.keyword_hashes), r.date_time)
+      # randomize results slightly
+      r.rating += random.random() * 0.1
+ 
+    results.sort(key=lambda r: r.rating, reverse = True)
 
-      if step <= 0:
-        break
-
-      step -= 1
-      search_query = search.get_search_query(user, keyword_hashes, step)
-
-    results = models.Query.get(result_keys)
-    result_values = [{'query': r.query_string, 'key': r.key().id_or_name(), 'user_key': common.get_ref_key(r, 'user')} for r in results]
-
-    existing_chat_keys = [common.get_chat_key_name(user.key().id(), r.key().id_or_name()) for r in results]
+    existing_chat_keys = [common.get_chat_key_name(str(user.key().id_or_name()), str(r.key().id_or_name())) for r in results]
     existing_chats = models.UserChat.get_by_key_name(existing_chat_keys)
 
-    user_keys = [r['user_key'] for r in result_values]
-    users_status = common.get_user_status(user_keys)
-
-    for i in range(len(result_values)):
-      result = result_values[i]
-      idle_time = common.get_user_idle_time(users_status[i])
-      status_class = common.get_status_class(idle_time)
-      result['status_class'] = status_class
+    result_values = []
+    for i in range(len(results[:config.ITEMS_PER_PAGE])):
+      r = results[i]
+      status_class = common.get_status_class(r.idle_time)
+      v = {'query': r.query_string, 'key': r.key().id_or_name(), 'user_key': common.get_ref_key(r, 'user')}
+      v['status_class'] = status_class
       if existing_chats[i]:
-        result['existing_chat'] = existing_chats[i].key().id_or_name()
+        v['existing_chat'] = existing_chats[i].key().id_or_name()
         if existing_chats[i].key().id_or_name() in user.unread_chat:
-          result['existing_chat_unread'] = True
+          v['existing_chat_unread'] = True
+        if existing_chats[i].excerpt:
+          v['excerpt'] = existing_chats[i].excerpt
+      result_values.append(v)
 
     unread = common.get_unread(user)
 
@@ -98,8 +91,6 @@ class SearchPage(webapp.RequestHandler):
       "query" : q,
       "unread_count" : unread[0],
       "unread_alert" : unread[1],
-      "cursor" : cursor,
-      "with_cursor" : with_cursor,
     }
 
     path = os.path.join(os.path.dirname(__file__), 'SearchPage.html')

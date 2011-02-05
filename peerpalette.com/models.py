@@ -10,17 +10,15 @@ class User(db.Model):
 class UserStatus(db.Model):
   last_been_online = db.DateTimeProperty(auto_now = True, indexed = False)
 
-class UserIndexStatus(db.Model):
-  index_status = db.IntegerProperty(default = -1)
+class OnlineUser(db.Model):
+  pass
 
 class Query(db.Model):
   user = db.ReferenceProperty(User)
   query_string = db.StringProperty(required = True, indexed = False)
   date_time = db.DateTimeProperty(auto_now_add = True)
-
-class QueryIndex(db.Model):
   keyword_hashes = db.ListProperty(item_type = long)
-  rating = db.IntegerProperty(default = config.RATING_STEPS - 1)
+  age_index = db.IntegerProperty(default = 0)
 
 class UserChat(db.Model):
   user = db.ReferenceProperty(User)

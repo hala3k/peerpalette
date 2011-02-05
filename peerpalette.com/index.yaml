@@ -17,6 +17,11 @@ indexes:
 
 - kind: Query
   properties:
+  - name: age_index
+  - name: date_time
+
+- kind: Query
+  properties:
   - name: user
   - name: date_time
     direction: desc

@@ -1,8 +1,17 @@
 cron:
-- description: update query ratings for offline users
-  url: /update_queries_rating/0
-  schedule: every 1 minutes synchronized
-- description: update query ratings for inactive users
-  url: /update_queries_rating/1
-  schedule: every 24 hours synchronized
+- description: update queries of age index 0
+  url: /update_queries_age_index/0
+  schedule: every 1 hours
+
+- description: update queries of age index 1
+  url: /update_queries_age_index/1
+  schedule: every 1 days
+
+- description: update queries of age index 2
+  url: /update_queries_age_index/2
+  schedule: every 2 days
+
+- description: remove offline users from OnlineUser
+  url: /cleanup_online_users
+  schedule: every 1 minutes
 

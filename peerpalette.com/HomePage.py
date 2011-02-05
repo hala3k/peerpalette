@@ -14,7 +14,7 @@ def get_num_online_users():
   num = memcache.get('num_online_users')
   if num is None:
     from google.appengine.ext import db
-    num = db.Query(models.UserIndexStatus, keys_only = True).filter('index_status =', 0).count()
+    num = models.OnlineUser.all(keys_only = True).count()
     memcache.set('num_online_users', num, 60)
   return num
 

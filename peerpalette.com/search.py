@@ -18,9 +18,9 @@ def get_keyword_hashes(clean_string):
 def clean_query_string(q):
   return remove_nonspacing_marks(q).lower()
 
-def get_search_query(user, keyword_hashes, step):
-  results = db.Query(models.QueryIndex, keys_only = True)
-  results.filter('rating =', step)
+def get_search_query(user, keyword_hashes, age_index):
+  results = db.Query(models.Query)
+  results.filter('age_index =', age_index)
   for k in keyword_hashes:
     results.filter('keyword_hashes =', k)
 
