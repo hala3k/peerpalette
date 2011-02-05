@@ -159,3 +159,47 @@ $(document).ready(function() {
     setTimeout("update();", 1000);
   }
 });
+
+var random_chat_canceled = false;
+
+function random_chat_show_waiting() {
+  $.blockUI({
+    message: '<div style="font-size:18px;"><img src="/static/waiting.gif" /> Waiting for a random dude/girl... <a href="#" onclick="random_chat_stop();return false;">Cancel</a></div>',
+    css: {
+      padding: '10px',
+      width: '400px',
+      left: ($(window).width() - 400) /2 + 'px', 
+    }
+  });
+}
+
+function random_chat_hide_waiting() {
+  $.unblockUI();
+}
+
+function random_chat_stop() {
+  random_chat_canceled = true;
+}
+
+function random_chat_retry() {
+  $.ajax({
+    url: "/random",
+    type: "post",
+    success: function(data, textStatus, rqst) {
+      if (rqst.status == 201)
+        window.location.href = data;
+      else if (random_chat_canceled)
+        random_chat_hide_waiting();
+      else
+        setTimeout("random_chat_retry()", 1000);
+    }
+  });
+}
+
+function random_chat_start(showDialog) {
+  random_chat_canceled = false;
+  random_chat_retry();
+  if (showDialog)
+    setTimeout("random_chat_show_waiting()", 300);
+}
+

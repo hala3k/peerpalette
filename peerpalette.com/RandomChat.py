@@ -65,8 +65,8 @@ class RandomChat(webapp.RequestHandler):
     if chat_key_name:
       self.redirect('/chat/%s' % chat_key_name)
       return
-    time.sleep(1)
-    self.redirect('/random')
+    path = os.path.join(os.path.dirname(__file__), 'RandomChat.html')
+    self.response.out.write(template.render(path, None))
 
   def post(self):
     user = common.get_user()

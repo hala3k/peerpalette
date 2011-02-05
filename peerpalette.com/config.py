@@ -14,4 +14,4 @@ errors = {'random_peer_not_found' : "Could not found a random peer at the moment
 
 RATING_STEPS = 5
 
-RANDOM_CHAT_WAIT = 5
+RANDOM_CHAT_WAIT = 2

@@ -17,7 +17,7 @@
   {% if with_cursor %}
   <span style="color: red;">No more chat sessions in your inbox. Return to <a href="/inbox">first page</a>.</span>
   {% else %}
-  <span style="color: red;">You don't have any chat sessions yet. Try a <a href="/random">random chat</a>.</span>
+  <span style="color: red;">You don't have any chat sessions yet. Try a <a href="/random" onclick="random_chat_start(true);return false;">random chat</a>.</span>
   {% endif %}
 {% endif %}
 {% if cursor %}
