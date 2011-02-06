@@ -18,16 +18,19 @@ class StartChatPage(webapp.RequestHandler):
   def get(self):
     user = common.get_user()
     queries = models.Query.get_by_key_name(self.request.get_all('q'))
+    user_key_0 = common.get_ref_key(queries[0], 'user')
+    user_key_1 = common.get_ref_key(queries[1], 'user')
 
     if len(queries) != 2 \
-      or queries[0].user.key() == queries[1].user.key() \
-      or (queries[0].user.key() != user.key() and queries.user.key() != user.key()):
-      self.response.out.write('error')
+      or user_key_0 == user_key_1 \
+      or (user_key_0 != user.key() and user_key_1 != user.key()):
+      self.response.set_status(403)
+      return
 
     # TODO test if the two queries match (one is a subset of the other)
 
     # subject_query is the query that the user found
-    if queries[0].user.key() == user.key():
+    if user_key_0 == user.key():
       my_query = queries[0]
       peer_query = queries[1]
     else:
@@ -35,18 +38,18 @@ class StartChatPage(webapp.RequestHandler):
       peer_query = queries[0]
 
     # TODO test if the user has an existing coversation with that query
-    chat_key_name = common.get_chat_key_name(user.key().id(), peer_query.key().id_or_name())
+    chat_key_name = common.get_chat_key_name(str(user.key().id_or_name()), str(peer_query.key().id_or_name()))
     existing_chat = models.Query.get_by_key_name(chat_key_name)
     if existing_chat:
       self.redirect('/chat/' + chat_key_name)
       return
 
-    peer = peer_query.user
-    peer_chat_key_name = common.get_chat_key_name(peer.key().id(), my_query.key().id_or_name())
+    peer_key = common.get_ref_key(peer_query, 'user')
+    peer_chat_key_name = common.get_chat_key_name(str(peer_key.id_or_name()), str(my_query.key().id_or_name()))
 
     my_title = peer_query.query_string
 
-    my_chat = models.UserChat(key_name = chat_key_name, user = user, peer = peer, peer_query = peer_query, query = my_query, title = my_title, peer_chat = db.Key.from_path('UserChat', peer_chat_key_name))
+    my_chat = models.UserChat(key_name = chat_key_name, user = user, peer = peer_key, peer_query = peer_query, query = my_query, title = my_title, peer_chat = db.Key.from_path('UserChat', peer_chat_key_name))
     my_chat.put()
 
     self.redirect('/chat/' + chat_key_name)
