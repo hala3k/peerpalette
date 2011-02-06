@@ -5,11 +5,11 @@ cron:
 
 - description: update queries of age index 1
   url: /update_queries_age_index/1
-  schedule: every 1 days
+  schedule: every 24 hours
 
 - description: update queries of age index 2
   url: /update_queries_age_index/2
-  schedule: every 2 days
+  schedule: every 48 hours
 
 - description: remove offline users from OnlineUser
   url: /cleanup_online_users

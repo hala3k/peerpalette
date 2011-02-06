@@ -164,7 +164,7 @@ var random_chat_canceled = false;
 
 function random_chat_show_waiting() {
   $.blockUI({
-    message: '<div style="font-size:18px;"><img src="/static/waiting.gif" /> Waiting for a random dude/girl... <a href="#" onclick="random_chat_stop();return false;">Cancel</a></div>',
+    message: '<div style="font-size:18px;"><img src="/static/waiting.gif" /> Waiting for a random dude or girl... <a href="#" onclick="random_chat_stop();return false;">Cancel</a></div>',
     css: {
       padding: '10px',
       width: '400px',
