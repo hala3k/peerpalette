@@ -80,12 +80,12 @@ function update() {
         if ("messages" in result) {
           var messages = result["messages"];
           cursor = result["cursor"];
-          document.getElementById('buzzer').newMessageAlert();
           for (var i = 0; i < messages.length; ++ i) {
             $("#log").append($('<div><span class="them">s/he</span>: </div>').append($('<span style="white-space:pre-wrap"/>').text(messages[i])));
           }
           $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
           if (!hasfocus) {
+            document.getElementById('buzzer').newMessageAlert();
             ++ newUnreadMessages;
             notify(newUnreadMessages, true);
           }
