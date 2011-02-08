@@ -7,6 +7,7 @@ var unread_alert_disabled = false;
 function unread_alert() {
   if (!unread_alert_disabled) {
     unread_alert_disabled = true;
+    document.getElementById('buzzer').newChatAlert();
     $("#inbox").blink({maxBlinks: 6, blinkPeriod: 200, speed: 'fast', onBlink: function(){}, onMaxBlinks: function(){}});
     setTimeout("unread_alert_disabled = false;", 4000);
   }
@@ -79,6 +80,7 @@ function update() {
         if ("messages" in result) {
           var messages = result["messages"];
           cursor = result["cursor"];
+          document.getElementById('buzzer').newMessageAlert();
           for (var i = 0; i < messages.length; ++ i) {
             $("#log").append($('<div><span class="them">s/he</span>: </div>').append($('<span style="white-space:pre-wrap"/>').text(messages[i])));
           }
@@ -109,6 +111,9 @@ function update() {
 }
 
 $(document).ready(function() {
+  $('body').append('<div id="buzzer" style="display:none;"/>');
+  swfobject.embedSWF("/static/Buzzer.swf", "buzzer", "0", "0", "9.0.0");
+
   if (typeof chat_key_name  == "undefined") {
     // we're not in a chat window, so only pull inbox
     window.timestamp = "";

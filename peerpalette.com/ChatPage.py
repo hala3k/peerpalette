@@ -86,7 +86,6 @@ class ChatPage(webapp.RequestHandler):
       "messages" : [{'message_string': msg.message_string, 'chat_key_name': common.get_ref_key(msg, 'to').id_or_name()} for msg in messages],
       "unread_count" : unread[0],
       "unread_alert" : unread[1],
-      "link_target" : "_blank",
     }
 
     path = os.path.join(os.path.dirname(__file__), 'ChatPage.html')

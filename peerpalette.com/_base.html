@@ -8,6 +8,7 @@
     <meta name="keywords" content="chat,anonymous,people,search" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
     <script type='text/javascript' src='/static/jquery.blink.js'></script>
     <script type='text/javascript' src='/static/jquery.blockUI.js'></script>
     <script type="text/javascript" src="/static/ajax.js"></script>
@@ -100,16 +101,16 @@ $(document).ready(function() {
       <a href="/" style="text-decoration:none;color:#0f4482;font-size:30px;font-family:sans-serif;"><img src="/static/peerpalette.png" style="border:0;" alt="peerpalette.com"/></a>
 
       <div class="menu" style="padding:3px;padding-bottom:0;position:absolute;bottom:0;right:10px;background-color: #ffffff;border:1px solid #aaaaaa;border-bottom:0;">
-          <a id="home" class="tabitem" href="/" {% if link_target %}target="{{link_target}}"{% endif %}>home</a>
-          <a id="inbox" class="tabitem" href="/inbox" {% if link_target %}target="{{link_target}}"{% endif %}>
+          <a id="home" class="tabitem" href="/">home</a>
+          <a id="inbox" class="tabitem" href="/inbox">
 {% ifnotequal unread_count 0 %}
           inbox<b>({{unread_count}})</b>
 {% else %}
           inbox
 {% endifnotequal %}
           </a>
-          <a id="history" class="tabitem" href="/history" {% if link_target %}target="{{link_target}}"{% endif %}>history</a>
-          <a id="feedback" class="tabitem" href="/feedback" {% if link_target %}target="{{link_target}}"{% endif %} style="color:#171">feedback</a>
+          <a id="history" class="tabitem" href="/history">history</a>
+          <a id="feedback" class="tabitem" href="/feedback" style="color:#171">feedback</a>
       </div>
     </div>
     {% block content %}
