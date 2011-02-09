@@ -10,17 +10,24 @@ function unread_alert() {
     document.getElementById('buzzer').newChatAlert();
     $("#inbox").blink({maxBlinks: 6, blinkPeriod: 200, speed: 'fast', onBlink: function(){}, onMaxBlinks: function(){}});
     setTimeout("unread_alert_disabled = false;", 4000);
+
+    var stay = true;
+    if (hasfocus)
+      stay = false;
+
+    jQuery.noticeAdd({
+      text: 'You have received a message in another chat session. Go to <a href="/inbox">inbox</a>',
+      stay: stay,
+      stayTime: 5000,
+    });
   }
 }
 
 function refresh_unread_text(unread_count) {
-  current_html = $("#inbox").html();
-  new_html = "inbox";
-
   if (unread_count > 0)
-    new_html += "<b>(" + unread_count + ")</b>";
-
-  $("#inbox").html(new_html);
+    $("#inbox").html("<b>inbox (" + unread_count + ")</b>");
+  else
+    $("#inbox").html("inbox");
 }
 
 function refresh_chat_status(status_class) {
@@ -118,6 +125,13 @@ $(document).ready(function() {
     // we're not in a chat window, so only pull inbox
     window.timestamp = "";
     setTimeout("update2();", 3000);
+    $(window).bind("blur", function() {
+      hasfocus = false;
+    });
+
+    $(window).bind("focus", function() {
+      hasfocus = true;
+    });
   }
   else {
     $("#message").keypress(function(event) {

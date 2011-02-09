@@ -7,10 +7,12 @@
     <meta name="description" content="Peerpalette - anonymous people search &amp; chat." />
     <meta name="keywords" content="chat,anonymous,people,search" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/static/jquery.notice.css" type="text/css" />
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
     <script type='text/javascript' src='/static/jquery.blink.js'></script>
     <script type='text/javascript' src='/static/jquery.blockUI.js'></script>
+    <script type='text/javascript' src='/static/jquery.notice.js'></script>
     <script type="text/javascript" src="/static/ajax.js"></script>
 {% if unread_alert %}
 <script type="text/javascript">
@@ -104,7 +106,7 @@ $(document).ready(function() {
           <a id="home" class="tabitem" href="/">home</a>
           <a id="inbox" class="tabitem" href="/inbox">
 {% ifnotequal unread_count 0 %}
-          inbox<b>({{unread_count}})</b>
+          <b>inbox ({{unread_count}})</b>
 {% else %}
           inbox
 {% endifnotequal %}
