@@ -18,7 +18,7 @@ function unread_alert() {
     jQuery.noticeAdd({
       text: 'You have received a message in another chat session. Go to <a href="/inbox">inbox</a>',
       stay: stay,
-      stayTime: 5000,
+      stayTime: 5000
     });
   }
 }
@@ -187,7 +187,7 @@ function random_chat_show_waiting() {
     css: {
       padding: '10px',
       width: '400px',
-      left: ($(window).width() - 400) /2 + 'px', 
+      left: ($(window).width() - 400) /2 + 'px'
     }
   });
 }
