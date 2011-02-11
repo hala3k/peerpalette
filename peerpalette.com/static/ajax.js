@@ -125,13 +125,9 @@ $(document).ready(function() {
     // we're not in a chat window, so only pull inbox
     window.timestamp = "";
     setTimeout("update2();", 3000);
-    $(window).bind("blur", function() {
-      hasfocus = false;
-    });
 
-    $(window).bind("focus", function() {
-      hasfocus = true;
-    });
+    var focus_callback = function() {hasfocus = true;};
+    var blur_callback = function() {hasfocus = false;};
   }
   else {
     $("#message").keypress(function(event) {
@@ -164,18 +160,23 @@ $(document).ready(function() {
         }
       }
     });
-
-    $(window).bind("blur", function() {
-      hasfocus = false;
-    });
-
-    $(window).bind("focus", function() {
+    var focus_callback = function() {
       hasfocus = true;
       newUnreadMessages = 0;
       clear_notify();
-    });
+    };
+    var blur_callback = function() {hasfocus = false;};
     $("#log").scrollTop($("#log")[0].scrollHeight);
     setTimeout("update();", 1000);
+  }
+
+  if($.browser.msie){
+    $(document).focusin(focus_callback);
+    $(document).focusout(blur_callback);
+  }
+  else {
+    $(window).focus(focus_callback);
+    $(window).blur(blur_callback);
   }
 });
 
