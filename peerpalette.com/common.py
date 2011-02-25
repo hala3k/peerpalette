@@ -22,27 +22,31 @@ def get_online_users():
 
   return u
 
-def _update_user(user_key, clear_unread):
+def _get_user(user_key, clear_unread):
   user = models.User.get(user_key)
-
   try:
     i = user.unread_chat.index(clear_unread)
     del user.unread_chat[i]
-    del user.unread_timestamp[i]
+    del user.unread_first_timestamp[i]
+    t = user.unread_last_timestamp.pop(i)
     user.put()
-    return user
+    return user, True
   except: # TODO use specific exception
     pass
 
-  return user
+  return user, False
 
-def get_user(clear_unread = None):
+def get_current_user_info(timestamp = None, clear_unread = None):
+  now = datetime.datetime.now()
+  if timestamp is None:
+    timestamp = now - config.REQUEST_TIMESTAMP_PADDING
   user = None
   session = get_current_session()
 
   if session.has_key("user"):
     if clear_unread:
-      user = db.run_in_transaction(_update_user, session["user"], clear_unread)
+      user, cleared = db.run_in_transaction(_get_user, session["user"], clear_unread)
+      user._cleared = cleared
     else:
       user = models.User.get(session["user"])
 
@@ -50,6 +54,27 @@ def get_user(clear_unread = None):
     user = models.User()
     user.put()
     session["user"] = str(user.key())
+
+  user._unread_count = 0
+  user._new_chats = []
+  user._updated_chats = []
+  user._new_timestamp = timestamp
+
+  for i in range(len(user.unread_chat)):
+    if now > user.unread_first_timestamp[i] + config.UNREAD_THRESHOLD:
+      user._unread_count += 1
+      if timestamp < user.unread_first_timestamp[i]:
+        user._new_chats.append(user.unread_chat[i])
+        try:
+          user._new_timestamp = max(user._new_timestamp, user.unread_first_timestamp[i])
+        except:
+          user._new_timestamp = user.unread_first_timestamp[i]
+      elif timestamp < user.unread_last_timestamp[i] and now > user.unread_last_timestamp[i] + config.UNREAD_THRESHOLD:
+        user._updated_chats.append(user.unread_chat[i])
+        try:
+          user._new_timestamp = max(user._new_timestamp, user.unread_last_timestamp[i])
+        except:
+          user._new_timestamp = user.unread_last_timestamp[i]
 
   last_been_online = memcache.get("last_been_online_%d" % user.key().id())
 
@@ -66,30 +91,8 @@ def get_user(clear_unread = None):
   if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.OFFLINE_THRESHOLD:
     online_user = models.OnlineUser(key_name = str(user.key().id_or_name()))
     online_user.put()
+
   return user
-
-def show_error(user, error, description = ""):
-    template_values = {
-      "error" : error,
-      "description" : description,
-      "unread_html" : get_unread_count_html(user),
-    }
-    path = os.path.join(os.path.dirname(__file__), 'ErrorPage.html')
-    return template.render(path, template_values)
-
-def get_unread(user):
-  unread_threshold = datetime.datetime.now() - datetime.timedelta(seconds = config.UNREAD_THRESHOLD)
-  alert_threshold = datetime.datetime.now() - datetime.timedelta(seconds = config.ALERT_THRESHOLD)
-
-  unread_count = 0
-  unread_alert = False
-  for t in user.unread_timestamp:
-    if t < unread_threshold:
-      unread_count += 1
-      if t > alert_threshold:
-        unread_alert = True
-
-  return (unread_count, unread_alert)
 
 def get_user_status(user_keys):
   if type(user_keys).__name__ == 'list':

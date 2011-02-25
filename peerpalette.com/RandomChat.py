@@ -60,7 +60,7 @@ def random_chat(user):
 
 class RandomChat(webapp.RequestHandler):
   def get(self):
-    user = common.get_user()
+    user = common.get_current_user_info()
     chat_key_name = random_chat(user)
     if chat_key_name:
       self.redirect('/chat/%s' % chat_key_name)
@@ -69,7 +69,7 @@ class RandomChat(webapp.RequestHandler):
     self.response.out.write(template.render(path, None))
 
   def post(self):
-    user = common.get_user()
+    user = common.get_current_user_info()
     chat_key_name = random_chat(user)
     if chat_key_name:
       self.response.set_status(201)

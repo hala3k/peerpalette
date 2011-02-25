@@ -10,6 +10,8 @@ import models
 import os
 import random
 
+import datetime
+
 def get_num_online_users():
   num = memcache.get('num_online_users')
   if num is None:
@@ -41,7 +43,7 @@ class HomePage(webapp.RequestHandler):
     random.shuffle(twitter_trends)
     topics = twitter_trends[:10]
 
-    user = common.get_user()
+    user = common.get_current_user_info()
 
     conversations = models.UserChat.get_by_key_name(user.unread_chat)
     peer_keys = [common.get_ref_key(c, 'peer') for c in conversations]
@@ -57,11 +59,10 @@ class HomePage(webapp.RequestHandler):
         c['excerpt'] = conv.excerpt
       conversations_value.append(c)
 
-    unread = common.get_unread(user)
-
     template_values = {
-      "unread_count" : unread[0],
-      "unread_alert" : unread[1],
+      "unread_count" : user._unread_count,
+      "unread_alert" : True if len(user._new_chats) > 0 else False,
+      "timestamp" : user._new_timestamp,
       "topics" : topics,
       "conversations" : conversations_value,
       "num_online_users" : get_num_online_users(),

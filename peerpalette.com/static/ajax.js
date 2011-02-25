@@ -63,11 +63,14 @@ function update2() {
   $.ajax({
     url: "/getunread",
     type: "GET",
+    data: ({timestamp : timestamp}),
     success: function(result){
       if (result["status"] == "ok") {
         refresh_unread_text(result["unread_count"])
         if (result["unread_alert"])
           unread_alert();
+        if ("timestamp" in result)
+          timestamp = result["timestamp"];
       }
       setTimeout("update2();", 3000);
     },
@@ -81,7 +84,7 @@ function update() {
   $.ajax({
     url: "/receivemessages",
     type: "GET",
-    data: ({chat_key_name : chat_key_name, cursor: cursor}),
+    data: ({timestamp : timestamp, chat_key_name : chat_key_name, cursor: cursor}),
     success: function(result) {
       if (result["status"] == "ok") {
         if ("messages" in result) {
@@ -105,6 +108,9 @@ function update() {
 
         if ("status_class" in result)
           refresh_chat_status(result['status_class']);
+
+        if ("timestamp" in result)
+          timestamp = result["timestamp"];
       }
 
       setTimeout("update();", 1000);
@@ -123,7 +129,6 @@ $(document).ready(function() {
 
   if (typeof chat_key_name  == "undefined") {
     // we're not in a chat window, so only pull inbox
-    window.timestamp = "";
     setTimeout("update2();", 3000);
 
     var focus_callback = function() {hasfocus = true;};

@@ -16,7 +16,7 @@ def compare_message_dates(message1, message2):
 
 class StartChatPage(webapp.RequestHandler):
   def get(self):
-    user = common.get_user()
+    user = common.get_current_user_info()
     queries = models.Query.get_by_key_name(self.request.get_all('q'))
     user_key_0 = common.get_ref_key(queries[0], 'user')
     user_key_1 = common.get_ref_key(queries[1], 'user')
@@ -58,7 +58,7 @@ class StartChatPage(webapp.RequestHandler):
 class ChatPage(webapp.RequestHandler):
   def get(self, chat_key_name):
     my_chat = db.get(db.Key.from_path('UserChat', chat_key_name))
-    user = common.get_user(chat_key_name)
+    user = common.get_current_user_info(clear_unread = chat_key_name)
  
     if not my_chat or my_chat.user.key() != user.key():
       self.response.out.write("error")
@@ -76,16 +76,15 @@ class ChatPage(webapp.RequestHandler):
     idle_time = common.get_user_idle_time(common.get_user_status(my_chat.peer.key()))
     status_class = common.get_status_class(idle_time)
 
-    unread = common.get_unread(user)
-
     template_values = {
+      "unread_count" : user._unread_count,
+      "unread_alert" : True if len(user._new_chats) > 0 else False,
+      "timestamp" : user._new_timestamp,
       "cursor" : cur,
       "title" : my_chat.title,
       "status_class" : status_class,
       "chat_key_name" : chat_key_name,
       "messages" : [{'message_string': msg.message_string, 'chat_key_name': common.get_ref_key(msg, 'to').id_or_name()} for msg in messages],
-      "unread_count" : unread[0],
-      "unread_alert" : unread[1],
     }
 
     path = os.path.join(os.path.dirname(__file__), 'ChatPage.html')

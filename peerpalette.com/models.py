@@ -5,7 +5,8 @@ import datetime
 class User(db.Model):
   join_date = db.DateTimeProperty(auto_now_add = True)
   unread_chat = db.StringListProperty(indexed = False)
-  unread_timestamp = db.ListProperty(datetime.datetime, indexed = False)
+  unread_first_timestamp = db.ListProperty(datetime.datetime, indexed = False)
+  unread_last_timestamp = db.ListProperty(datetime.datetime, indexed = False)
 
 class UserStatus(db.Model):
   last_been_online = db.DateTimeProperty(auto_now = True, indexed = False)

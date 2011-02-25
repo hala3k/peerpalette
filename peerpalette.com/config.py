@@ -1,10 +1,11 @@
 from datetime import timedelta
 
-UNREAD_THRESHOLD = 2
-ALERT_THRESHOLD = 6
+UNREAD_THRESHOLD = timedelta(seconds = 2)
+
 OFFLINE_THRESHOLD = 15
 INACTIVE_THRESHOLD = 604800
 STATUS_UPDATE_THRESHOLD = 8
+
 ITEMS_PER_PAGE = 15
 MAX_KEYWORDS = 4
 
@@ -19,3 +20,4 @@ TOTAL_RESULTS = 100
 AGE_INDEX_THRESHOLDS = {0 : timedelta(days = 2), 1 : timedelta(days = 9), 2 : timedelta(days = 40)}
 AGE_INDEX_STEPS = len(AGE_INDEX_THRESHOLDS)
 
+REQUEST_TIMESTAMP_PADDING = timedelta(seconds = 4)

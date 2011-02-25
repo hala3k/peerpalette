@@ -13,7 +13,7 @@ import datetime
 
 class HistoryPage(webapp.RequestHandler):
   def get(self):
-    user = common.get_user()
+    user = common.get_current_user_info()
     queries_query = db.Query(models.Query).filter('user =', user).order('-date_time')
     cur = self.request.get('cursor')
     if cur:
@@ -33,12 +33,11 @@ class HistoryPage(webapp.RequestHandler):
         cursor = queries_query.cursor()
         break
 
-    unread = common.get_unread(user)
-
     template_values = {
+      "unread_count" : user._unread_count,
+      "unread_alert" : True if len(user._new_chats) > 0 else False,
+      "timestamp" : user._new_timestamp,
       "queries" : queries,
-      "unread_count" : unread[0],
-      "unread_alert" : unread[1],
       "cursor" : cursor,
       "with_cursor" : with_cursor,
     }

@@ -9,13 +9,12 @@ import os
 
 class FeedbackPage(webapp.RequestHandler):
   def get(self):
-    user = common.get_user()
-
-    unread = common.get_unread(user)
+    user = common.get_current_user_info()
 
     template_values = {
-      "unread_count" : unread[0],
-      "unread_alert" : unread[1],
+      "unread_count" : user._unread_count,
+      "unread_alert" : True if len(user._new_chats) > 0 else False,
+      "timestamp" : user._new_timestamp,
     }
 
     path = os.path.join(os.path.dirname(__file__), 'FeedbackPage.html')
@@ -35,13 +34,13 @@ class FeedbackPage(webapp.RequestHandler):
               subject = subject,
               body= message)
 
-    user = common.get_user()
-    unread = common.get_unread(user)
+    user = common.get_current_user_info()
 
     template_values = {
+      "unread_count" : user._unread_count,
+      "unread_alert" : True if len(user._new_chats) > 0 else False,
+      "timestamp" : user._new_timestamp,
       "submitted" : True,
-      "unread_count" : unread[0],
-      "unread_alert" : unread[1],
     }
 
     path = os.path.join(os.path.dirname(__file__), 'FeedbackPage.html')

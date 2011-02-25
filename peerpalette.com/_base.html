@@ -14,13 +14,15 @@
     <script type='text/javascript' src='/static/jquery.blockUI.js'></script>
     <script type='text/javascript' src='/static/jquery.notice.js'></script>
     <script type="text/javascript" src="/static/ajax.js"></script>
+    <script type="text/javascript">
+      var timestamp = "{{timestamp}}";
 {% if unread_alert %}
-<script type="text/javascript">
-$(document).ready(function() {
-  unread_alert();
-});
-</script>
+      $(document).ready(function() {
+
+        unread_alert();
+      });
 {% endif %}
+    </script>
     <style type="text/css">
       body {
         font-family: arial, sans-serif;

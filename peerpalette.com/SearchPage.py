@@ -15,7 +15,7 @@ import random
 
 class SearchPage(webapp.RequestHandler):
   def get(self):
-    user = common.get_user()
+    user = common.get_current_user_info()
     q = self.request.get('q')
 
     if not q:
@@ -83,14 +83,13 @@ class SearchPage(webapp.RequestHandler):
           v['excerpt'] = existing_chats[i].excerpt
       result_values.append(v)
 
-    unread = common.get_unread(user)
-
     template_values = {
+      "unread_count" : user._unread_count,
+      "unread_alert" : True if len(user._new_chats) > 0 else False,
+      "timestamp" : user._new_timestamp,
       "results" : result_values,
       "key" : query.key().id_or_name(),
       "query" : q,
-      "unread_count" : unread[0],
-      "unread_alert" : unread[1],
     }
 
     path = os.path.join(os.path.dirname(__file__), 'SearchPage.html')
