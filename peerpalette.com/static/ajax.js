@@ -124,15 +124,19 @@ function update() {
 }
 
 $(document).ready(function() {
-  $('body').append('<div id="buzzer" style="display:none;"/>');
-  swfobject.embedSWF("/static/Buzzer.swf", "buzzer", "0", "0", "9.0.0");
+  if (typeof swfobject != "undefined") {
+    $('body').append('<div id="buzzer" style="display:none;"/>');
+    swfobject.embedSWF("/static/Buzzer.swf", "buzzer", "0", "0", "9.0.0");
+  }
 
   if (typeof chat_key_name  == "undefined") {
-    // we're not in a chat window, so only pull inbox
-    setTimeout("update2();", 3000);
+    if ($("#inbox").length) {
+      // we're not in a chat window, so only pull inbox
+      setTimeout("update2();", 3000);
 
-    var focus_callback = function() {hasfocus = true;};
-    var blur_callback = function() {hasfocus = false;};
+      var focus_callback = function() {hasfocus = true;};
+      var blur_callback = function() {hasfocus = false;};
+    }
   }
   else {
     $("#message").keypress(function(event) {

@@ -18,8 +18,7 @@
       var timestamp = "{{timestamp}}";
 {% if unread_alert %}
       $(document).ready(function() {
-
-        unread_alert();
+        setTimeout('unread_alert();', 200);
       });
 {% endif %}
     </script>
