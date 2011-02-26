@@ -22,26 +22,9 @@ def get_num_online_users():
 
 class HomePage(webapp.RequestHandler):
   def get(self):
-    twitter_trends = memcache.get("twitter_trends")
-    if not twitter_trends:
-      from google.appengine.api import urlfetch
-      from django.utils import simplejson
+    topics = ['Photography', 'Art', 'Music', 'Politics', 'Humor', 'Fashion', 'Writing', 'Travel', 'Food', 'Technology', 'Culture', 'Social Media', 'Books', 'Business', 'Health', 'Love', 'Religion', 'Parenting', 'Entertainment', 'Life', 'Comics']
 
-      result = urlfetch.fetch(url = "http://api.twitter.com/1/trends/daily.json")
-      if result.status_code == 200:
-        twitter_trends = set()
-        time_groups = simplejson.loads(result.content)['trends']
-        for tg in time_groups:
-          trends = time_groups[tg]
-          for t in trends:
-            q = t['query'].encode('utf-8')
-            if not q.startswith('#'):
-              twitter_trends.add(q)
-        twitter_trends = list(twitter_trends)
-        memcache.set("twitter_trends", twitter_trends, time = 7200)
-
-    random.shuffle(twitter_trends)
-    topics = twitter_trends[:10]
+    random.shuffle(topics)
 
     user = common.get_current_user_info()
 
