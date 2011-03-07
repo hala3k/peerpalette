@@ -4,6 +4,7 @@ import datetime
 
 class User(db.Model):
   join_date = db.DateTimeProperty(auto_now_add = True)
+  username = db.StringProperty()
   unread_chat = db.StringListProperty(indexed = False)
   unread_first_timestamp = db.ListProperty(datetime.datetime, indexed = False)
   unread_last_timestamp = db.ListProperty(datetime.datetime, indexed = False)
@@ -13,6 +14,10 @@ class UserStatus(db.Model):
 
 class OnlineUser(db.Model):
   pass
+
+class GoogleLogin(db.Model):
+  google_user = db.UserProperty()
+  user = db.ReferenceProperty(User)
 
 class Query(db.Model):
   user = db.ReferenceProperty(User)

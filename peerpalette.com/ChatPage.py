@@ -80,6 +80,7 @@ class ChatPage(webapp.RequestHandler):
       "unread_count" : user._unread_count,
       "unread_alert" : True if len(user._new_chats) > 0 else False,
       "timestamp" : user._new_timestamp,
+      "username" : user.username,
       "cursor" : cur,
       "title" : my_chat.title,
       "status_class" : status_class,

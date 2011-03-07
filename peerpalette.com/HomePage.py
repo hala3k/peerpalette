@@ -46,6 +46,7 @@ class HomePage(webapp.RequestHandler):
       "unread_count" : user._unread_count,
       "unread_alert" : True if len(user._new_chats) > 0 else False,
       "timestamp" : user._new_timestamp,
+      "username" : user.username,
       "topics" : topics,
       "conversations" : conversations_value,
       "num_online_users" : get_num_online_users(),

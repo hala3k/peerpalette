@@ -2,6 +2,7 @@ from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
+from google.appengine.api import users
 
 from gaesessions import get_current_session
 import models
@@ -42,18 +43,24 @@ def get_current_user_info(timestamp = None, clear_unread = None):
     timestamp = now - config.REQUEST_TIMESTAMP_PADDING
   user = None
   session = get_current_session()
-
+  user_key = None
   if session.has_key("user"):
+    user_key = session["user"]
+  elif session.has_key("anon_user"):
+    user_key = session["anon_user"]
+
+  if user_key is not None:
     if clear_unread:
-      user, cleared = db.run_in_transaction(_get_user, session["user"], clear_unread)
+      user, cleared = db.run_in_transaction(_get_user, user_key, clear_unread)
       user._cleared = cleared
     else:
-      user = models.User.get(session["user"])
+      user = models.User.get(user_key)
 
   if user is None:
     user = models.User()
     user.put()
-    session["user"] = str(user.key())
+    session["anon_user"] = str(user.key())
+    session.pop("user")
 
   user._unread_count = 0
   user._new_chats = []
