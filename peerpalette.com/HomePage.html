@@ -8,6 +8,29 @@ $(document).ready(function() {
     return false;
   });
 });
+function toggle_context_editor() {
+  var h = $("#context-div").height();
+  if (h < 15)
+    h = 15;
+  $("#context-textarea").height(h);
+  $("#context").toggle();
+  $("#context-edit").toggle();
+}
+function update_context() {
+  var text = $('#context-textarea').val();
+  $.ajax({
+    url: "/updatecontext",
+    type: "POST",
+    data: ({context : text}),
+    success: function(msg) {
+      $("#context-div").text(text);
+      toggle_context_editor()
+    },
+    error: function(arg1, arg2, arg3) {
+      alert("Couldn't update your context. Please try refreshing the page.");
+    }
+  });
+}
 </script>
 {% endblock headtags %}
 {% block content %}
@@ -26,8 +49,19 @@ $(document).ready(function() {
     <input id="random_button" type="submit" value="Random Chat" style="padding:10px"/>
     </form>
   </div>
+  <div style="margin-bottom: 10px;">
+    <b>Present yourself:</b>
+    <div id="context">
+      <div id="context-div" style="white-space:pre-wrap;">{{context|default_if_none:""|escape}}</div>
+      <a href="#" onclick="toggle_context_editor();return false;" style="font-size:10px;">Change</a>
+    </div>
+    <div id="context-edit" style="padding-right:5px;display:none;">
+      <textarea id="context-textarea" style="width:100%;border:1px solid #aaa;">{{context|default_if_none:""|escape}}</textarea>
+      <a href="#" onclick="toggle_context_editor();return false;" style="font-size:10px;">Cancel</a>
+      <a href="#" onclick="update_context();return false;" style="font-size:10px;">Save</a>
+    </div>
+  </div>
   <div>
-    <br/>
     <b>Suggested topics:</b>
     <br/>
     {% for t in topics %}

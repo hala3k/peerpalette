@@ -152,3 +152,11 @@ class GetUnread(webapp.RequestHandler):
     
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(simplejson.dumps({"status" : "ok", "timestamp" : str(user._new_timestamp), "unread_count": user._unread_count, "unread_alert": True if len(user._new_chats) > 0 else False}))
+
+class UpdateContext(webapp.RequestHandler):
+  def post(self):
+    context = self.request.get("context")
+    user = common.get_current_user_info()
+    user.context = context
+    user.put()
+

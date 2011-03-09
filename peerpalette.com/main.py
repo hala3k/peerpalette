@@ -17,8 +17,8 @@ from LoginPage import LoginPage
 from LogoutPage import LogoutPage
 import Ajax
 
-application = webapp.WSGIApplication(
-                                     [('/', HomePage),
+application = webapp.WSGIApplication([
+                                      ('/', HomePage),
                                       ('/privacy', PrivacyPage),
                                       ('/feedback', FeedbackPage),
                                       ('/search', SearchPage),
@@ -26,6 +26,7 @@ application = webapp.WSGIApplication(
                                       ('/sendmessage', Ajax.SendMessage),
                                       ('/receivemessages', Ajax.ReceiveMessages),
                                       ('/getunread', Ajax.GetUnread),
+                                      ('/updatecontext', Ajax.UpdateContext),
                                       ('/inbox', InboxPage),
                                       ('/history', HistoryPage),
                                       ('/update_queries_age_index/([012])', UpdateQueriesAgeIndex),
@@ -33,8 +34,8 @@ application = webapp.WSGIApplication(
                                       ('/random', RandomChat),
                                       ('/login', LoginPage),
                                       ('/logout', LogoutPage),
-                                      ('/chat/(.*)', ChatPage)],
-                                     debug=True)
+                                      ('/chat/(.*)', ChatPage),
+                                     ], debug=True)
 
 def main():
   run_wsgi_app(application)
