@@ -7,6 +7,8 @@
     <meta name="description" content="Peerpalette - anonymous people search &amp; chat." />
     <meta name="keywords" content="chat,anonymous,people,search" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/static/default.css" type="text/css" />
+    <link rel="stylesheet" href="/static/style.css" type="text/css" />
     <link rel="stylesheet" href="/static/jquery.notice.css" type="text/css" />
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
@@ -22,77 +24,6 @@
       });
 {% endif %}
     </script>
-    <style type="text/css">
-      body {
-        font-family: arial, sans-serif;
-        margin: 0;
-        padding: 0;
-      }
-      .panel {
-        border:1px solid #aaaaaa;
-        margin:5px;
-        padding: 5px;
-      }
-      .you {
-        color: blue;
-        font-weight: bold;
-      }
-      .them {
-        color: red;
-        font-weight: bold;
-      }
-      .error {
-        color: red;
-      }
-      a {
-        text-decoration: none;
-        color: #0f4482;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-      .tabitem {
-        margin-left: 5px;
-        margin-right: 5px;
-      }
-      .online {
-        padding-left: 16px;
-        background-image: url(/static/online.png);
-        background-repeat: no-repeat;
-        background-position: 0% 50%;
-      }
-      .offline {
-        padding-left: 16px;
-        background-image: url(/static/offline.png);
-        background-repeat: no-repeat;
-        background-position: 0% 50%;
-      }
-      .inactive {
-        padding-left: 16px;
-        background-image: url(/static/inactive.png);
-        background-repeat: no-repeat;
-        background-position: 0% 50%;
-      }
-      .chat {
-        padding-left: 18px;
-        background-image: url(/static/chat.png);
-        background-repeat: no-repeat;
-        background-position: 0% 50%;
-      }
-      .history-item {
-        padding-left:9px;
-        background-image: url(/static/arrow.png);
-        background-repeat: no-repeat;
-        background-position: 0% 50%;
-      }
-      #content {
-        min-height: 200px;
-        margin-bottom: 20px;
-      }
-      .excerpt {
-        color: #888;
-      }
-    </style>
     {% block headtags %}
     {% endblock headtags %}
   </head>
