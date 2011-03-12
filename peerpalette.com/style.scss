@@ -69,3 +69,20 @@ p {
 #content {
   min-height: 200px;
   margin-bottom: 20px; }
+
+textarea {
+  font: inherit;
+  letter-spacing: inherit; }
+
+textarea.context-view {
+  overflow: auto;
+  color: inherit;
+  margin: 1px;
+  resize: none;
+  outline: none;
+  border:0; }
+
+textarea.context-edit {
+  overflow: auto;
+  border:1px solid #aaaaaa; }
+

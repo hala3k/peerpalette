@@ -1,5 +1,6 @@
 {% extends "_base.html" %}
 {% block headtags %}
+<script type='text/javascript' src='/static/autoresize.jquery.js'></script>
 <script type="text/javascript">
 $(document).ready(function() {
   $("#searchbox").focus();
@@ -7,24 +8,41 @@ $(document).ready(function() {
     random_chat_start(true);
     return false;
   });
+  $("#context").autoResize({extraSpace: 0});
+  $("#context").trigger("change");
 });
-function toggle_context_editor() {
-  var h = $("#context-div").height();
-  if (h < 15)
-    h = 15;
-  $("#context-textarea").height(h);
-  $("#context").toggle();
-  $("#context-edit").toggle();
+
+function context_edit() {
+  c = $("#context[readonly]");
+  if (c.length == 0)
+    return;
+  context_text = $("#context").val();
+  $("#context-buttons").show();
+  c.removeAttr('readonly');
+  c.removeClass('context-view').addClass('context-edit');
+  c.select();
 }
-function update_context() {
-  var text = $('#context-textarea').val();
+
+function context_cancel() {
+  $("#context").val(context_text);
+  $("#context").trigger("change");
+  $("#context-buttons").hide();
+  $("#context").attr('readonly','readonly');
+  $('#context').removeClass('context-edit').addClass('context-view');
+}
+
+function context_save() {
+  var text = $('#context').val();
   $.ajax({
     url: "/updatecontext",
     type: "POST",
     data: ({context : text}),
     success: function(msg) {
-      $("#context-div").text(text);
-      toggle_context_editor()
+      $("#context").val(msg);
+      $("#context").trigger("change");
+      $("#context-buttons").hide();
+      $("#context").attr('readonly','readonly');
+      $('#context').removeClass('context-edit').addClass('context-view');
     },
     error: function(arg1, arg2, arg3) {
       alert("Couldn't update your context. Please try refreshing the page.");
@@ -51,14 +69,10 @@ function update_context() {
   </div>
   <div style="margin-bottom: 10px;">
     <b>Present yourself:</b>
-    <div id="context">
-      <div id="context-div" style="white-space:pre-wrap;">{{context|default_if_none:""|escape}}</div>
-      <a href="#" onclick="toggle_context_editor();return false;" style="font-size:10px;">Change</a>
-    </div>
-    <div id="context-edit" style="padding-right:5px;display:none;">
-      <textarea id="context-textarea" style="width:100%;border:1px solid #aaa;">{{context|default_if_none:""|escape}}</textarea>
-      <a href="#" onclick="toggle_context_editor();return false;" style="font-size:10px;">Cancel</a>
-      <a href="#" onclick="update_context();return false;" style="font-size:10px;">Save</a>
+    <div><textarea id="context" style="width:100%;height:1em;" class="context-view" readonly=true onkeypress="context_edit();" onclick="context_edit();">{{context|escape}}</textarea></div>
+    <div id="context-buttons" style="display:none;">
+      <a href="#" onclick="context_cancel();return false;" style="font-size:10px;">Cancel</a>
+      <a href="#" onclick="context_save();return false;" style="font-size:10px;">Save</a>
     </div>
   </div>
   <div>
