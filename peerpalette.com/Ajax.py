@@ -159,5 +159,5 @@ class UpdateContext(webapp.RequestHandler):
     user = common.get_current_user_info()
     user.context = context
     user.put()
-    self.response.out.write(context if context != "" else "<click to add a personal message>")
+    self.response.out.write(context if context else "<click to add a personal message>")
 

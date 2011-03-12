@@ -33,6 +33,10 @@ function context_cancel() {
 
 function context_save() {
   var text = $('#context').val();
+  if (text == context_text) {
+    context_cancel();
+    return;
+  }
   $.ajax({
     url: "/updatecontext",
     type: "POST",
