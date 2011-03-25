@@ -83,7 +83,7 @@ def get_current_user_info(timestamp = None, clear_unread = None):
         except:
           user._new_timestamp = user.unread_last_timestamp[i]
 
-  last_been_online = memcache.get("last_been_online_%d" % user.key().id())
+  last_been_online = memcache.get("last_been_online_%s" % user.key().id_or_name())
 
   if last_been_online is None:
     user_status = models.UserStatus.get_by_key_name(str(user.key().id()))
@@ -93,7 +93,7 @@ def get_current_user_info(timestamp = None, clear_unread = None):
   if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.STATUS_UPDATE_THRESHOLD:
     status = models.UserStatus(key_name = str(user.key().id_or_name()))
     status.put()
-    memcache.set("last_been_online_%d" % user.key().id(), datetime.datetime.now(), time = config.OFFLINE_THRESHOLD)
+    memcache.set("last_been_online_%s" % user.key().id_or_name(), datetime.datetime.now(), time = config.OFFLINE_THRESHOLD)
 
   if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.OFFLINE_THRESHOLD:
     online_user = models.OnlineUser(key_name = str(user.key().id_or_name()))
