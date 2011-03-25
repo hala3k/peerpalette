@@ -78,27 +78,25 @@ class ReceiveMessages(webapp.RequestHandler):
     cur = self.request.get("cursor")
 
     memcache_peer_key = "user_%s_userchat_%s_peer_key" % (user.key().id_or_name(), userchat_key_name)
-    peer_key = memcache.get(memcache_peer_key)
-    if peer_key is None:
+    memcache_chat_key = "user_%s_userchat_%s_chat_key" % (user.key().id_or_name(), userchat_key_name)
+    r = memcache.get_multi([memcache_peer_key, memcache_chat_key])
+    try:
+      peer_key = r[memcache_peer_key]
+      chat_key = r[memcache_chat_key]
+    except KeyError:
       userchat = models.UserChat.get_by_key_name(userchat_key_name, parent = user)
+      if userchat is None:
+        self.response.set_status(404)
+        return
       peer_key = common.get_ref_key(userchat, 'peer_userchat').parent()
-      memcache.set(memcache_peer_key, peer_key, 240)
+      chat_key = common.get_ref_key(userchat, 'chat')
+      memcache.set_multi({memcache_peer_key:peer_key, memcache_chat_key: chat_key}, 240)
 
     # peer status
     idle_time = common.get_user_idle_time(common.get_user_status(peer_key))
     status_class = common.get_status_class(idle_time)
 
     if user._cleared:
-      memcache_chat_key = "user_%s_userchat_%s_chat_key" % (user.key().id_or_name(), userchat_key_name)
-      chat_key = memcache.get(memcache_chat_key)
-      if chat_key is None:
-        try:
-          userchat
-        except NameError:
-          userchat = models.UserChat.get_by_key_name(userchat_key_name, parent = user)
-        chat_key = common.get_ref_key(userchat, 'chat')
-        memcache.set(memcache_chat_key, chat_key, 240)
-        
       new_messages_query = db.Query(models.Message).filter('chat =', chat_key).order('date_time')
       new_messages_query.with_cursor(start_cursor=cur)
 
