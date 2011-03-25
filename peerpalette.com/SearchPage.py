@@ -66,8 +66,8 @@ class SearchPage(webapp.RequestHandler):
  
     results.sort(key=lambda r: r.rating, reverse = True)
 
-    existing_chat_keys = [common.get_chat_key_name(str(user.key().id_or_name()), str(r.key().id_or_name())) for r in results]
-    existing_chats = models.UserChat.get_by_key_name(existing_chat_keys)
+    existing_chat_keys = [common.get_userchat_key_name(r) for r in results]
+    existing_chats = models.UserChat.get_by_key_name(existing_chat_keys, parent = user)
 
     result_values = []
     for i in range(len(results[:config.ITEMS_PER_PAGE])):
@@ -75,6 +75,7 @@ class SearchPage(webapp.RequestHandler):
       status_class = common.get_status_class(r.idle_time)
       v = {'query': r.query_string, 'key': r.key().id_or_name(), 'user_key': common.get_ref_key(r, 'user')}
       v['status_class'] = status_class
+      v['username'] = models.User.get_username(common.get_ref_key(r, 'user'))
       if existing_chats[i]:
         v['existing_chat'] = existing_chats[i].key().id_or_name()
         if existing_chats[i].key().id_or_name() in user.unread_chat:
@@ -87,7 +88,8 @@ class SearchPage(webapp.RequestHandler):
       "unread_count" : user._unread_count,
       "unread_alert" : True if len(user._new_chats) > 0 else False,
       "timestamp" : user._new_timestamp,
-      "username" : user.username,
+      "username" : user.username(),
+      "anonymous" : user.anonymous(),
       "results" : result_values,
       "key" : query.key().id_or_name(),
       "query" : q,

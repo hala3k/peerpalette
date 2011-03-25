@@ -14,7 +14,7 @@ import datetime
 class InboxPage(webapp.RequestHandler):
   def get(self):
     user = common.get_current_user_info()
-    convs_query = db.Query(models.UserChat).filter('user =', user).order('-last_updated')
+    convs_query = db.Query(models.UserChat).ancestor(user).order('-last_updated')
     cur = self.request.get('cursor')
     if cur:
       convs_query.with_cursor(start_cursor = cur)
@@ -31,6 +31,8 @@ class InboxPage(webapp.RequestHandler):
         continue
       counter += 1
       c = {'title' : conv.title, 'key_name' : conv.key().id_or_name()}
+      peer_key = common.get_ref_key(conv, 'peer_userchat').parent()
+      c['username'] = models.User.get_username(peer_key)
 
       try:
         i = user.unread_chat.index(conv.key().id_or_name())
@@ -42,7 +44,7 @@ class InboxPage(webapp.RequestHandler):
         c['excerpt'] = conv.excerpt
 
       conversations.append(c)
-      peer_keys.append(common.get_ref_key(conv, 'peer'))
+      peer_keys.append(peer_key)
 
       if counter >= config.ITEMS_PER_PAGE:
         cursor = convs_query.cursor()
@@ -60,7 +62,8 @@ class InboxPage(webapp.RequestHandler):
       "unread_count" : user._unread_count,
       "unread_alert" : True if len(user._new_chats) > 0 else False,
       "timestamp" : user._new_timestamp,
-      "username" : user.username,
+      "username" : user.username(),
+      "anonymous" : user.anonymous(),
       "conversations" : conversations,
       "cursor" : cursor,
       "with_cursor" : with_cursor,

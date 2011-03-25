@@ -9,13 +9,12 @@
   <div style="clear:left">
     {% if result.existing_chat %}
       {% if result.existing_chat_unread %}
-    <div style="float:left;margin-right:0.5em;"><a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat"><b>{{result.query|escape}}</b></span></a></div>
+    <div style="float:left;margin-right:0.5em;"><a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat"><b>{{result.username}}</b></span></a><span style="color:#888;"> &mdash; {{result.query|escape}}</span></div>
       {% else %}
-    <div style="float:left;margin-right:0.5em;"><a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat">{{result.query|escape}}</span></a></div>
+    <div style="float:left;margin-right:0.5em;"><a href="/chat/{{result.existing_chat}}" class="{{result.status_class}}"><span class="chat">{{result.username}}</span></a><span style="color:#888;"> &mdash; {{result.query|escape}}</span></div>
       {% endif %}
-      {% if result.excerpt %}<span class="excerpt">{{result.excerpt|escape}}</span>{% endif %}
     {% else %}
-    <div style="float:left;margin-right:0.5em;"><a href="/startchat?q={{key}}&q={{result.key}}" class="{{result.status_class}}">{{result.query|escape}}</a></div>
+    <div style="float:left;margin-right:0.5em;"><a href="/startchat?q={{key}}&q={{result.key}}" class="{{result.status_class}}">{{result.username}}</a><span style="color:#888;"> &mdash; {{result.query|escape}}</span></div>
     {% endif %}
   </div>
   {% endfor %}

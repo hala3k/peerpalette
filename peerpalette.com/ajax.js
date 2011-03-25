@@ -84,15 +84,13 @@ function update() {
   $.ajax({
     url: "/receivemessages",
     type: "GET",
-    data: ({timestamp : timestamp, chat_key_name : chat_key_name, cursor: cursor}),
+    data: ({timestamp : timestamp, userchat_key_name : userchat_key_name, cursor: cursor}),
     success: function(result) {
       if (result["status"] == "ok") {
-        if ("messages" in result) {
-          var messages = result["messages"];
+        if ("messages_html" in result) {
+          var messages_html = result["messages_html"];
           cursor = result["cursor"];
-          for (var i = 0; i < messages.length; ++ i) {
-            $("#log").append($('<div><span class="them">s/he</span>: </div>').append($('<span style="white-space:pre-wrap"/>').text(messages[i])));
-          }
+          $("#log").append(messages_html);
           $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
           if (!hasfocus) {
             document.getElementById('buzzer').newMessageAlert();
@@ -129,7 +127,7 @@ $(document).ready(function() {
     swfobject.embedSWF("/static/Buzzer.swf", "buzzer", "0", "0", "9.0.0");
   }
 
-  if (typeof chat_key_name  == "undefined") {
+  if (typeof userchat_key_name  == "undefined") {
     if ($("#inbox").length) {
       // we're not in a chat window, so only pull inbox
       setTimeout("update2();", 3000);
@@ -152,9 +150,9 @@ $(document).ready(function() {
           $.ajax({
             url: "/sendmessage",
             type: "POST",
-            data: ({chat_key_name : chat_key_name, msg: text}),
-            success: function(msg) {
-              $("#log").append($('<div><span class="you">you</span>: </div>').append($('<span style="white-space:pre-wrap"/>').text(text)));
+            data: ({userchat_key_name : userchat_key_name, msg: text}),
+            success: function(result) {
+              $("#log").append(result["messages_html"]);
               $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
             },
             error: function(arg1, arg2, arg3) {
@@ -198,7 +196,8 @@ function random_chat_show_waiting() {
       padding: '10px',
       width: '400px',
       left: ($(window).width() - 400) /2 + 'px'
-    }
+    },
+    applyPlatformOpacityRules: false
   });
 }
 

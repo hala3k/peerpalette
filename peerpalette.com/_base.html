@@ -32,10 +32,10 @@
       <a href="/" style="text-decoration:none;color:#0f4482;font-size:30px;font-family:sans-serif;"><img src="/static/peerpalette.png" style="border:0;" alt="peerpalette.com"/></a>
 
       <div class="menu" style="padding:3px;padding-bottom:0;position:absolute;bottom:0;right:10px;background-color: #ffffff;border:1px solid #aaaaaa;border-bottom:0;">
-{% if username %}
-          <span id="username" class="tabitem" href="/">{{username}} (<a href="/logout">logout</a>)</span>
+{% if anonymous %}
+          <span id="username" class="tabitem" href="/">{{username}} (<a href="/login">login/register</a>)</span>
 {% else %}
-          <span id="username" class="tabitem" href="/">anonymous (<a href="/login">login with Google</a>)</span>
+          <span id="username" class="tabitem" href="/">{{username}} (<a href="/logout">logout</a>)</span>
 {% endif %}
           <a id="inbox" class="tabitem" href="/inbox">
 {% ifnotequal unread_count 0 %}

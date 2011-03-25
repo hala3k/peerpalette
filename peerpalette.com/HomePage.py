@@ -28,8 +28,8 @@ class HomePage(webapp.RequestHandler):
 
     user = common.get_current_user_info()
 
-    conversations = models.UserChat.get_by_key_name(user.unread_chat)
-    peer_keys = [common.get_ref_key(c, 'peer') for c in conversations]
+    conversations = models.UserChat.get_by_key_name(user.unread_chat, parent = user)
+    peer_keys = [common.get_ref_key(c, 'peer_userchat').parent() for c in conversations]
     peers_status = common.get_user_status(peer_keys)
 
     conversations_value = []
@@ -46,7 +46,8 @@ class HomePage(webapp.RequestHandler):
       "unread_count" : user._unread_count,
       "unread_alert" : True if len(user._new_chats) > 0 else False,
       "timestamp" : user._new_timestamp,
-      "username" : user.username,
+      "username" : user.username(),
+      "anonymous" : user.anonymous(),
       "context" : user.context if user.context else "<click to add a personal message>",
       "topics" : topics,
       "conversations" : conversations_value,

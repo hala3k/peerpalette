@@ -46,17 +46,29 @@ def random_chat(user):
   if peer_key is None:
     return None
 
+  userchat_key_name = models.User.get_username(peer_key)
+  peer_userchat_key_name = models.User.get_username(user.key())
+
   if q:
     db.delete(q)
+    time.sleep(0.1) # wait for peer to finish creating UserChat instances
+  else:
+    existing_userchat = models.UserChat.get_by_key_name(userchat_key_name, parent = user)
+    if existing_userchat is None:
+      chat = models.Chat()
+      chat.put()
 
-  chat_key_name = common.get_random_chat_key_name(user.key().id(), peer_key.id())
-  peer_chat_key_name = common.get_random_chat_key_name(peer_key.id(), user.key().id())
+      my_title = peer_title = "random"
 
-  my_title = "random chat"
+      my_userchat_key = db.Key.from_path('User', user.key().id_or_name(), 'UserChat', userchat_key_name)
+      peer_userchat_key = db.Key.from_path('User', peer_key.id_or_name(), 'UserChat', peer_userchat_key_name)
 
-  my_chat = models.UserChat(key_name = chat_key_name, user = user, peer = peer_key, peer_query = None, query = None, title = my_title, peer_chat = db.Key.from_path('UserChat', peer_chat_key_name))
-  my_chat.put()
-  return chat_key_name
+      my_userchat = models.UserChat(key_name = userchat_key_name, parent = user.key(), peer_userchat = peer_userchat_key, chat = chat.key(), title = my_title)
+      peer_userchat = models.UserChat(key_name = peer_userchat_key_name, parent = peer_key, peer_userchat = my_userchat_key, chat = chat.key(), title = peer_title)
+
+      db.put([my_userchat, peer_userchat])
+
+  return userchat_key_name
 
 class RandomChat(webapp.RequestHandler):
   def get(self):

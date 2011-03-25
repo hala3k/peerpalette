@@ -14,7 +14,8 @@ class PrivacyPage(webapp.RequestHandler):
       "unread_count" : user._unread_count,
       "unread_alert" : True if len(user._new_chats) > 0 else False,
       "timestamp" : user._new_timestamp,
-      "username" : user.username,
+      "username" : user.username(),
+      "anonymous" : user.anonymous(),
     }
 
     path = os.path.join(os.path.dirname(__file__), 'PrivacyPage.html')

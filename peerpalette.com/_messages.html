@@ -1,0 +1,10 @@
+{% for message in messages %}
+<div>
+  {% ifequal username message.username %}
+  <span class="you">{{message.username}}</span>:
+  {% else %}
+  <span class="them">{{message.username}}</span>:
+  {% endifequal %}
+  <span style="white-space:pre-wrap">{{message.message_string|escape}}</span>
+</div>
+{% endfor %}

@@ -12,7 +12,7 @@ indexes:
 
 - kind: Message
   properties:
-  - name: to
+  - name: chat
   - name: date_time
 
 - kind: Query
@@ -27,7 +27,7 @@ indexes:
     direction: desc
 
 - kind: UserChat
+  ancestor: yes
   properties:
-  - name: user
   - name: last_updated
     direction: desc

@@ -15,14 +15,14 @@ import common
 import os
 import cgi
 
-def update_recipient_user(user_id, chat_key_name, timestamp):
-    u = models.User.get_by_id(user_id)
+def update_recipient_user(user_key, userchat_key_name, timestamp):
+    u = models.User.get(user_key)
     try:
-      i = u.unread_chat.index(chat_key_name)
+      i = u.unread_chat.index(userchat_key_name)
       u.unread_last_timestamp[i] = timestamp
     except:
       i = len(u.unread_chat)
-      u.unread_chat.insert(i, chat_key_name)
+      u.unread_chat.insert(i, userchat_key_name)
       u.unread_first_timestamp.insert(i, timestamp)
       u.unread_last_timestamp.insert(i, timestamp)
     u.put()
@@ -30,96 +30,85 @@ def update_recipient_user(user_id, chat_key_name, timestamp):
 class SendMessage(webapp.RequestHandler):
   def post(self):
     user = common.get_current_user_info()
-    my_chat = models.UserChat.get_by_key_name(self.request.get("chat_key_name"))
+    userchat = models.UserChat.get_by_key_name(self.request.get("userchat_key_name"), parent = user)
 
-    if not my_chat:
+    if not userchat:
        self.response.headers['Content-Type'] = 'application/json'
        self.response.out.write('{"status": "error"}')
        return
 
-    if my_chat.user.key() != user.key():
-       self.response.headers['Content-Type'] = 'application/json'
-       self.response.out.write('{"status": "error"}')
-       return
-
-    peer_chat_key = common.get_ref_key(my_chat, 'peer_chat')
-
+    chat_key = common.get_ref_key(userchat, 'chat')
     msg = self.request.get("msg")[:400]
-    message = models.Message(to = peer_chat_key, message_string = msg)
-    message.put()
+    message = models.Message(chat = chat_key, message_string = msg, sender = userchat)
 
-    if not my_chat.last_updated:
-      my_chat.last_updated = datetime.datetime.now()
-      my_chat.put()
+    if not userchat.last_updated:
+      userchat.last_updated = datetime.datetime.now()
+      userchat.put()
 
-    try:
-      peer_chat = my_chat.peer_chat
-    except datastore_errors.Error, e:
-      if e.args[0] == "ReferenceProperty failed to be resolved":
-        peer_chat = None
-      else:
-        raise
+    peer_userchat = userchat.peer_userchat
+    peer_userchat.last_updated = datetime.datetime.now()
+    peer_userchat.excerpt = msg.splitlines()[0][:80]
+    db.put([message, peer_userchat])
 
-    if not peer_chat:
-      my_query_key = common.get_ref_key(my_chat, 'query')
-      peer_query_key = common.get_ref_key(my_chat, 'peer_query')
-      peer_key = common.get_ref_key(my_chat, 'peer')
+    db.run_in_transaction(update_recipient_user, peer_userchat.parent_key(), str(peer_userchat.key().id_or_name()), datetime.datetime.now())
 
-      if my_query_key is None:
-        peer_title = "random chat"
-      else:
-        peer_title = "in: " + my_chat.query.query_string
+    template_values = {
+      "username" : user.username(),
+      "messages" : [{'message_string': message.message_string, 'username': user.username()}],
+    }
 
-      peer_chat = models.UserChat(key_name = peer_chat_key.id_or_name(), user = peer_key, peer = user, peer_query = my_chat.query, my_query = peer_query_key, title = peer_title, peer_chat = my_chat, last_updated = datetime.datetime.now())
-      peer_chat.excerpt = msg
-      peer_chat.put()
-      db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), peer_chat.key().id_or_name(), datetime.datetime.now())
-    else:
-      peer_chat.last_updated = datetime.datetime.now()
-      peer_chat.excerpt = msg.splitlines()[0][:80]
-      peer_chat.put()
-      db.run_in_transaction(update_recipient_user, my_chat.peer.key().id(), peer_chat.key().id_or_name(), datetime.datetime.now())
+    path = os.path.join(os.path.dirname(__file__), '_messages.html')
+    messages_html = template.render(path, template_values)
 
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.out.write('{"status": "ok"}')
-
+    self.response.out.write(simplejson.dumps({
+      "status" : "ok",
+      "messages_html" : messages_html,
+    }))
 
 class ReceiveMessages(webapp.RequestHandler):
   def get(self):
-    chat_key_name = self.request.get('chat_key_name')
+    userchat_key_name = self.request.get('userchat_key_name')
 
     timestamp = self.request.get("timestamp", None)
     if timestamp is not None:
       timestamp = common.str2datetime(timestamp)
-    user = common.get_current_user_info(clear_unread = chat_key_name, timestamp = timestamp)
+    user = common.get_current_user_info(clear_unread = userchat_key_name, timestamp = timestamp)
 
     cur = self.request.get("cursor")
 
-    keys = memcache.get_multi(["user_key", "peer_key"], key_prefix = "chat_" + chat_key_name + "_")
-    try:
-      user_key = keys["user_key"]
-      peer_key = keys["peer_key"]
-    except KeyError:
-      my_chat = models.UserChat.get_by_key_name(chat_key_name)
-      user_key = common.get_ref_key(my_chat, 'user')
-      peer_key = common.get_ref_key(my_chat, 'peer')
-      memcache.set_multi({"user_key" : user_key, "peer_key" : peer_key}, key_prefix = "chat_" + chat_key_name + "_")
-
-    if user_key != user.key():
-      self.response.headers['Content-Type'] = 'application/json'
-      self.response.out.write('{"status": "error"}')
-      return
+    memcache_peer_key = "user_%s_userchat_%s_peer_key" % (user.key().id_or_name(), userchat_key_name)
+    peer_key = memcache.get(memcache_peer_key)
+    if peer_key is None:
+      userchat = models.UserChat.get_by_key_name(userchat_key_name, parent = user)
+      peer_key = common.get_ref_key(userchat, 'peer_userchat').parent()
+      memcache.set(memcache_peer_key, peer_key, 240)
 
     # peer status
     idle_time = common.get_user_idle_time(common.get_user_status(peer_key))
     status_class = common.get_status_class(idle_time)
 
     if user._cleared:
-      chat_key = db.Key.from_path("UserChat", chat_key_name)
-      new_messages_query = db.Query(models.Message).filter('to =', chat_key).order('date_time')
+      memcache_chat_key = "user_%s_userchat_%s_chat_key" % (user.key().id_or_name(), userchat_key_name)
+      chat_key = memcache.get(memcache_chat_key)
+      if chat_key is None:
+        try:
+          userchat
+        except NameError:
+          userchat = models.UserChat.get_by_key_name(userchat_key_name, parent = user)
+        chat_key = common.get_ref_key(userchat, 'chat')
+        memcache.set(memcache_chat_key, chat_key, 240)
+        
+      new_messages_query = db.Query(models.Message).filter('chat =', chat_key).order('date_time')
       new_messages_query.with_cursor(start_cursor=cur)
 
-      new_messages = [msg.message_string for msg in new_messages_query]
+      template_values = {
+        "username" : user.username(),
+        "messages" : [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in new_messages_query if common.get_ref_key(msg, 'sender').parent() != user.key()],
+      }
+
+      path = os.path.join(os.path.dirname(__file__), '_messages.html')
+      messages_html = template.render(path, template_values)
 
       self.response.headers['Content-Type'] = 'application/json'
       self.response.out.write(simplejson.dumps({
@@ -127,7 +116,7 @@ class ReceiveMessages(webapp.RequestHandler):
         "unread_alert" : True if len(user._new_chats) > 0 else False,
         "timestamp" : str(user._new_timestamp),
         "status": "ok",
-        "messages": new_messages,
+        "messages_html": messages_html,
         "cursor" : str(new_messages_query.cursor()),
         "status_class" : status_class,
       }))
