@@ -144,7 +144,10 @@ class UpdateContext(webapp.RequestHandler):
   def post(self):
     context = self.request.get("context").strip()
     user = common.get_current_user_info()
-    user.context = context
-    user.put()
+    if context:
+      user.context = context
+    else:
+      user.context = None
+    common.set_user_context(user.key(), context)
     self.response.out.write(context if context else "<click to add a personal message>")
 

@@ -42,13 +42,17 @@ class HomePage(webapp.RequestHandler):
         c['excerpt'] = conv.excerpt
       conversations_value.append(c)
 
+    context = common.get_user_context(user.key())
+    if not context:
+      context = "<click to add a personal message>"
+
     template_values = {
       "unread_count" : user._unread_count,
       "unread_alert" : True if len(user._new_chats) > 0 else False,
       "timestamp" : user._new_timestamp,
       "username" : user.username(),
       "anonymous" : user.anonymous(),
-      "context" : user.context if user.context else "<click to add a personal message>",
+      "context" : context,
       "topics" : topics,
       "conversations" : conversations_value,
       "num_online_users" : get_num_online_users(),

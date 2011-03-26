@@ -19,7 +19,7 @@ def get_online_users():
     t = datetime.datetime.now() - datetime.timedelta(seconds = OFFLINE_THRESHOLD)
     q = db.Query(models.User, keys_only = True).filter('last_been_online >', t)
     u = set(q.fetch())
-    memcache.add('online_users', u, STATUS_UPDATE_THRESHOLD)
+    memcache.set('online_users', u, STATUS_UPDATE_THRESHOLD)
 
   return u
 
@@ -105,11 +105,25 @@ def get_user_status(user_keys):
   if type(user_keys).__name__ == 'list':
     ids = []
     for u in user_keys:
-      ids.append(str(u.id()))
+      ids.append(str(u.id_or_name()))
   else:
-    ids = str(user_keys.id())
+    ids = str(user_keys.id_or_name())
 
   return models.UserStatus.get_by_key_name(ids)
+
+def get_user_context(user_key, cache_duration = 300):
+  m = memcache.get("user_%s_context" % user_key.id_or_name())
+  if m is None:
+    m = models.UserContext.get_by_key_name(str(user_key.id_or_name()))
+    if m is None:
+      m = models.UserContext(key_name = str(user_key.id_or_name()), context = None)
+    memcache.set("user_%s_context" % user_key.id_or_name(), m, cache_duration)
+  return m.context
+
+def set_user_context(user_key, context, cache_duration = 300):
+  m = models.UserContext(key_name = str(user_key.id_or_name()), context = context)
+  m.put()
+  memcache.set("user_%s_context" % user_key.id_or_name(), m, cache_duration)
 
 def get_user_idle_time(user_status):
   if user_status is None:

@@ -25,9 +25,13 @@ class SearchPage(webapp.RequestHandler):
     random.seed()
 
     clean_string = search.clean_query_string(q)
-    keyword_hashes = search.get_keyword_hashes(clean_string)
+    context = common.get_user_context(user.key())
+    if context:
+      keyword_hashes = search.get_keyword_hashes(clean_string + " " + search.clean_query_string(context))
+    else:
+      keyword_hashes = search.get_keyword_hashes(clean_string)
     key_name = common.get_query_key_name(user.key().id(), clean_string)
-    query = models.Query(key_name = key_name, user = user, query_string = q, keyword_hashes = keyword_hashes, age_index = 0)
+    query = models.Query(key_name = key_name, user = user, query_string = q, context = context, keyword_hashes = keyword_hashes, age_index = 0)
     query.put()
 
     age_index = 0
@@ -73,9 +77,16 @@ class SearchPage(webapp.RequestHandler):
     for i in range(len(results[:config.ITEMS_PER_PAGE])):
       r = results[i]
       status_class = common.get_status_class(r.idle_time)
-      v = {'query': r.query_string, 'key': r.key().id_or_name(), 'user_key': common.get_ref_key(r, 'user')}
-      v['status_class'] = status_class
-      v['username'] = models.User.get_username(common.get_ref_key(r, 'user'))
+      user_key = common.get_ref_key(r, 'user')
+      v = {
+        'query' : r.query_string,
+        'key' : r.key().id_or_name(),
+        'user_key' : user_key,
+        'username' : models.User.get_username(user_key),
+        'status_class' : status_class,
+        'context' : r.context,
+      }
+
       if existing_chats[i]:
         v['existing_chat'] = existing_chats[i].key().id_or_name()
         if existing_chats[i].key().id_or_name() in user.unread_chat:
