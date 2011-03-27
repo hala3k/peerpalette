@@ -102,6 +102,9 @@ textarea.context-edit {
     padding: 10px;
     border:1px solid #aaa;
     display: none;
+    &.visible {
+      display: block;
+    }
   }
   &:hover {
     #loginbox {

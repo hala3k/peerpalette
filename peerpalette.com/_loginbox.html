@@ -10,4 +10,14 @@
       <a href="/login?login_type=google"><img alt="Google" src="/static/google.png" /></a>
     </div>
   </form>
+  <script type="text/javascript">
+$("#login").focusout(function() {
+  // needed so users can navigate using tab key
+  setTimeout('$("#loginbox").removeClass("visible");', 0);
+});
+$("#login").focusin(function() {
+  // needed so users can navigate using tab key
+  setTimeout('$("#loginbox").addClass("visible");', 1);
+});
+  </script>
 </div>
