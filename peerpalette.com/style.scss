@@ -92,3 +92,21 @@ textarea.context-edit {
   overflow: auto;
   border:1px solid #aaaaaa; }
 
+#login {
+  position: relative;
+  #loginbox {
+    position:absolute;
+    top: 100%;
+    left: 0%;
+    background-color: #eee;
+    padding: 10px;
+    border:1px solid #aaa;
+    display: none;
+  }
+  &:hover {
+    #loginbox {
+      display:block;
+    }
+  }
+}
+

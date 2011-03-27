@@ -1,0 +1,13 @@
+<div id="loginbox">
+  <form action="/login" method="post">
+    <div><label for="login_username">username</label></div>
+    <div><input id="login_username" type="text" name="username" value="{{login_username}}" /></div>
+    <div><label for="password">password</label></div>
+    <div><input id="password" type="password" name="password" /></div>
+    <div style="text-align:right;margin-top:5px;"><input type="submit" value="Login" /></div>
+    <div style="margin: 10px;">Or login with</div>
+    <div style="text-align:center;">
+      <a href="/login?login_type=google"><img alt="Google" src="/static/google.png" /></a>
+    </div>
+  </form>
+</div>
