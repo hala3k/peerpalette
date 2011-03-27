@@ -1,0 +1,39 @@
+{% extends "_base.html" %}
+{% block title %}Peerpalette - Login{% endblock title %}
+{% block headtags %}
+<script type="text/javascript">
+$(document).ready(function() {
+  $("#login_username").focus();
+});
+</script>
+{% endblock headtags %}
+{% block content %}
+<div id="content" style="padding: 10px;font-family:sans-serif;color:#444444;">
+  <div style="width:400px;margin-left:auto;margin-right:auto;background-color:#eee;padding:10px;border:1px solid #aaa;text-align:center;">
+    <div style="text-align:left;">Enter your username and password to login.</div>
+    <div style="text-align:left;color: red">{{message}}</div>
+    <form action="/login" method="post">
+      <table style="margin:1em auto 1em auto;">
+        <tr>
+          <td style="text-align:right">
+            <label for="login_username">username</label>
+          </td>
+          <td>
+            <input id="login_username" type="text" name="username" value="{{login_username}}" />
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:right">
+            <label for="password">password</label>
+          </td>
+          <td>
+            <input id="password" type="password" name="password" />
+          </td>
+        </tr>
+      </table>
+      <input type="submit" value="Login" />
+    </form>
+  </div>
+</div>
+{% endblock content%}
+

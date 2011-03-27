@@ -15,6 +15,7 @@ from UpdateQueriesAgeIndex import UpdateQueriesAgeIndex
 from CleanupOnlineUsers import CleanupOnlineUsers
 from LoginPage import LoginPage
 from LogoutPage import LogoutPage
+from RegisterPage import RegisterPage
 import Ajax
 
 application = webapp.WSGIApplication([
@@ -33,6 +34,7 @@ application = webapp.WSGIApplication([
                                       ('/cleanup_online_users', CleanupOnlineUsers),
                                       ('/random', RandomChat),
                                       ('/login', LoginPage),
+                                      ('/register', RegisterPage),
                                       ('/logout', LogoutPage),
                                       ('/chat/(.*)', ChatPage),
                                      ], debug=True)

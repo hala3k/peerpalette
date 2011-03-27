@@ -59,7 +59,7 @@ def get_current_user_info(timestamp = None, clear_unread = None):
   if user is None:
     user = models.User()
     user.put()
-    session["anon_user"] = str(user.key())
+    session["anon_user"] = user.key()
     session.pop("user")
 
   user._unread_count = 0

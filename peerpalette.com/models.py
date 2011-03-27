@@ -31,6 +31,11 @@ class UserContext(db.Model):
 class OnlineUser(db.Model):
   pass
 
+class Login(db.Model):
+  user = db.ReferenceProperty(User)
+  username = db.StringProperty(required = True)
+  password_hash = db.StringProperty(required = True)
+
 class GoogleLogin(db.Model):
   google_user = db.UserProperty()
   user = db.ReferenceProperty(User)
