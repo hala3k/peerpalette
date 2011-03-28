@@ -11,8 +11,8 @@ def remove_nonspacing_marks(s):
   return ''.join(c for c in unicodedata.normalize('NFKD', s)
                  if unicodedata.category(c) != 'Mn')
 
-def get_keyword_hashes(clean_string):
-  keywords = string.split(clean_string)[:config.MAX_KEYWORDS]
+def get_keyword_hashes(clean_string, limit = config.MAX_KEYWORDS):
+  keywords = string.split(clean_string)[:limit]
   return [hash(k) for k in keywords]
 
 def clean_query_string(q):

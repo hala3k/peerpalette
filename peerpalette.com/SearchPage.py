@@ -25,17 +25,19 @@ class SearchPage(webapp.RequestHandler):
     random.seed()
 
     clean_string = search.clean_query_string(q)
+    keyword_hashes = search.get_keyword_hashes(clean_string)
+    search_hashes = keyword_hashes[:config.MAX_SEARCH_KEYWORDS]
+
     context = common.get_user_context(user.key())
     if context:
-      keyword_hashes = search.get_keyword_hashes(clean_string + " " + search.clean_query_string(context))
-    else:
-      keyword_hashes = search.get_keyword_hashes(clean_string)
+      keyword_hashes = list(keyword_hashes + search.get_keyword_hashes(search.clean_query_string(context)))[:config.MAX_KEYWORDS]
+
     key_name = common.get_query_key_name(user.key().id(), clean_string)
     query = models.Query(key_name = key_name, user = user, query_string = q, context = context, keyword_hashes = keyword_hashes, age_index = 0)
     query.put()
 
     age_index = 0
-    search_query = search.get_search_query(user, keyword_hashes, age_index)
+    search_query = search.get_search_query(user, search_hashes, age_index)
 
     results = []
     user_keys = []
@@ -47,7 +49,7 @@ class SearchPage(webapp.RequestHandler):
           break
         res = search_query.fetch(num_fetch + 4)
         age_index += 1
-        search_query = search.get_search_query(user, keyword_hashes, age_index)
+        search_query = search.get_search_query(user, search_hashes, age_index)
 
       if len(res) == 0:
         break;

@@ -134,6 +134,8 @@ textarea.context-edit {
     padding: 10px;
     border:1px solid #aaa;
     display: none;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
     &.visible {
       display: block; } }
   &:hover {

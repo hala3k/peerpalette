@@ -6,9 +6,9 @@
   {% for conversation in conversations %}
   <div style="clear:left">
     {% if conversation.read %}
-    <div style="float:left;margin-right:0.5em;"><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{username}}</a><span style="color:#888;"> &mdash; {{conversation.title|escape}}</span></div>
+    <div style="float:left;margin-right:0.5em;"><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.username}}</a><span style="color:#888;"> &mdash; {{conversation.title|escape}}</span></div>
     {% else %}
-    <div style="float:left;margin-right:0.5em;"><b><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{username}}</a></b><span style="color:#888;"> &mdash; {{conversation.title|escape}}</span></div>
+    <div style="float:left;margin-right:0.5em;"><b><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.username}}</a></b><span style="color:#888;"> &mdash; {{conversation.title|escape}}</span></div>
     {% endif %}
   </div>
   {% endfor %}
