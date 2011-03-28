@@ -31,21 +31,21 @@
     <div style="position:relative;margin:0; padding: 5px; height:40px;background-color: #ebf0ff;border-bottom:1px #aaaaaa solid;">
       <a href="/" style="text-decoration:none;color:#0f4482;font-size:30px;font-family:sans-serif;"><img src="/static/peerpalette.png" style="border:0;" alt="peerpalette.com"/></a>
 
-      <div class="menu" style="padding:3px;padding-bottom:0;position:absolute;bottom:0;right:10px;background-color: #ffffff;border:1px solid #aaaaaa;border-bottom:0;">
+      <div id="menu">
 {% if anonymous %}
-          <span id="username" class="tabitem" href="/">{{username}} (<span id="login"><a href="/login">login</a>{% include "_loginbox.html" %}</span>/ <a href="/register">register</a>)</span>
+          <span id="username" class="menuitem" href="/">{{username}} (<span id="login"><a href="/login">login</a>{% include "_loginbox.html" %}</span>/ <a href="/register">register</a>)</span>
 {% else %}
-          <span id="username" class="tabitem" href="/">{{username}} (<a href="/logout">logout</a>)</span>
+          <span id="username" class="menuitem" href="/">{{username}} (<a href="/logout">logout</a>)</span>
 {% endif %}
-          <a id="inbox" class="tabitem" href="/inbox">
+          <a id="inbox" class="menuitem" href="/inbox">
 {% ifnotequal unread_count 0 %}
           <b>inbox ({{unread_count}})</b>
 {% else %}
           inbox
 {% endifnotequal %}
           </a>
-          <a id="history" class="tabitem" href="/history">history</a>
-          <a id="feedback" class="tabitem" href="/feedback" style="color:#171">feedback</a>
+          <a id="history" class="menuitem" href="/history">history</a>
+          <a id="feedback" class="menuitem" href="/feedback" style="color:#171">feedback</a>
       </div>
     </div>
     {% block content %}
