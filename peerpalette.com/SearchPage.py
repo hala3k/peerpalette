@@ -32,57 +32,58 @@ class SearchPage(webapp.RequestHandler):
     if context:
       keyword_hashes = list(keyword_hashes + search.get_keyword_hashes(search.clean_query_string(context)))[:config.MAX_KEYWORDS]
 
-    key_name = common.get_query_key_name(user.key().id(), clean_string)
-    query = models.Query(key_name = key_name, user = user, query_string = q, context = context, keyword_hashes = keyword_hashes, age_index = 0)
-    query.put()
-
     age_index = 0
-    search_query = search.get_search_query(user, search_hashes, age_index)
+    indexes_query = search.get_search_query(search_hashes, age_index)
 
-    results = []
+    result_keys = []
     user_keys = []
-    while len(results) < 100:
-      num_fetch = config.TOTAL_RESULTS - len(results)
+    while len(result_keys) < config.TOTAL_RESULTS:
+      num_fetch = config.TOTAL_RESULTS - len(result_keys)
       res = []
       while len(res) == 0:
         if age_index >= config.AGE_INDEX_STEPS - 1:
           break
-        res = search_query.fetch(num_fetch + 4)
-        age_index += 1
-        search_query = search.get_search_query(user, search_hashes, age_index)
+        res = indexes_query.fetch(num_fetch + 4)
+        if len(res) < num_fetch + 4:
+          age_index += 1
+          indexes_query = search.get_search_query(search_hashes, age_index)
 
       if len(res) == 0:
         break;
 
       for r in res:
-        user_key = common.get_ref_key(r, 'user')
-        if user_key == user.key():
+        qk = r.parent_key()
+        uk = qk.parent()
+        if uk == user.key():
           continue
-        user_keys.append(user_key)
-        results.append(r)
+        user_keys.append(uk)
+        result_keys.append(qk)
 
+    results = db.get(result_keys)
     users_status = common.get_user_status(user_keys)
     for i in range(len(results)):
       st = users_status[i]
       r = results[i]
       r.idle_time = common.get_user_idle_time(st)
-      r.rating = common.calc_query_rating(r.idle_time, len(r.keyword_hashes), r.date_time)
+      r.rating = common.calc_query_rating(r.idle_time, r.date_time)
       # randomize results slightly
       r.rating += random.random() * 0.1
  
     results.sort(key=lambda r: r.rating, reverse = True)
+    # TODO store result keys in memcache
 
-    existing_chat_keys = [common.get_userchat_key_name(r) for r in results]
-    existing_chats = models.UserChat.get_by_key_name(existing_chat_keys, parent = user)
+    results_page = results[:config.ITEMS_PER_PAGE]
+    existing_chat_keys = [common.get_userchat_key_name(r.key()) for r in results_page]
+    existing_chats = models.UserChat.get_by_key_name(existing_chat_keys, parent = user.key())
 
     result_values = []
-    for i in range(len(results[:config.ITEMS_PER_PAGE])):
-      r = results[i]
+    for i in range(len(results_page)):
+      r = results_page[i]
       status_class = common.get_status_class(r.idle_time)
-      user_key = common.get_ref_key(r, 'user')
+      user_key = r.parent_key()
       v = {
         'query' : r.query_string,
-        'key' : r.key().id_or_name(),
+        'key' : r.key(),
         'user_key' : user_key,
         'username' : models.User.get_username(user_key),
         'status_class' : status_class,
@@ -97,6 +98,11 @@ class SearchPage(webapp.RequestHandler):
           v['excerpt'] = existing_chats[i].excerpt
       result_values.append(v)
 
+    query_key = db.Key.from_path('Query', common.get_query_key_name(clean_string), parent = user.key())
+    query = models.Query(key = query_key, query_string = q, context = context)
+    index = models.QueryIndex(key_name = query_key.name(), parent = query_key, keyword_hashes = keyword_hashes)
+    db.put([query, index])
+
     template_values = {
       "unread_count" : user._unread_count,
       "unread_alert" : True if len(user._new_chats) > 0 else False,
@@ -104,7 +110,7 @@ class SearchPage(webapp.RequestHandler):
       "username" : user.username(),
       "anonymous" : user.anonymous(),
       "results" : result_values,
-      "key" : query.key().id_or_name(),
+      "key" : query.key(),
       "query" : q,
     }
 

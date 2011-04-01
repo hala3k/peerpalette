@@ -16,15 +16,15 @@ indexes:
   - name: date_time
 
 - kind: Query
+  ancestor: yes
+  properties:
+  - name: date_time
+    direction: desc
+
+- kind: QueryIndex
   properties:
   - name: age_index
   - name: date_time
-
-- kind: Query
-  properties:
-  - name: user
-  - name: date_time
-    direction: desc
 
 - kind: UserChat
   ancestor: yes

@@ -86,17 +86,19 @@ def get_current_user_info(timestamp = None, clear_unread = None):
   last_been_online = memcache.get("last_been_online_%s" % user.key().id_or_name())
 
   if last_been_online is None:
-    user_status = models.UserStatus.get_by_key_name(str(user.key().id()))
+    user_status = models.UserStatus.get(db.Key.from_path('UserStatus', user.key().id_or_name()))
     if user_status:
       last_been_online = user_status.last_been_online
 
   if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.STATUS_UPDATE_THRESHOLD:
-    status = models.UserStatus(key_name = str(user.key().id_or_name()))
+    status_key = db.Key.from_path('UserStatus', user.key().id_or_name())
+    status = models.UserStatus(key = status_key)
     status.put()
     memcache.set("last_been_online_%s" % user.key().id_or_name(), datetime.datetime.now(), time = config.OFFLINE_THRESHOLD)
 
   if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.OFFLINE_THRESHOLD:
-    online_user = models.OnlineUser(key_name = str(user.key().id_or_name()))
+    online_user_key = db.Key.from_path('OnlineUser', user.key().id_or_name())
+    online_user = models.OnlineUser(key = online_user_key)
     online_user.put()
 
   return user
@@ -105,11 +107,11 @@ def get_user_status(user_keys):
   if type(user_keys).__name__ == 'list':
     ids = []
     for u in user_keys:
-      ids.append(str(u.id_or_name()))
+      ids.append(db.Key.from_path('UserStatus', u.id_or_name()))
   else:
-    ids = str(user_keys.id_or_name())
+    ids = db.Key.from_path('UserStatus', user_keys.id_or_name())
 
-  return models.UserStatus.get_by_key_name(ids)
+  return models.UserStatus.get(ids)
 
 def get_user_context(user_key, cache_duration = 300):
   m = memcache.get("user_%s_context" % user_key.id_or_name())
@@ -152,30 +154,28 @@ def get_hash(string):
   hsh = base64.urlsafe_b64encode(hashlib.md5(string.encode('utf-8')).digest())
   return hsh.rstrip('=')
 
-def get_query_key_name(user_id, clean_string):
-  return get_hash(str(user_id) + ':' + clean_string)
+def get_query_key_name(clean_string):
+  return get_hash(clean_string)
 
-def get_userchat_key_name(peer_query):
-  return models.User.get_username(get_ref_key(peer_query, 'user'))
+def get_userchat_key_name(peer_query_key):
+  return models.User.get_username(peer_query_key.parent())
 
 def get_ref_key(inst, prop_name):
   return getattr(inst.__class__, prop_name).get_value_for_datastore(inst)
 
-def calc_query_rating(user_idle_time, num_keywords, query_time):
+def calc_query_rating(user_idle_time, query_time):
   if user_idle_time < config.OFFLINE_THRESHOLD:
     u = 1
   elif user_idle_time < config.INACTIVE_THRESHOLD:
     u = 0.5
   else:
     u = 0
-  k = min(num_keywords / config.MAX_KEYWORDS, 1)
 
   timediff = datetime.datetime.now() - query_time
   a = min(timediff.days / 30, 1)
 
   rating = (u * 0.7)
-  rating += (1 - k) * 0.1
-  rating += (1 - a) * 0.2
+  rating += (1 - a) * 0.3
 
   return rating
 

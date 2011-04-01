@@ -17,7 +17,7 @@ class UpdateQueriesAgeIndex(webapp.RequestHandler):
   def get(self, age_index):
     age_index = int(age_index)
     threshold = datetime.datetime.now() - config.AGE_INDEX_THRESHOLDS[age_index]
-    queries = db.Query(models.Query).filter('age_index =', age_index).filter('date_time <', threshold).fetch(50)
+    queries = db.Query(models.QueryIndex).filter('age_index =', age_index).filter('date_time <', threshold).fetch(50)
 
     for q in queries:
       a = datetime.datetime.now() - q.date_time

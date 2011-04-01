@@ -14,9 +14,9 @@ import time
 class StartChatPage(webapp.RequestHandler):
   def get(self):
     user = common.get_current_user_info()
-    queries = models.Query.get_by_key_name(self.request.get_all('q'))
-    user_key_0 = common.get_ref_key(queries[0], 'user')
-    user_key_1 = common.get_ref_key(queries[1], 'user')
+    queries = models.Query.get(self.request.get_all('q')[:2])
+    user_key_0 = queries[0].parent_key()
+    user_key_1 = queries[1].parent_key()
 
     if len(queries) != 2 \
       or user_key_0 == user_key_1 \
@@ -33,8 +33,8 @@ class StartChatPage(webapp.RequestHandler):
       peer_query = queries[0]
       peer_key = user_key_0
 
-    userchat_key_name = common.get_userchat_key_name(peer_query)
-    peer_userchat_key_name = common.get_userchat_key_name(my_query)
+    userchat_key_name = common.get_userchat_key_name(peer_query.key())
+    peer_userchat_key_name = common.get_userchat_key_name(my_query.key())
 
     existing_userchat = models.UserChat.get_by_key_name(userchat_key_name, parent = user)
     if existing_userchat:

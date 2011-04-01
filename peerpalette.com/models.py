@@ -41,19 +41,24 @@ class GoogleLogin(db.Model):
   user = db.ReferenceProperty(User)
 
 class Query(db.Model):
-  user = db.ReferenceProperty(User)
+  # parent: User
+  # key_name: hash(query)
   query_string = db.StringProperty(required = True, indexed = False)
   context = db.TextProperty()
   date_time = db.DateTimeProperty(auto_now_add = True)
+
+class QueryIndex(db.Model):
+  # parent: Query
   keyword_hashes = db.ListProperty(item_type = long)
   age_index = db.IntegerProperty(default = 0)
+  date_time = db.DateTimeProperty(auto_now = True)
 
 class Chat(db.Model):
   create_time = db.DateTimeProperty(auto_now = True)
 
-# key_name: hash(peer)
-# parent: user
 class UserChat(db.Model):
+  # parent: user
+  # key_name: hash(peer)
   peer_userchat = db.SelfReferenceProperty()
   chat = db.ReferenceProperty(Chat)
   title = db.StringProperty(required = True, indexed = False)

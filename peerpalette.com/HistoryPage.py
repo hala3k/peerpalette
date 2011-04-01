@@ -14,7 +14,7 @@ import datetime
 class HistoryPage(webapp.RequestHandler):
   def get(self):
     user = common.get_current_user_info()
-    queries_query = db.Query(models.Query).filter('user =', user).order('-date_time')
+    queries_query = db.Query(models.Query).ancestor(user).order('-date_time')
     cur = self.request.get('cursor')
     if cur:
       queries_query.with_cursor(start_cursor = cur)
