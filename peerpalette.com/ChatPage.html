@@ -21,10 +21,10 @@ $(document).ready(function() {
 <div style="height:25px;margin:5px 10px;font-size:20px;" class="{{status_class}}" id="status">
 {{peer_username}}<span style="color:#888;"> &mdash; {{title|escape}}</span>
 </div>
-<div id="log">
+<div id="log" class="shadowed">
 {% include "_messages.html" %}
 </div>
-<div id="message_container">
+<div id="message_container" class="shadowed">
   <form>
     <textarea id="message"></textarea>
   </form>
