@@ -1,12 +1,22 @@
 from google.appengine.ext import db
 import config
 import datetime
+import pickle
+
+# Source: http://stackoverflow.com/questions/3447071/storing-complex-object-on-datastore-with-pickle-any-faster-alternatives
+class PickleProperty(db.Property): 
+  data_type = db.Blob
+  def get_value_for_datastore(self, model_instance):
+    value = self.__get__(model_instance, model_instance.__class__)
+    if value is not None:
+      return db.Blob(pickle.dumps(value))
+  def make_value_from_datastore(self, value):
+    if value is not None:
+      return pickle.loads(str(value))
 
 class User(db.Model):
   join_date = db.DateTimeProperty(auto_now_add = True)
-  unread_chat = db.StringListProperty(indexed = False)
-  unread_first_timestamp = db.ListProperty(datetime.datetime, indexed = False)
-  unread_last_timestamp = db.ListProperty(datetime.datetime, indexed = False)
+  unread = PickleProperty(default = {})
   @staticmethod
   def is_anonymous(key):
     if key.id() is not None:
@@ -58,9 +68,9 @@ class Chat(db.Model):
 
 class UserChat(db.Model):
   # parent: user
-  # key_name: hash(peer)
+  # id or key_name: Chat id or key_name
+  name = db.StringProperty(required = True)
   peer_userchat = db.SelfReferenceProperty()
-  chat = db.ReferenceProperty(Chat)
   title = db.StringProperty(required = True, indexed = False)
   excerpt = db.StringProperty(indexed = False)
   last_updated = db.DateTimeProperty()

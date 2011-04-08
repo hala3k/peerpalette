@@ -73,8 +73,8 @@ class SearchPage(webapp.RequestHandler):
     # TODO store result keys in memcache
 
     results_page = results[:config.ITEMS_PER_PAGE]
-    existing_chat_keys = [common.get_userchat_key_name(r.key()) for r in results_page]
-    existing_chats = models.UserChat.get_by_key_name(existing_chat_keys, parent = user.key())
+    existing_chats_key_names = [common.get_chat_key_name(user.key(), r.parent_key()) for r in results_page]
+    existing_chats = models.UserChat.get_by_key_name(existing_chats_key_names, parent = user.key())
 
     result_values = []
     for i in range(len(results_page)):
@@ -91,11 +91,9 @@ class SearchPage(webapp.RequestHandler):
       }
 
       if existing_chats[i]:
-        v['existing_chat'] = existing_chats[i].key().id_or_name()
-        if existing_chats[i].key().id_or_name() in user.unread_chat:
+        v['existing_chat'] = existing_chats[i].name
+        if existing_chats[i].key().id_or_name() in user.unread:
           v['existing_chat_unread'] = True
-        if existing_chats[i].excerpt:
-          v['excerpt'] = existing_chats[i].excerpt
       result_values.append(v)
 
     query_key = db.Key.from_path('Query', common.get_query_key_name(clean_string), parent = user.key())

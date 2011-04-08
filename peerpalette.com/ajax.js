@@ -3,24 +3,9 @@ var newUnreadMessages = 0;
 var hasfocus = true;
 var notifyTimeout;
 
-var unread_alert_disabled = false;
-function unread_alert() {
-  if (!unread_alert_disabled) {
-    unread_alert_disabled = true;
+function alert_new_chat() {
     document.getElementById('buzzer').newChatAlert();
     $("#inbox").blink({maxBlinks: 6, blinkPeriod: 200, speed: 'fast', onBlink: function(){}, onMaxBlinks: function(){}});
-    setTimeout("unread_alert_disabled = false;", 4000);
-
-    var stay = true;
-    if (hasfocus)
-      stay = false;
-
-    jQuery.noticeAdd({
-      text: 'You have received a message in another chat session. Go to <a href="/inbox">inbox</a>',
-      stay: stay,
-      stayTime: 5000
-    });
-  }
 }
 
 function refresh_unread_text(unread_count) {
@@ -28,6 +13,23 @@ function refresh_unread_text(unread_count) {
     $("#inbox").html("<b>inbox (" + unread_count + ")</b>");
   else
     $("#inbox").html("inbox");
+}
+
+function alert_new_messages(messages) {
+  if (hasfocus)
+    stayTime = 5000;
+  else
+    stayTime = 10000;
+
+  for (m in messages) {
+    msg = messages[m];
+    t = '<b><a href="/chat/' + msg['username'] + '">' + msg['username'] + '</a></b><br/>' + msg['message'];
+    jQuery.noticeAdd({
+      text: t,
+      stay: false,
+      stayTime: stayTime
+    });
+  }
 }
 
 function refresh_chat_status(status_class) {
@@ -66,16 +68,22 @@ function update2() {
     data: ({timestamp : timestamp}),
     success: function(result){
       if (result["status"] == "ok") {
-        refresh_unread_text(result["unread_count"])
+        if ("unread_count" in result)
+          refresh_unread_text(result["unread_count"])
+
+        if ("messages" in result)
+          alert_new_messages(result["messages"]);
+
         if (result["unread_alert"])
-          unread_alert();
+          alert_new_chat();
+
         if ("timestamp" in result)
           timestamp = result["timestamp"];
       }
-      setTimeout("update2();", 3000);
+      setTimeout("update2();", 2000);
     },
     error: function(er, textStatus, errorThrown){
-      setTimeout("update2();", 3000);
+      setTimeout("update2();", 2000);
     }
   });
 }
@@ -84,7 +92,7 @@ function update() {
   $.ajax({
     url: "/receivemessages",
     type: "GET",
-    data: ({timestamp : timestamp, userchat_key_name : userchat_key_name, cursor: cursor}),
+    data: ({timestamp : timestamp, userchat_key : userchat_key, cursor: cursor}),
     success: function(result) {
       if (result["status"] == "ok") {
         if ("messages_html" in result) {
@@ -101,8 +109,11 @@ function update() {
         if ("unread_count" in result)
           refresh_unread_text(result["unread_count"])
 
+        if ("messages" in result)
+          alert_new_messages(result["messages"]);
+
         if (result["unread_alert"])
-          unread_alert();
+          alert_new_chat();
 
         if ("status_class" in result)
           refresh_chat_status(result['status_class']);
@@ -127,10 +138,10 @@ $(document).ready(function() {
     swfobject.embedSWF("/static/Buzzer.swf", "buzzer", "0", "0", "9.0.0");
   }
 
-  if (typeof userchat_key_name  == "undefined") {
+  if (typeof userchat_key  == "undefined") {
     if ($("#inbox").length) {
       // we're not in a chat window, so only pull inbox
-      setTimeout("update2();", 3000);
+      setTimeout("update2();", 2000);
 
       var focus_callback = function() {hasfocus = true;};
       var blur_callback = function() {hasfocus = false;};
@@ -150,7 +161,7 @@ $(document).ready(function() {
           $.ajax({
             url: "/sendmessage",
             type: "POST",
-            data: ({userchat_key_name : userchat_key_name, msg: text}),
+            data: ({userchat_key : userchat_key, msg: text}),
             success: function(result) {
               $("#log").append(result["messages_html"]);
               $('#log').animate({scrollTop: $('#log')[0].scrollHeight});

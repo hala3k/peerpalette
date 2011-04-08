@@ -4,7 +4,7 @@
 <script type="text/javascript">
 $(document).ready(function() {
   $("#searchbox").focus();
-  $("#random_form").submit(function() {
+  $("#random").click(function() {
     random_chat_start(true);
     return false;
   });
@@ -67,9 +67,7 @@ function context_save() {
     or
   </div>
   <div style="text-align:center;">
-    <form id="random_form" action="/random" method="get">
-    <input class="button blue" id="random_button" type="submit" value="Random Chat"/>
-    </form>
+    <a id="random" href="/random" class="button blue" style="padding-top: .8em; padding-bottom: .8em;">Random Chat</a>
   </div>
   <div style="margin-bottom: 10px;">
     <b>Present yourself:</b>
@@ -92,9 +90,8 @@ function context_save() {
     <b>New messages:</b>
     <br/>
     {% for conversation in conversations %}
-    <div style="clear:left">
-      <div style="float:left;margin-right:0.5em;"><b><a href="/chat/{{conversation.key_name}}" class="{{conversation.status_class}}">{{conversation.title|escape}}</a></b></div>
-    {% if conversation.excerpt %}<span class="excerpt">{{conversation.excerpt|escape}}</span>{% endif %}
+    <div>
+      <div><b><a href="/chat/{{conversation.name}}" class="{{conversation.status_class}}">{{conversation.username}}</a></b><span style="color:#888;"> &mdash; {{conversation.title|escape}}</span></div>
     </div>
     {% endfor %}
   </div>

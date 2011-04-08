@@ -26,7 +26,7 @@ class LoginPage(webapp.RequestHandler):
         self.redirect("/register?link_type=google")
         return
 
-      get_current_session()["user"] = str(user.key())
+      get_current_session()["user"] = user.key()
       self.redirect("/")
       return
 

@@ -26,16 +26,22 @@ def get_online_users():
 def _get_user(user_key, clear_unread):
   user = models.User.get(user_key)
   try:
-    i = user.unread_chat.index(clear_unread)
-    del user.unread_chat[i]
-    del user.unread_first_timestamp[i]
-    t = user.unread_last_timestamp.pop(i)
+    user.unread.pop(clear_unread)
     user.put()
     return user, True
-  except: # TODO use specific exception
+  except KeyError:
     pass
 
   return user, False
+
+def get_current_user_key():
+  session = get_current_session()
+  if session.has_key("user"):
+    return session["user"]
+  elif session.has_key("anon_user"):
+    return session["anon_user"]
+
+  return None
 
 def get_current_user_info(timestamp = None, clear_unread = None):
   now = datetime.datetime.now()
@@ -67,21 +73,22 @@ def get_current_user_info(timestamp = None, clear_unread = None):
   user._updated_chats = []
   user._new_timestamp = timestamp
 
-  for i in range(len(user.unread_chat)):
-    if now > user.unread_first_timestamp[i] + config.UNREAD_THRESHOLD:
-      user._unread_count += 1
-      if timestamp < user.unread_first_timestamp[i]:
-        user._new_chats.append(user.unread_chat[i])
-        try:
-          user._new_timestamp = max(user._new_timestamp, user.unread_first_timestamp[i])
-        except:
-          user._new_timestamp = user.unread_first_timestamp[i]
-      elif timestamp < user.unread_last_timestamp[i] and now > user.unread_last_timestamp[i] + config.UNREAD_THRESHOLD:
-        user._updated_chats.append(user.unread_chat[i])
-        try:
-          user._new_timestamp = max(user._new_timestamp, user.unread_last_timestamp[i])
-        except:
-          user._new_timestamp = user.unread_last_timestamp[i]
+  if user.unread:
+    for chat_id, timestamps in user.unread.iteritems():
+      if now > timestamps['first_timestamp'] + config.UNREAD_THRESHOLD:
+        user._unread_count += 1
+        if timestamp < timestamps['first_timestamp']:
+          user._new_chats.append(chat_id)
+          try:
+            user._new_timestamp = max(user._new_timestamp, timestamps['first_timestamp'])
+          except:
+            user._new_timestamp = timestamps['first_timestamp']
+        elif timestamp < timestamps['last_timestamp'] and now > timestamps['last_timestamp'] + config.UNREAD_THRESHOLD:
+          user._updated_chats.append(chat_id)
+          try:
+            user._new_timestamp = max(user._new_timestamp, timestamps['last_timestamp'])
+          except:
+            user._new_timestamp = timestamps['last_timestamp']
 
   last_been_online = memcache.get("last_been_online_%s" % user.key().id_or_name())
 
@@ -157,8 +164,14 @@ def get_hash(string):
 def get_query_key_name(clean_string):
   return get_hash(clean_string)
 
-def get_userchat_key_name(peer_query_key):
-  return models.User.get_username(peer_query_key.parent())
+def xor(hash1, hash2):
+  r = ''
+  for i in range(len(hash1)):
+    r += chr(ord(hash1[i]) ^ ord(hash2[i]))
+  return r
+
+def get_chat_key_name(user_key_1, user_key_2):
+  return base64.urlsafe_b64encode(xor(hashlib.md5(str(user_key_1)).digest(), hashlib.md5(str(user_key_2)).digest()))
 
 def get_ref_key(inst, prop_name):
   return getattr(inst.__class__, prop_name).get_value_for_datastore(inst)
@@ -178,4 +191,35 @@ def calc_query_rating(user_idle_time, query_time):
   rating += (1 - a) * 0.3
 
   return rating
+
+def create_chat(query_1 = None, query_2 = None, user_key_1 = None, user_key_2 = None, title_1 = None, title_2 = None):
+  if query_1 is not None:
+    user_key_1 = query_1.key().parent()
+    title_2 = query_1.query_string
+  
+  if query_2 is not None:
+    user_key_2 = query_2.key().parent()
+    title_1 = query_2.query_string
+
+  chat_id = get_chat_key_name(user_key_1, user_key_2)
+
+  userchat_key_1 = db.Key.from_path('User', user_key_1.id_or_name(), 'UserChat', chat_id)
+  userchat_key_2 = db.Key.from_path('User', user_key_2.id_or_name(), 'UserChat', chat_id)
+
+  userchat_1, userchat_2 = db.get([userchat_key_1, userchat_key_2])
+  if userchat_1 is not None and userchat_2 is not None:
+    return userchat_1, userchat_2
+
+  chat_key = db.Key.from_path('Chat', chat_id)
+  chat = models.Chat(key = chat_key)
+
+  userchat_name_1 = models.User.get_username(user_key_2)
+  userchat_name_2 = models.User.get_username(user_key_1)
+
+  userchat_1 = models.UserChat(key = userchat_key_1, chat = chat_key, peer_userchat = userchat_key_2, name = userchat_name_1, title = title_1)
+  userchat_2 = models.UserChat(key = userchat_key_2, chat = chat_key, peer_userchat = userchat_key_1, name = userchat_name_2, title = title_2)
+
+  db.put([chat, userchat_1, userchat_2])
+
+  return userchat_1, userchat_2
 

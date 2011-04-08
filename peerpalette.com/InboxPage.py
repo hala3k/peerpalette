@@ -30,15 +30,14 @@ class InboxPage(webapp.RequestHandler):
       if not conv.last_updated:
         continue
       counter += 1
-      c = {'title' : conv.title, 'key_name' : conv.key().id_or_name()}
+      c = {'title' : conv.title, 'name' : conv.name}
       peer_key = common.get_ref_key(conv, 'peer_userchat').parent()
       c['username'] = models.User.get_username(peer_key)
 
-      try:
-        i = user.unread_chat.index(conv.key().id_or_name())
-        c['read'] = False
-      except:
-        c['read'] = True
+      if conv.key().id_or_name() in user.unread:
+        c['unread'] = True
+      else:
+        c['unread'] = False
 
       if conv.excerpt:
         c['excerpt'] = conv.excerpt

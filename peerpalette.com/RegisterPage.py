@@ -94,6 +94,6 @@ class RegisterPage(webapp.RequestHandler):
       google_login = models.GoogleLogin(google_user = google_user, user = user)
       google_login.put()
 
-    get_current_session()["user"] = str(user.key())
+    get_current_session()["user"] = user.key()
     self.redirect("/")
 

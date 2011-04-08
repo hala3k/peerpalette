@@ -2,6 +2,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 from google.appengine.api import memcache
+from google.appengine.ext import db
 
 import config
 import common
@@ -28,7 +29,8 @@ class HomePage(webapp.RequestHandler):
 
     user = common.get_current_user_info()
 
-    conversations = models.UserChat.get_by_key_name(user.unread_chat, parent = user)
+    conversation_keys = [db.Key.from_path('User', user.key().id_or_name(), 'UserChat', chat_id) for chat_id in user.unread]
+    conversations = models.UserChat.get(conversation_keys)
     peer_keys = [common.get_ref_key(c, 'peer_userchat').parent() for c in conversations]
     peers_status = common.get_user_status(peer_keys)
 
@@ -37,9 +39,8 @@ class HomePage(webapp.RequestHandler):
       conv = conversations[i]
       idle_time = common.get_user_idle_time(peers_status[i])
       status_class = common.get_status_class(idle_time)
-      c = {'title' : conv.title, 'key_name' : conv.key().id_or_name(), 'status_class' : status_class}
-      if conv.excerpt:
-        c['excerpt'] = conv.excerpt
+      username = models.User.get_username(peer_keys[i])
+      c = {'username' : username, 'title' : conv.title, 'name' : conv.name, 'status_class' : status_class}
       conversations_value.append(c)
 
     context = common.get_user_context(user.key())
