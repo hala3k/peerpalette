@@ -3,9 +3,23 @@ var newUnreadMessages = 0;
 var hasfocus = true;
 var notifyTimeout;
 
-function alert_new_chat() {
+var disabled_alert = 0;
+function sound_alert(type) {
+  if (type <= disabled_alert)
+    return;
+
+  if (type == 1)
+    document.getElementById('buzzer').newMessageAlert();
+  else if (type == 2)
     document.getElementById('buzzer').newChatAlert();
-    $("#inbox").blink({maxBlinks: 6, blinkPeriod: 200, speed: 'fast', onBlink: function(){}, onMaxBlinks: function(){}});
+
+  disabled_alert = type;
+  setTimeout("disabled_alert = 0;", 1000);
+}
+
+function alert_new_chat() {
+  sound_alert(2);
+  $("#inbox").blink({maxBlinks: 6, blinkPeriod: 200, speed: 'fast', onBlink: function(){}, onMaxBlinks: function(){}});
 }
 
 function refresh_unread_text(unread_count) {
@@ -24,6 +38,7 @@ function alert_new_messages(messages) {
   for (m in messages) {
     msg = messages[m];
     t = '<b><a href="/chat/' + msg['username'] + '">' + msg['username'] + '</a></b><br/>' + msg['message'];
+    sound_alert(1);
     jQuery.noticeAdd({
       text: t,
       stay: false,
@@ -68,14 +83,14 @@ function update2() {
     data: ({timestamp : timestamp}),
     success: function(result){
       if (result["status"] == "ok") {
+        if (result["unread_alert"])
+          alert_new_chat();
+
         if ("unread_count" in result)
           refresh_unread_text(result["unread_count"])
 
         if ("messages" in result)
           alert_new_messages(result["messages"]);
-
-        if (result["unread_alert"])
-          alert_new_chat();
 
         if ("timestamp" in result)
           timestamp = result["timestamp"];
@@ -95,25 +110,26 @@ function update() {
     data: ({timestamp : timestamp, userchat_key : userchat_key, cursor: cursor}),
     success: function(result) {
       if (result["status"] == "ok") {
+        if (result["unread_alert"])
+          alert_new_chat();
+
+        if ("unread_count" in result)
+          refresh_unread_text(result["unread_count"])
+
         if ("messages_html" in result) {
           var messages_html = result["messages_html"];
           cursor = result["cursor"];
           $("#log").append(messages_html);
           $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
           if (!hasfocus) {
-            document.getElementById('buzzer').newMessageAlert();
+            sound_alert(1);
             ++ newUnreadMessages;
             notify(newUnreadMessages, true);
           }
         }
-        if ("unread_count" in result)
-          refresh_unread_text(result["unread_count"])
 
         if ("messages" in result)
           alert_new_messages(result["messages"]);
-
-        if (result["unread_alert"])
-          alert_new_chat();
 
         if ("status_class" in result)
           refresh_chat_status(result['status_class']);
