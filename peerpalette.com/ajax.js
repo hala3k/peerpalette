@@ -1,17 +1,24 @@
 var title;
-var newUnreadMessages = 0;
+var newMessage = false;
+var newChat = false;
 var hasfocus = true;
-var notifyTimeout;
+var notifyTimeout = null;
+var update_request;
+var update_timeout;
 
 var disabled_alert = 0;
 function sound_alert(type) {
   if (type <= disabled_alert)
     return;
 
-  if (type == 1)
-    document.getElementById('buzzer').newMessageAlert();
-  else if (type == 2)
-    document.getElementById('buzzer').newChatAlert();
+  try {
+    if (type == 1)
+      swfobject.getObjectById('buzzer').newMessageAlert();
+    else if (type == 2)
+      swfobject.getObjectById('buzzer').newChatAlert();
+  }
+  catch(e) {
+  }
 
   disabled_alert = type;
   setTimeout("disabled_alert = 0;", 1000);
@@ -29,18 +36,24 @@ function refresh_unread_text(unread_count) {
     $("#inbox").html("inbox");
 }
 
-function alert_new_messages(messages) {
+function alert_new_background_messages(background_messages) {
   if (hasfocus)
     stayTime = 5000;
   else
     stayTime = 10000;
 
-  for (m in messages) {
-    msg = messages[m];
-    t = '<b><a href="/chat/' + msg['username'] + '">' + msg['username'] + '</a></b><br/>' + msg['message'];
+  var inEffectDuration = 600;
+
+  if (typeof update_request == "undefined")
+    inEffectDuration = 0;
+  
+  for (m in background_messages) {
+    msg = background_messages[m];
+    t = '<a style="color: black; text-decoration: none;" href="/chat/' + msg['username'] + '"><div><b>' + msg['username'] + ':</b><br/>' + msg['message'] + '</div></a>';
     sound_alert(1);
     jQuery.noticeAdd({
       text: t,
+      inEffectDuration : inEffectDuration,
       stay: false,
       stayTime: stayTime
     });
@@ -52,116 +65,123 @@ function refresh_chat_status(status_class) {
   $('#status').addClass(status_class);
 }
 
-function notify(msg, clear) {
+function update_title_notification() {
   if (typeof title == "undefined")
     title = $(document).attr("title");
 
-  var t = "(" + msg + ")" + title;
-  if (clear) {
-    if (typeof notifyTimeout != "undefined")
-      clearTimeout(notifyTimeout);
-    $(document).attr("title", t);
+  if (newMessage || newChat) {
+    if (notifyTimeout == null && !hasfocus)
+      notifyTimeout = setTimeout("toggle_title()", 1000);
   }
   else {
-    if ($(document).attr("title") == t)
-      $(document).attr("title", title);
-    else
-      $(document).attr("title", t);
+    if (notifyTimeout != null)
+      clear_title_notification();
   }
-  notifyTimeout = setTimeout("notify('" + msg + "')", 1000);
 }
 
-function clear_notify() {
+function toggle_title() {
+  var t = "*" + title;
+  if ($(document).attr("title") == t)
+    $(document).attr("title", title);
+  else
+    $(document).attr("title", t);
+  notifyTimeout = setTimeout("toggle_title()", 1000);
+}
+
+function clear_title_notification() {
+  newChat = false;
+  newMessage = false;
   clearTimeout(notifyTimeout);
   $(document).attr("title", title);
+  notifyTimeout = null;
 }
 
-function update2() {
-  $.ajax({
-    url: "/getunread",
-    type: "GET",
-    data: ({timestamp : timestamp}),
-    success: function(result){
-      if (result["status"] == "ok") {
-        if (result["unread_alert"])
-          alert_new_chat();
+function request_update(msg) {
+  if (typeof request_timeout != "undefined")
+    clearTimeout(request_timeout);
+  if (typeof update_request != "undefined")
+    update_request.abort();
+    
+  var method = "GET";
+  var data = {timestamp : update['timestamp']};
+  if (msg) {
+    data['message'] = msg;
+    method = "POST";
+  }
 
-        if ("unread_count" in result)
-          refresh_unread_text(result["unread_count"])
+  var timeout = 2000;
+  if (typeof userchat_key != "undefined") {
+    data["userchat_key"] = userchat_key;
+    timeout = 1000;
+  }
 
-        if ("messages" in result)
-          alert_new_messages(result["messages"]);
+  if (typeof update["cursor"] != "undefined")
+    data["cursor"] = update["cursor"];
 
-        if ("timestamp" in result)
-          timestamp = result["timestamp"];
-      }
-      setTimeout("update2();", 2000);
-    },
-    error: function(er, textStatus, errorThrown){
-      setTimeout("update2();", 2000);
-    }
-  });
-}
-
-function update() {
-  $.ajax({
-    url: "/receivemessages",
-    type: "GET",
-    data: ({timestamp : timestamp, userchat_key : userchat_key, cursor: cursor}),
+  update_request = $.ajax({
+    url: "/getupdate",
+    type: method,
+    data: data,
     success: function(result) {
-      if (result["status"] == "ok") {
-        if (result["unread_alert"])
-          alert_new_chat();
+      apply_update(result);
+      update = $.extend(update, result);
 
-        if ("unread_count" in result)
-          refresh_unread_text(result["unread_count"])
-
-        if ("messages_html" in result) {
-          var messages_html = result["messages_html"];
-          cursor = result["cursor"];
-          $("#log").append(messages_html);
-          $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
-          if (!hasfocus) {
-            sound_alert(1);
-            ++ newUnreadMessages;
-            notify(newUnreadMessages, true);
-          }
-        }
-
-        if ("messages" in result)
-          alert_new_messages(result["messages"]);
-
-        if ("status_class" in result)
-          refresh_chat_status(result['status_class']);
-
-        if ("timestamp" in result)
-          timestamp = result["timestamp"];
-      }
-
-      setTimeout("update();", 1000);
+      request_timeout = setTimeout("request_update();", timeout);
     },
     error: function(er, textStatus, errorThrown){
       $("#log").append('<div class="error"><b>error</b>: Could not connect to server.</div>');
       $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
-      setTimeout("update();", 1000);
+      request_timeout = setTimeout("request_update();", 3000);
     }
   });
 }
 
-$(document).ready(function() {
-  if (typeof swfobject != "undefined") {
-    $('body').append('<div id="buzzer" style="display:none;"/>');
-    swfobject.embedSWF("/static/Buzzer.swf", "buzzer", "0", "0", "9.0.0");
+function apply_update(data) {
+  var diff = 0;
+
+  if ("unread_count" in data) {
+    diff = data["unread_count"] - update["unread_count"];
+    if (diff != 0) {
+      refresh_unread_text(data["unread_count"]);
+    }
+  }
+  if ("new_chat_alert" in data && data["new_chat_alert"]) {
+    newChat = true;
+    alert_new_chat();
+    update_title_notification();
+  }
+  else if (diff < 0) {
+    newChat = false;
+    update_title_notification();
   }
 
-  if (typeof userchat_key  == "undefined") {
-    if ($("#inbox").length) {
-      // we're not in a chat window, so only pull inbox
-      setTimeout("update2();", 2000);
+  if ("timestamp" in data)
+    update['timestamp'] = data['timestamp'];
 
-      var focus_callback = function() {hasfocus = true;};
-      var blur_callback = function() {hasfocus = false;};
+  if ("messages_html" in data) {
+    var messages_html = data["messages_html"];
+    cursor = data["cursor"];
+    $("#log").append(messages_html);
+    $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
+    if (!hasfocus) {
+      sound_alert(1);
+      newMessage = true;
+      update_title_notification();
     }
+  }
+
+  if ("background_messages" in data)
+    alert_new_background_messages(data["background_messages"]);
+
+  if ("status_class" in data)
+    refresh_chat_status(data['status_class']);
+}
+
+$(document).ready(function() {
+  setTimeout("apply_update(update);", 1);
+
+  if (typeof userchat_key  == "undefined") {
+    request_timeout = setTimeout("request_update();", 2000);
   }
   else {
     $("#message").keypress(function(event) {
@@ -173,36 +193,21 @@ $(document).ready(function() {
         if (text != "") {
           $('textarea#message').val('');
           event.preventDefault();
-
-          $.ajax({
-            url: "/sendmessage",
-            type: "POST",
-            data: ({userchat_key : userchat_key, msg: text}),
-            success: function(result) {
-              $("#log").append(result["messages_html"]);
-              $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
-            },
-            error: function(arg1, arg2, arg3) {
-              $("#log").append('<div class="error"><b>error</b>: Message could not be sent.</div>');
-              $("#log").append('<div class="error">' + arg2 + '</div>');
-              $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
-            }
-          });
+          request_update(text);
         }
-        else {
+        else
           return false;
-        }
       }
     });
-    var focus_callback = function() {
-      hasfocus = true;
-      newUnreadMessages = 0;
-      clear_notify();
-    };
-    var blur_callback = function() {hasfocus = false;};
     $("#log").scrollTop($("#log")[0].scrollHeight);
-    setTimeout("update();", 1000);
+    request_timeout = setTimeout("request_update();", 1000);
   }
+
+  var focus_callback = function() {
+    hasfocus = true;
+    clear_title_notification();
+  };
+  var blur_callback = function() {hasfocus = false;};
 
   if($.browser.msie){
     $(document).focusin(focus_callback);

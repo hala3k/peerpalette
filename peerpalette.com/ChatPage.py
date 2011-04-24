@@ -1,31 +1,24 @@
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
-from django.utils import simplejson
 
 import models
 import common
-import os
-import cgi
+from RequestHandler import RequestHandler
 
-import datetime
-import time
-
-class StartChatPage(webapp.RequestHandler):
+class StartChatPage(RequestHandler):
   def get(self):
-    user = common.get_current_user_info()
+    user_key = common.get_current_user_key()
     queries = models.Query.get(self.request.get_all('q')[:2])
     user_key_0 = queries[0].parent_key()
     user_key_1 = queries[1].parent_key()
 
     if len(queries) != 2 \
       or user_key_0 == user_key_1 \
-      or (user_key_0 != user.key() and user_key_1 != user.key()):
+      or (user_key_0 != user_key and user_key_1 != user_key):
       self.response.set_status(403)
       return
 
-    if user_key_0 == user.key():
+    if user_key_0 == user_key:
       my_query = queries[0]
       peer_query = queries[1]
       peer_key = user_key_1
@@ -38,10 +31,10 @@ class StartChatPage(webapp.RequestHandler):
 
     self.redirect('/chat/' + my_userchat.name)
 
-
-class ChatPage(webapp.RequestHandler):
+class ChatPage(RequestHandler):
   def get(self, userchat_name):
     from urllib import unquote_plus
+
     userchat_name = unquote_plus(userchat_name)
     userchat = db.Query(models.UserChat).ancestor(common.get_current_user_key()).filter('name =', userchat_name).get()
 
@@ -49,31 +42,24 @@ class ChatPage(webapp.RequestHandler):
       self.response.set_status(404)
       return
 
-    user = common.get_current_user_info(clear_unread = userchat.key().id_or_name())
- 
+    self.init(userchat.key().id_or_name())
+
     chat_key = db.Key.from_path('Chat', userchat.key().id_or_name())
     q = db.Query(models.Message).filter('chat =', chat_key).order('date_time')
     messages = q.fetch(500)
-    cur = q.cursor()
 
-    # peer status
-    peer_userchat_key = common.get_ref_key(userchat, 'peer_userchat')
-    idle_time = common.get_user_idle_time(common.get_user_status(peer_userchat_key.parent()))
-    status_class = common.get_status_class(idle_time)
+    peer_key = common.get_ref_key(userchat, 'peer_userchat').parent()
+    peer_status = self.fetcher.get(db.Key.from_path('UserStatus', peer_key.id_or_name()))
 
-    template_values = {
-      "unread_count" : user._unread_count,
-      "unread_alert" : True if len(user._new_chats) > 0 else False,
-      "timestamp" : user._new_timestamp,
-      "username" : user.username(),
-      "anonymous" : user.anonymous(),
-      "cursor" : cur,
-      "peer_username" : models.User.get_username(peer_userchat_key.parent()),
-      "title" : userchat.title,
-      "status_class" : status_class,
-      "userchat_key" : userchat.key(),
-      "messages" : [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in messages],
-    }
+    self.update['cursor'] = str(q.cursor())
 
-    path = os.path.join(os.path.dirname(__file__), 'ChatPage.html')
-    self.response.out.write(template.render(path, template_values))
+    idle_time = common.get_user_idle_time(peer_status)
+
+    self.template_values["peer_username"] = models.User.get_username(peer_key)
+    self.template_values["peer_status_class"] = common.get_status_class(idle_time)
+    self.template_values["title"] = userchat.title
+    self.template_values["userchat_key"] = userchat.key()
+    self.template_values["messages"] = [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in messages]
+
+    self.render_page('ChatPage.html')
+

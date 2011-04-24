@@ -1,17 +1,11 @@
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
-from google.appengine.ext.webapp import template
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
-import config
 import common
 import models
+from RequestHandler import RequestHandler
 
-import os
 import random
-
-import datetime
 
 def get_num_online_users():
   num = memcache.get('num_online_users')
@@ -21,17 +15,19 @@ def get_num_online_users():
     memcache.set('num_online_users', num, 60)
   return num
 
-class HomePage(webapp.RequestHandler):
+class HomePage(RequestHandler):
   def get(self):
+    self.init()
     topics = ['Photography', 'Art', 'Music', 'Politics', 'Humor', 'Fashion', 'Writing', 'Travel', 'Food', 'Technology', 'Culture', 'Social Media', 'Books', 'Business', 'Health', 'Love', 'Religion', 'Parenting', 'Entertainment', 'Life', 'Comics']
 
     random.shuffle(topics)
 
-    user = common.get_current_user_info()
+    conversations = []
+    for i in self.user.unread:
+      if self.is_unread(i):
+        conversations.append(self.fetcher.get(db.Key.from_path('User', self.user.key().id_or_name(), 'UserChat', i)))
 
-    conversation_keys = [db.Key.from_path('User', user.key().id_or_name(), 'UserChat', chat_id) for chat_id in user.unread]
-    conversations = models.UserChat.get(conversation_keys)
-    peer_keys = [common.get_ref_key(c, 'peer_userchat').parent() for c in conversations]
+    peer_keys = [common.get_ref_key(c.get_model(), 'peer_userchat').parent() for c in conversations]
     peers_status = common.get_user_status(peer_keys)
 
     conversations_value = []
@@ -43,21 +39,14 @@ class HomePage(webapp.RequestHandler):
       c = {'username' : username, 'title' : conv.title, 'name' : conv.name, 'status_class' : status_class}
       conversations_value.append(c)
 
-    context = common.get_user_context(user.key())
+    context = common.get_user_context(self.user.key())
     if not context:
       context = "<click to add a personal message>"
 
-    template_values = {
-      "unread_count" : user._unread_count,
-      "unread_alert" : True if len(user._new_chats) > 0 else False,
-      "timestamp" : user._new_timestamp,
-      "username" : user.username(),
-      "anonymous" : user.anonymous(),
-      "context" : context,
-      "topics" : topics,
-      "conversations" : conversations_value,
-      "num_online_users" : get_num_online_users(),
-    }
+    self.template_values['context'] = context
+    self.template_values['topics'] = topics
+    self.template_values['conversations'] = conversations_value
+    self.template_values['num_online_users'] = get_num_online_users()
 
-    path = os.path.join(os.path.dirname(__file__), 'HomePage.html')
-    self.response.out.write(template.render(path, template_values))
+    self.render_page('HomePage.html')
+

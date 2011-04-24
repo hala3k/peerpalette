@@ -1,26 +1,14 @@
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
-from google.appengine.ext.webapp import template
 from google.appengine.api import mail
 
-import config
-import common
+from RequestHandler import RequestHandler
+
 import os
+import datetime
 
-class FeedbackPage(webapp.RequestHandler):
+class FeedbackPage(RequestHandler):
   def get(self):
-    user = common.get_current_user_info()
-
-    template_values = {
-      "unread_count" : user._unread_count,
-      "unread_alert" : True if len(user._new_chats) > 0 else False,
-      "timestamp" : user._new_timestamp,
-      "username" : user.username(),
-      "anonymous" : user.anonymous(),
-    }
-
-    path = os.path.join(os.path.dirname(__file__), 'FeedbackPage.html')
-    self.response.out.write(template.render(path, template_values))
+    self.init()
+    self.render_page('FeedbackPage.html')
 
   def post(self):
     message = self.request.get("message")
@@ -36,17 +24,7 @@ class FeedbackPage(webapp.RequestHandler):
               subject = subject,
               body= message)
 
-    user = common.get_current_user_info()
-
-    template_values = {
-      "unread_count" : user._unread_count,
-      "unread_alert" : True if len(user._new_chats) > 0 else False,
-      "timestamp" : user._new_timestamp,
-      "username" : user.username(),
-      "anonymous" : user.anonymous(),
-      "submitted" : True,
-    }
-
-    path = os.path.join(os.path.dirname(__file__), 'FeedbackPage.html')
-    self.response.out.write(template.render(path, template_values))
+    self.init()
+    self.template_values['submitted'] = True
+    self.render_page('FeedbackPage.html')
 

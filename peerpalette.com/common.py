@@ -5,11 +5,11 @@ from google.appengine.api import taskqueue
 from google.appengine.api import users
 
 from gaesessions import get_current_session
-import models
-import datetime
-
-import os
 import config
+import models
+
+import datetime
+import os
 import hashlib
 import base64
 
@@ -23,16 +23,21 @@ def get_online_users():
 
   return u
 
-def _get_user(user_key, clear_unread):
-  user = models.User.get(user_key)
-  try:
-    user.unread.pop(clear_unread)
-    user.put()
-    return user, True
-  except KeyError:
-    pass
+def clear_old_unread_messages(unread):
+  threshold = datetime.datetime.now() - datetime.timedelta(seconds = 5)
+  for k in unread.keys():
+    v = unread[k]
+    try:
+      if v['read_timestamp'] >= v['last_timestamp'] and v['last_timestamp'] < threshold:
+        del unread[k]
+        continue
+    except KeyError:
+      pass
 
-  return user, False
+    try:
+      v['messages'] = [(m,t) for m,t in v['messages'] if t > threshold]
+    except KeyError:
+      pass
 
 def get_current_user_key():
   session = get_current_session()
@@ -42,73 +47,6 @@ def get_current_user_key():
     return session["anon_user"]
 
   return None
-
-def get_current_user_info(timestamp = None, clear_unread = None):
-  now = datetime.datetime.now()
-  if timestamp is None:
-    timestamp = now - config.REQUEST_TIMESTAMP_PADDING
-  user = None
-  session = get_current_session()
-  user_key = None
-  if session.has_key("user"):
-    user_key = session["user"]
-  elif session.has_key("anon_user"):
-    user_key = session["anon_user"]
-
-  if user_key is not None:
-    if clear_unread:
-      user, cleared = db.run_in_transaction(_get_user, user_key, clear_unread)
-      user._cleared = cleared
-    else:
-      user = models.User.get(user_key)
-
-  if user is None:
-    user = models.User()
-    user.put()
-    session["anon_user"] = user.key()
-    session.pop("user")
-
-  user._unread_count = 0
-  user._new_chats = []
-  user._updated_chats = []
-  user._new_timestamp = timestamp
-
-  if user.unread:
-    for chat_id, timestamps in user.unread.iteritems():
-      if now > timestamps['first_timestamp'] + config.UNREAD_THRESHOLD:
-        user._unread_count += 1
-        if timestamp < timestamps['first_timestamp']:
-          user._new_chats.append(chat_id)
-          try:
-            user._new_timestamp = max(user._new_timestamp, timestamps['first_timestamp'])
-          except:
-            user._new_timestamp = timestamps['first_timestamp']
-        elif timestamp < timestamps['last_timestamp'] and now > timestamps['last_timestamp'] + config.UNREAD_THRESHOLD:
-          user._updated_chats.append(chat_id)
-          try:
-            user._new_timestamp = max(user._new_timestamp, timestamps['last_timestamp'])
-          except:
-            user._new_timestamp = timestamps['last_timestamp']
-
-  last_been_online = memcache.get("last_been_online_%s" % user.key().id_or_name())
-
-  if last_been_online is None:
-    user_status = models.UserStatus.get(db.Key.from_path('UserStatus', user.key().id_or_name()))
-    if user_status:
-      last_been_online = user_status.last_been_online
-
-  if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.STATUS_UPDATE_THRESHOLD:
-    status_key = db.Key.from_path('UserStatus', user.key().id_or_name())
-    status = models.UserStatus(key = status_key)
-    status.put()
-    memcache.set("last_been_online_%s" % user.key().id_or_name(), datetime.datetime.now(), time = config.OFFLINE_THRESHOLD)
-
-  if last_been_online is None or (datetime.datetime.now() - last_been_online).seconds >= config.OFFLINE_THRESHOLD:
-    online_user_key = db.Key.from_path('OnlineUser', user.key().id_or_name())
-    online_user = models.OnlineUser(key = online_user_key)
-    online_user.put()
-
-  return user
 
 def get_user_status(user_keys):
   if type(user_keys).__name__ == 'list':

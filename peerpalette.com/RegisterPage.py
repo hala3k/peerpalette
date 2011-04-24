@@ -1,17 +1,12 @@
-from google.appengine.ext import webapp
 from google.appengine.api import users
 from google.appengine.ext import db
-from google.appengine.ext.webapp import template
-
-import os
-
 from gaesessions import get_current_session
 
 import common
 import models
-import hashlib
+from RequestHandler import RequestHandler
 
-class RegisterPage(webapp.RequestHandler):
+class RegisterPage(RequestHandler):
   def get(self):
     link_type = self.request.get("link_type", None)
     if link_type == "google":
@@ -20,18 +15,9 @@ class RegisterPage(webapp.RequestHandler):
         self.redirect(users.create_login_url("/register?link_type=google"))
         return
 
-    user = common.get_current_user_info()
-
-    template_values = {
-      "unread_count" : user._unread_count,
-      "unread_alert" : True if len(user._new_chats) > 0 else False,
-      "timestamp" : user._new_timestamp,
-      "username" : user.username(),
-      "anonymous" : user.anonymous(),
-      "link_type" : link_type,
-    }
-    path = os.path.join(os.path.dirname(__file__), 'RegisterPage.html')
-    self.response.out.write(template.render(path, template_values))
+    self.init()
+    self.template_values["link_type"] = link_type
+    self.render_page("RegisterPage.html")
 
   def post(self):
     username = self.request.get("username", None).strip()
@@ -63,20 +49,13 @@ class RegisterPage(webapp.RequestHandler):
       error_message = "Please enter your desired username."
 
     if error_message:
-      user = common.get_current_user_info()
-      template_values = {
-        "unread_count" : user._unread_count,
-        "unread_alert" : True if len(user._new_chats) > 0 else False,
-        "timestamp" : user._new_timestamp,
-        "username" : user.username(),
-        "anonymous" : user.anonymous(),
-        "username" : user.username(),
-        "login_username" : username,
-        "message" : error_message,
-        "link_type" : link_type,
-      }
-      path = os.path.join(os.path.dirname(__file__), 'RegisterPage.html')
-      self.response.out.write(template.render(path, template_values))
+      self.init()
+      self.template_values["username"] = user.username()
+      self.template_values["login_username"] = username
+      self.template_values["message"] = error_message
+      self.template_values["link_type"] = link_type
+
+      self.render_page("RegisterPage.html")
       return
 
     password_hash = common.get_hash(password)

@@ -16,12 +16,8 @@
     <script type='text/javascript' src='/static/jquery.notice.js'></script>
     <script type="text/javascript" src="/static/ajax.js"></script>
     <script type="text/javascript">
-      var timestamp = "{{timestamp}}";
-{% if unread_alert %}
-      $(document).ready(function() {
-        setTimeout('unread_alert();', 200);
-      });
-{% endif %}
+      swfobject.registerObject("buzzer", "9.0.0");
+      var update = {{update}};
     </script>
     {% block headtags %}
     {% endblock headtags %}
@@ -56,5 +52,14 @@
 alt="Powered by Google App Engine" /></div>
       </div>
     {% endblock footer %}
+    <div>
+      <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="0" height="0" id="buzzer">
+        <param name="movie" value="/static/Buzzer.swf" />
+        <!--[if !IE]>-->
+        <object type="application/x-shockwave-flash" data="/static/Buzzer.swf" width="0" height="0">
+        </object>
+        <!--<![endif]-->
+      </object>
+    </div>
   </body>
 </html>

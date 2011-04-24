@@ -1,36 +1,28 @@
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
-from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 
+import config
 import models
 import common
 import search
-import config
+from RequestHandler import RequestHandler
 
-import os
-import cgi
-import datetime
 import random
 
-class SearchPage(webapp.RequestHandler):
+class SearchPage(RequestHandler):
   def get(self):
-    user = common.get_current_user_info()
     q = self.request.get('q')
 
     if not q:
       self.redirect("/")
       return
 
-    random.seed()
+    self.init()
 
     clean_string = search.clean_query_string(q)
     keyword_hashes = search.get_keyword_hashes(clean_string)
     search_hashes = keyword_hashes[:config.MAX_SEARCH_KEYWORDS]
 
-    context = common.get_user_context(user.key())
-    if context:
-      keyword_hashes = list(keyword_hashes + search.get_keyword_hashes(search.clean_query_string(context)))[:config.MAX_KEYWORDS]
+    context = self.fetcher.get(db.Key.from_path('UserContext', self.user.key().id_or_name()))
 
     age_index = 0
     indexes_query = search.get_search_query(search_hashes, age_index)
@@ -54,13 +46,14 @@ class SearchPage(webapp.RequestHandler):
       for r in res:
         qk = r.parent_key()
         uk = qk.parent()
-        if uk == user.key():
+        if uk == self.user.key():
           continue
         user_keys.append(uk)
         result_keys.append(qk)
 
-    results = db.get(result_keys)
-    users_status = common.get_user_status(user_keys)
+    results = self.fetcher.get(result_keys)
+    users_status = self.fetcher.get([db.Key.from_path('UserStatus', u.id_or_name()) for u in user_keys])
+    random.seed()
     for i in range(len(results)):
       st = users_status[i]
       r = results[i]
@@ -73,8 +66,8 @@ class SearchPage(webapp.RequestHandler):
     # TODO store result keys in memcache
 
     results_page = results[:config.ITEMS_PER_PAGE]
-    existing_chats_key_names = [common.get_chat_key_name(user.key(), r.parent_key()) for r in results_page]
-    existing_chats = models.UserChat.get_by_key_name(existing_chats_key_names, parent = user.key())
+    existing_chats_key_names = [common.get_chat_key_name(self.user.key(), r.parent_key()) for r in results_page]
+    existing_chats = self.fetcher.get([db.Key.from_path('UserChat', c, 'User', self.user.key().id_or_name()) for c in existing_chats_key_names])
 
     result_values = []
     for i in range(len(results_page)):
@@ -96,21 +89,19 @@ class SearchPage(webapp.RequestHandler):
           v['existing_chat_unread'] = True
       result_values.append(v)
 
-    query_key = db.Key.from_path('Query', common.get_query_key_name(clean_string), parent = user.key())
-    query = models.Query(key = query_key, query_string = q, context = context)
+    context_text = ""
+    if context:
+      context_text = context.context
+      keyword_hashes = list(keyword_hashes + search.get_keyword_hashes(search.clean_query_string(context_text)))[:config.MAX_KEYWORDS]
+
+    query_key = db.Key.from_path('Query', common.get_query_key_name(clean_string), parent = self.user.key())
+    query = models.Query(key = query_key, query_string = q, context = context_text)
     index = models.QueryIndex(key_name = query_key.name(), parent = query_key, keyword_hashes = keyword_hashes)
     db.put([query, index])
 
-    template_values = {
-      "unread_count" : user._unread_count,
-      "unread_alert" : True if len(user._new_chats) > 0 else False,
-      "timestamp" : user._new_timestamp,
-      "username" : user.username(),
-      "anonymous" : user.anonymous(),
-      "results" : result_values,
-      "key" : query.key(),
-      "query" : q,
-    }
+    self.template_values["results"] = result_values
+    self.template_values["key"] = query.key()
+    self.template_values["query"] = q
 
-    path = os.path.join(os.path.dirname(__file__), 'SearchPage.html')
-    self.response.out.write(template.render(path, template_values))
+    self.render_page('SearchPage.html')
+

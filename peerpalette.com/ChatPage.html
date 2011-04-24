@@ -14,11 +14,10 @@ $(document).ready(function() {
 </script>
 <script type="text/javascript">
   var userchat_key = "{{userchat_key}}";
-  var cursor = "{{cursor}}";
 </script>
 {% endblock headtags %}
 {% block content %}
-<div style="height:25px;margin:5px 10px;font-size:20px;" class="{{status_class}}" id="status">
+<div style="height:25px;margin:5px 10px;font-size:20px;" class="{{peer_status_class}}" id="status">
 {{peer_username}}<span style="color:#888;"> &mdash; {{title|escape}}</span>
 </div>
 <div id="log" class="shadowed">
