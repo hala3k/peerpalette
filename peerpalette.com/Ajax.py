@@ -8,6 +8,7 @@ import common
 from RequestHandler import RequestHandler
 
 import os
+from cgi import escape
 
 def get_peer_userchat_key(userchat_key):
   # TODO user with key name "1" will be confused with user with key id 1
@@ -58,10 +59,11 @@ class GetUpdate(RequestHandler):
       peer_userchat_key = get_peer_userchat_key(userchat_key)
       peer_status = self.fetcher.get(db.Key.from_path('UserStatus', peer_userchat_key.parent().id_or_name()))
       if message:
+        message = escape(message[:400]).replace("\n", "<br/>")
         msg = models.Message(chat = chat_key, message_string = message, sender = userchat_key)
         db.put(msg)
         db.run_in_transaction(update_recipient_user, peer_userchat_key, self.now, msg.key().id_or_name())
-      if message or chat_id in self.user.unread and self.timestamp < self.user.unread[chat_id]['last_timestamp']:
+      if message or (chat_id in self.user.unread and self.timestamp < self.user.unread[chat_id]['last_timestamp']):
         new_messages_query = db.Query(models.Message).filter('chat =', chat_key).order('date_time')
         new_messages_query.with_cursor(start_cursor=cursor)
         template_values = {
@@ -69,7 +71,7 @@ class GetUpdate(RequestHandler):
           "messages" : [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in new_messages_query],
         }
         path = os.path.join(os.path.dirname(__file__), '_messages.html')
-        self.update['messages_html'] = template.render(path, template_values)
+        self.update['messages_html'] = template.render(path, template_values).decode('utf-8')
         self.update['cursor'] = str(new_messages_query.cursor())
       peer_idle_time = common.get_user_idle_time(peer_status)
       self.update['status_class'] = common.get_status_class(peer_idle_time)
@@ -78,10 +80,10 @@ class GetUpdate(RequestHandler):
     return self.update
 
   def get(self):
-    self.response.headers['Content-Type'] = 'application/json'
+    self.response.headers['Content-Type'] = 'application/json; charset=utf-8'
     self.response.out.write(simplejson.dumps(self.get_update()))
   def post(self):
-    self.response.headers['Content-Type'] = 'application/json'
+    self.response.headers['Content-Type'] = 'application/json; charset=utf-8'
     self.response.out.write(simplejson.dumps(self.get_update()))
 
 class UpdateContext(RequestHandler):

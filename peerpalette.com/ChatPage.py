@@ -51,8 +51,6 @@ class ChatPage(RequestHandler):
     peer_key = common.get_ref_key(userchat, 'peer_userchat').parent()
     peer_status = self.fetcher.get(db.Key.from_path('UserStatus', peer_key.id_or_name()))
 
-    self.update['cursor'] = str(q.cursor())
-
     idle_time = common.get_user_idle_time(peer_status)
 
     self.template_values["peer_username"] = models.User.get_username(peer_key)
@@ -60,6 +58,8 @@ class ChatPage(RequestHandler):
     self.template_values["title"] = userchat.title
     self.template_values["userchat_key"] = userchat.key()
     self.template_values["messages"] = [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in messages]
+
+    self.update['cursor'] = str(q.cursor())
 
     self.render_page('ChatPage.html')
 

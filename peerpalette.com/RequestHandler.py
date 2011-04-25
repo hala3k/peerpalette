@@ -156,17 +156,21 @@ class RequestHandler(webapp.RequestHandler):
 
 def _get_user(user_key, read_chat_id, read_timestamp):
   user = models.User.get(user_key)
-  old_timestamp = None
-  if read_chat_id in user.unread:
+  if read_chat_id is None:
+    return user
+  elif read_chat_id in user.unread:
+    old_timestamp = None
     try:
       old_timestamp = user.unread[read_chat_id]['read_timestamp']
+      if old_timestamp >= user.unread[read_chat_id]['last_timestmap']:
+        return user, old_timestamp
     except KeyError:
       pass
-    user.unread[read_chat_id]['read_timestamp'] = read_timestamp
-  common.clear_old_unread_messages(user.unread)
-  user.put()
-
-  return user, old_timestamp
+    user.unread[read_chat_id]['read_timestamp'] = user.unread[read_chat_id]['last_timestamp']
+    common.clear_old_unread_messages(user.unread)
+    user.put()
+    return user, old_timestamp
+  return user, None
 
 def cookie_encode(v):
   from urllib import quote_plus

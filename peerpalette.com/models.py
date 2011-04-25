@@ -77,8 +77,8 @@ class UserChat(db.Model):
 
 class Message(db.Model):
   chat = db.ReferenceProperty(Chat)
-  sender = db.ReferenceProperty(UserChat)
-  message_string = db.TextProperty()
+  sender = db.ReferenceProperty(UserChat, indexed = False)
+  message_string = db.StringProperty(indexed = False)
   date_time = db.DateTimeProperty(auto_now_add = True)
 
 class RandomChatQueue(db.Model):
