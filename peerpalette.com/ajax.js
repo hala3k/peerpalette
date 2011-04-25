@@ -128,10 +128,12 @@ function request_update(msg) {
 
       request_timeout = setTimeout("request_update();", timeout);
     },
-    error: function(er, textStatus, errorThrown){
-      $("#log").append('<div class="error"><b>error</b>: Could not connect to server.</div>');
-      $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
-      request_timeout = setTimeout("request_update();", 3000);
+    error: function(jqxhr, textStatus, errorThrown) {
+      if (jqxhr.status != 0) {
+        $("#log").append('<div class="error"><b>Error</b>: Could not connect to server (' + jqxhr.status + ').</div>');
+        $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
+        request_timeout = setTimeout("request_update();", 3000);
+      }
     }
   });
 }
