@@ -61,14 +61,16 @@ def get_user_status(user_keys):
 def get_user_context(user_key, cache_duration = 300):
   m = memcache.get("user_%s_context" % user_key.id_or_name())
   if m is None:
-    m = models.UserContext.get_by_key_name(str(user_key.id_or_name()))
+    context_key = db.Key.from_path('UserContext', user_key.id_or_name())
+    m = models.UserContext.get(context_key)
     if m is None:
-      m = models.UserContext(key_name = str(user_key.id_or_name()), context = None)
+      m = models.UserContext(key = context_key, context = None)
     memcache.set("user_%s_context" % user_key.id_or_name(), m, cache_duration)
   return m.context
 
 def set_user_context(user_key, context, cache_duration = 300):
-  m = models.UserContext(key_name = str(user_key.id_or_name()), context = context)
+  context_key = db.Key.from_path('UserContext', user_key.id_or_name())
+  m = models.UserContext(key = context_key, context = context)
   m.put()
   memcache.set("user_%s_context" % user_key.id_or_name(), m, cache_duration)
 
