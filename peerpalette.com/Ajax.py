@@ -60,11 +60,11 @@ class GetUpdate(RequestHandler):
       peer_status = self.fetcher.get(db.Key.from_path('UserStatus', peer_userchat_key.parent().id_or_name()))
       if message:
         message = escape(message[:400]).replace("\n", "<br/>")
-        msg = models.Message(chat = chat_key, message_string = message, sender = userchat_key)
+        msg = models.Message(parent = chat_key, message_string = message, sender = userchat_key)
         db.put(msg)
         db.run_in_transaction(update_recipient_user, peer_userchat_key, self.now, msg.key().id_or_name())
       if message or (chat_id in self.user.unread and self.timestamp < self.user.unread[chat_id]['last_timestamp']):
-        new_messages_query = db.Query(models.Message).filter('chat =', chat_key).order('date_time')
+        new_messages_query = db.Query(models.Message).ancestor(chat_key).order('date_time')
         new_messages_query.with_cursor(start_cursor=cursor)
         template_values = {
           "username" : self.user.username(),

@@ -11,8 +11,8 @@ indexes:
 # your application using appcfg.py.
 
 - kind: Message
+  ancestor: yes
   properties:
-  - name: chat
   - name: date_time
 
 - kind: Query

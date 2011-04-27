@@ -67,7 +67,7 @@ class Chat(db.Model):
   create_time = db.DateTimeProperty(auto_now = True)
 
 class UserChat(db.Model):
-  # parent: user
+  # parent: User
   # id or key_name: Chat id or key_name
   name = db.StringProperty(required = True)
   peer_userchat = db.SelfReferenceProperty()
@@ -76,7 +76,7 @@ class UserChat(db.Model):
   last_updated = db.DateTimeProperty()
 
 class Message(db.Model):
-  chat = db.ReferenceProperty(Chat)
+# parent: Chat
   sender = db.ReferenceProperty(UserChat, indexed = False)
   message_string = db.StringProperty(indexed = False)
   date_time = db.DateTimeProperty(auto_now_add = True)

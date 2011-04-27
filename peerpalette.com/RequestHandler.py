@@ -112,7 +112,7 @@ class RequestHandler(webapp.RequestHandler):
           background_messages = []
           for message_id, message_timestamp in details['messages']:
             if self.timestamp < message_timestamp:
-              background_messages.append(self.fetcher.get(db.Key.from_path('Message', message_id)))
+              background_messages.append(self.fetcher.get(db.Key.from_path('Chat', chat_id, 'Message', message_id)))
           if background_messages:
             self.background_messages = background_messages
 
