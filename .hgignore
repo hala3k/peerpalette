@@ -1,0 +1,7 @@
+syntax: glob
+
+*.pyc
+*~
+peerpalette.com/static/*.css
+peerpalette.com/static/*.js
+peerpalette.com/.sass-cache
