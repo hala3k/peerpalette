@@ -39,6 +39,7 @@ class UserContext(db.Model):
   context = db.TextProperty()
 
 class OnlineUser(db.Model):
+  # key id or name: User
   pass
 
 class Login(db.Model):
@@ -58,10 +59,10 @@ class Query(db.Model):
   date_time = db.DateTimeProperty(auto_now_add = True)
 
 class QueryIndex(db.Model):
-  # parent: Query
-  keyword_hashes = db.ListProperty(item_type = long)
-  age_index = db.IntegerProperty(default = 0)
-  date_time = db.DateTimeProperty(auto_now = True)
+  # parent: root
+  # key name: timestamp <timestamp> <User id or name> <Query id or name>
+  query = db.ReferenceProperty(Query, required = True)
+  keyword_hashes = db.ListProperty(item_type = long, required = True)
 
 class Chat(db.Model):
   create_time = db.DateTimeProperty(auto_now = True)

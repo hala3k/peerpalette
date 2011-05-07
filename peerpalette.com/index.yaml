@@ -21,11 +21,6 @@ indexes:
   - name: date_time
     direction: desc
 
-- kind: QueryIndex
-  properties:
-  - name: age_index
-  - name: date_time
-
 - kind: UserChat
   ancestor: yes
   properties:

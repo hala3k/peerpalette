@@ -14,11 +14,6 @@ STATUS_INACTIVE = 2
 
 RANDOM_CHAT_WAIT = 2
 
-TOTAL_RESULTS = 100
-
-AGE_INDEX_THRESHOLDS = {0 : timedelta(days = 2), 1 : timedelta(days = 9), 2 : timedelta(days = 40)}
-AGE_INDEX_STEPS = len(AGE_INDEX_THRESHOLDS)
-
 REQUEST_TIMESTAMP_PADDING = timedelta(seconds = 3)
 
 OPEN_CHAT_THRESHOLD = timedelta(seconds = 3)

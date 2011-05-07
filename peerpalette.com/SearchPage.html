@@ -21,6 +21,11 @@
     {% endif %}
   </div>
   {% endfor %}
+  {% if cursor %}
+    <div style="margin-top:1em">
+      <a href="/search?q={{query}}&cursor={{cursor}}">More...</a>
+    </div>
+  {% endif %}
 {% else %}
   <span style="color: red;">Nothing here yet. But someone will find you when they search for this topic in the future. Meanwhile, why not enjoy a <a href="/random" onclick="random_chat_start(true);return false;">random chat</a>?</span>
 {% endif %}

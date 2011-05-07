@@ -18,9 +18,8 @@ def get_keyword_hashes(clean_string, limit = config.MAX_KEYWORDS):
 def clean_query_string(q):
   return remove_nonspacing_marks(q).lower()
 
-def get_search_query(keyword_hashes, age_index):
-  results = db.Query(models.QueryIndex)
-  results.filter('age_index =', age_index)
+def get_search_query(keyword_hashes):
+  results = db.Query(models.QueryIndex, keys_only = True)
   for k in keyword_hashes:
     results.filter('keyword_hashes =', k)
 

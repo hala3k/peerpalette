@@ -13,6 +13,34 @@ import os
 import hashlib
 import base64
 
+# Source: http://stackoverflow.com/questions/561486/how-to-convert-an-integer-to-the-shortest-url-safe-string-in-python
+import string
+ALPHABET = '-' + string.digits + string.ascii_uppercase + '_' + string.ascii_lowercase
+ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
+BASE = len(ALPHABET)
+SIGN_CHARACTER = '$'
+def num_encode(n, digits = None):
+  if n < 0:
+    return SIGN_CHARACTER + num_encode(-n, digits)
+  s = []
+  while True:
+    n, r = divmod(n, BASE)
+    s.append(ALPHABET[r])
+    if n == 0: break
+  if digits is not None:
+    if len(s) > digits:
+      s = s[0-digits:]
+    elif len(s) < digits:
+      s.extend([ALPHABET[0]] * (digits-len(s)))
+  return ''.join(reversed(s))
+def num_decode(s):
+  if s[0] == SIGN_CHARACTER:
+    return -num_decode(s[1:])
+  n = 0
+  for c in s:
+    n = n * BASE + ALPHABET_REVERSE[c]
+  return n
+
 def get_online_users():
   u = memcache.get('online_users')
   if not u:
@@ -101,7 +129,7 @@ def get_hash(string):
   hsh = base64.urlsafe_b64encode(hashlib.md5(string.encode('utf-8')).digest())
   return hsh.rstrip('=')
 
-def get_query_key_name(clean_string):
+def get_query_hash(clean_string):
   return get_hash(clean_string)
 
 def xor(hash1, hash2):
@@ -115,22 +143,6 @@ def get_chat_key_name(user_key_1, user_key_2):
 
 def get_ref_key(inst, prop_name):
   return getattr(inst.__class__, prop_name).get_value_for_datastore(inst)
-
-def calc_query_rating(user_idle_time, query_time):
-  if user_idle_time < config.OFFLINE_THRESHOLD:
-    u = 1
-  elif user_idle_time < config.INACTIVE_THRESHOLD:
-    u = 0.5
-  else:
-    u = 0
-
-  timediff = datetime.datetime.now() - query_time
-  a = min(timediff.days / 30, 1)
-
-  rating = (u * 0.7)
-  rating += (1 - a) * 0.3
-
-  return rating
 
 def create_chat(query_1 = None, query_2 = None, user_key_1 = None, user_key_2 = None, title_1 = None, title_2 = None):
   if query_1 is not None:
@@ -162,4 +174,25 @@ def create_chat(query_1 = None, query_2 = None, user_key_1 = None, user_key_2 = 
   db.put([chat, userchat_1, userchat_2])
 
   return userchat_1, userchat_2
+
+def encode_if_num(s):
+  if isinstance(s, (int, long)):
+    return "#%d" % s
+  return s
+
+def decode_if_num(s):
+  if s[0] == '#':
+    return long(s[1:])
+  return s
+
+def encode_query_index_key_name(query_key):
+  td = datetime.datetime(2040, 1, 1) - datetime.datetime.now()
+  timestamp = num_encode(td.seconds + (td.days * 24 * 3600), 5)
+  query_id = encode_if_num(query_key.id_or_name())
+  username = encode_if_num(query_key.parent().id_or_name())
+  return "%s %s %s" % (timestamp, username, query_id)
+
+def decode_query_index_key_name(key_name):
+  timestamp, username, query_id = key_name.split()
+  return db.Key.from_path('User', decode_if_num(username), 'Query', decode_if_num(query_id))
 
