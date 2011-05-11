@@ -55,7 +55,8 @@ class GetUpdate(RequestHandler):
       message = self.request.get("message", None)
 
       chat_key = db.Key.from_path('Chat', chat_id)
-      cursor = self.request.get("cursor", None)
+      chat_timestamp = common.str2datetime(self.request.get('chat_timestamp'))
+
       peer_userchat_key = get_peer_userchat_key(userchat_key)
       peer_status = self.fetcher.get(db.Key.from_path('UserStatus', peer_userchat_key.parent().id_or_name()))
       if message:
@@ -64,15 +65,17 @@ class GetUpdate(RequestHandler):
         db.put(msg)
         db.run_in_transaction(update_recipient_user, peer_userchat_key, self.now, msg.key().id_or_name())
       if message or (chat_id in self.user.unread and self.timestamp < self.user.unread[chat_id]['last_timestamp']):
-        new_messages_query = db.Query(models.Message).ancestor(chat_key).order('date_time')
-        new_messages_query.with_cursor(start_cursor=cursor)
+        new_messages = db.Query(models.Message).ancestor(chat_key).filter('date_time >', chat_timestamp).order('-date_time').fetch(10)
+        self.update['chat_timestamp'] = str(new_messages[0].date_time)
+        new_messages.reverse()
+
         template_values = {
           "username" : self.user.username(),
-          "messages" : [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in new_messages_query],
+          "messages" : [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in new_messages],
         }
         path = os.path.join(os.path.dirname(__file__), '_messages.html')
         self.update['messages_html'] = template.render(path, template_values).decode('utf-8')
-        self.update['cursor'] = str(new_messages_query.cursor())
+
       peer_idle_time = common.get_user_idle_time(peer_status)
       self.update['status_class'] = common.get_status_class(peer_idle_time)
 

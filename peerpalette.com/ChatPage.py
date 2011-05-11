@@ -1,6 +1,7 @@
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 
+import config
 import models
 import common
 from RequestHandler import RequestHandler
@@ -45,11 +46,14 @@ class ChatPage(RequestHandler):
     self.init(userchat.key().id_or_name())
 
     chat_key = db.Key.from_path('Chat', userchat.key().id_or_name())
-    q = db.Query(models.Message, keys_only = True).ancestor(chat_key).order('date_time')
-    messages_keys = q.fetch(500)
-    messages = self.fetcher.get(messages_keys[-20:]) # Get latest 20 messages
+    messages = db.Query(models.Message).ancestor(chat_key).order('-date_time').fetch(config.CHAT_HISTORY_MESSAGE_COUNT)
 
-    # TODO put old messages in blogstore if there's more than say 30
+    try:
+      chat_timestamp = messages[0].date_time
+    except IndexError:
+      chat_timestamp = self.timestamp
+
+    messages.reverse()
 
     peer_key = common.get_ref_key(userchat, 'peer_userchat').parent()
     peer_status = self.fetcher.get(db.Key.from_path('UserStatus', peer_key.id_or_name()))
@@ -60,9 +64,9 @@ class ChatPage(RequestHandler):
     self.template_values["peer_status_class"] = common.get_status_class(idle_time)
     self.template_values["title"] = userchat.title
     self.template_values["userchat_key"] = userchat.key()
-    self.template_values["messages"] = [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg.get_model(), 'sender').parent())} for msg in messages]
+    self.template_values["messages"] = [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in messages]
 
-    self.update['cursor'] = str(q.cursor())
+    self.update['chat_timestamp'] = str(chat_timestamp)
 
     self.render_page('ChatPage.html')
 

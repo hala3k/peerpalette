@@ -115,8 +115,8 @@ function request_update(msg) {
     timeout = 1000;
   }
 
-  if (typeof update["cursor"] != "undefined")
-    data["cursor"] = update["cursor"];
+  if (typeof update["chat_timestamp"] != "undefined")
+    data["chat_timestamp"] = update["chat_timestamp"];
 
   update_request = $.ajax({
     url: "/getupdate",

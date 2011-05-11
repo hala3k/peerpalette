@@ -14,6 +14,7 @@ indexes:
   ancestor: yes
   properties:
   - name: date_time
+    direction: desc
 
 - kind: Query
   ancestor: yes
