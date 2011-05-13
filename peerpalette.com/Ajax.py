@@ -94,5 +94,5 @@ class UpdateContext(RequestHandler):
     context = self.request.get("context").strip()
     user_key = common.get_current_user_key()
     common.set_user_context(user_key, context)
-    self.response.out.write(context if context else "<click to add a personal message>")
+    self.response.out.write(context if context else "<click to type a public message>")
 

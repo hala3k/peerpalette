@@ -8,7 +8,7 @@ $(document).ready(function() {
     random_chat_start(true);
     return false;
   });
-  $("#context").autoResize({extraSpace: 0});
+  $("#context").autoResize({extraSpace: 0, limit : 80});
   $("#context").trigger("change");
 });
 
@@ -57,10 +57,7 @@ function context_save() {
 {% endblock headtags %}
 {% block content %}
 <div id="content" style="padding: 10px;font-family:sans-serif;color:#444444;">
-  <p>
-    Peerpalette is a new way to chat with other citizens of the Internet anonymously about topics that matter to you. Simply enter your search query to start chatting with interesting people. There are <b>{{num_online_users}} interesting people online right now</b>.
-  </p>
-  <div style="text-align:center;margin-top:50px;">
+  <div style="text-align:center;margin-top:30px;">
   {% include "_search.html" %}
   </div>
   <div style="text-align:center;margin:5px;color:#777">
@@ -69,19 +66,21 @@ function context_save() {
   <div style="text-align:center;">
     <a id="random" href="/random" class="button blue" style="padding-top: .8em; padding-bottom: .8em;">Random Chat</a>
   </div>
-  <div style="margin-bottom: 10px;">
-    <b>Present yourself:</b>
-    <div><textarea id="context" style="width:100%;height:1em;" class="context-view" readonly=true onkeypress="context_edit();" onclick="context_edit();">{{context|escape}}</textarea></div>
-    <div id="context-buttons" style="display:none;">
-      <a href="#" onclick="context_cancel();return false;" style="font-size:10px;">Cancel</a>
-      <a href="#" onclick="context_save();return false;" style="font-size:10px;">Save</a>
+  <div style="margin-top: 10px;">
+    <span style="font-size: 14px; font-weight: bold;">What are you up to?</span>
+    <div><textarea id="context" style="width:100%;height: 1em;" class="context-view" readonly=true onkeypress="context_edit();" onclick="context_edit();">{{context|escape}}</textarea></div>
+    <div style="height: 20px;">
+      <div id="context-buttons" style="display:none;">
+        <a href="#" onclick="context_cancel();return false;" style="font-size:10px;">Cancel</a>
+        <a href="#" onclick="context_save();return false;" style="font-size:10px;">Save</a>
+      </div>
     </div>
   </div>
   <div>
-    <b>Suggested topics:</b>
+    <span style="font-size: 14px; font-weight: bold;">Hot searches</span>
     <br/>
-    {% for t in topics %}
-      <a href="/search?q={{t|urlencode}}" style="margin-right:0.5em;">{{t|escape}}</a>
+    {% for t in recent_searches %}
+      <a href="/search?q={{t.query_string|urlencode}}" style="margin-right:0.5em;">{{t.query_string|escape}}</a>
     {% endfor %}
   </div>
   {% if conversations %}

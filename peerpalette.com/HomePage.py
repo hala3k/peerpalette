@@ -5,8 +5,6 @@ import common
 import models
 from RequestHandler import RequestHandler
 
-import random
-
 def get_num_online_users():
   num = memcache.get('num_online_users')
   if num is None:
@@ -18,9 +16,12 @@ def get_num_online_users():
 class HomePage(RequestHandler):
   def get(self):
     self.init()
-    topics = ['Photography', 'Art', 'Music', 'Politics', 'Humor', 'Fashion', 'Writing', 'Travel', 'Food', 'Technology', 'Culture', 'Social Media', 'Books', 'Business', 'Health', 'Love', 'Religion', 'Parenting', 'Entertainment', 'Life', 'Comics']
 
-    random.shuffle(topics)
+    recent_searches_query = db.Query(models.RecentSearch).order('-online_count')
+
+    recent_searches = []
+    for r in recent_searches_query.fetch(10):
+      recent_searches.append({'query_string' : r.query_string, 'online_count' : r.online_count})
 
     conversations = []
     for i in self.user.unread:
@@ -41,10 +42,10 @@ class HomePage(RequestHandler):
 
     context = common.get_user_context(self.user.key())
     if not context:
-      context = "<click to add a personal message>"
+      context = "<click to type a public message>"
 
     self.template_values['context'] = context
-    self.template_values['topics'] = topics
+    self.template_values['recent_searches'] = recent_searches
     self.template_values['conversations'] = conversations_value
     self.template_values['num_online_users'] = get_num_online_users()
 

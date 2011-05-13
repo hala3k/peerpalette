@@ -58,10 +58,13 @@ class SearchPage(RequestHandler):
     results = self.fetcher.get(result_keys)
 
     result_values = []
+    online_count = 1
     for r in results:
       user_key = r.parent_key()
       idle_time = common.get_user_idle_time(users_status[user_key].get_model())
       status_class = common.get_status_class(idle_time)
+      if status_class == 'online':
+        online_count += 1
 
       v = {
         'query' : r.query_string,
@@ -85,7 +88,10 @@ class SearchPage(RequestHandler):
 
     query = models.Query(key = query_key, query_string = q, context = context_text)
     index = models.QueryIndex(key_name = common.encode_query_index_key_name(query_key), query = query_key, keyword_hashes = keyword_hashes)
-    db.put([query, index])
+
+    recent_query = models.RecentSearch(key_name = query_key.name(), query_string = q, online_count = online_count)
+
+    db.put([query, index, recent_query])
 
     self.template_values["results"] = result_values
     self.template_values["key"] = query.key()
