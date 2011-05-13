@@ -79,6 +79,7 @@ Peerpalette is a new way for one-on-one chat with strangers. Enter your search t
       </div>
     </div>
   </div>
+{% if recent_searches %}
   <div>
     <span style="font-size: 14px; font-weight: bold;">Hot searches</span>
     <br/>
@@ -99,5 +100,6 @@ Peerpalette is a new way for one-on-one chat with strangers. Enter your search t
   </div>
   {% endif %}
 </div>
+{% endif %}
 {% endblock content%}
 

@@ -3,3 +3,7 @@ cron:
   url: /cleanup_online_users
   schedule: every 1 minutes
 
+- description: remove old items from recent searches
+  url: /cleanup_recent_searches
+  schedule: every 1 minutes
+
