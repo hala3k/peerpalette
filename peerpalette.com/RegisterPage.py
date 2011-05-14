@@ -6,6 +6,8 @@ import common
 import models
 from RequestHandler import RequestHandler
 
+import re
+
 class RegisterPage(RequestHandler):
   def get(self):
     link_type = self.request.get("link_type", None)
@@ -20,7 +22,7 @@ class RegisterPage(RequestHandler):
     self.render_page("RegisterPage.html")
 
   def post(self):
-    username = self.request.get("username", None).strip()
+    username = self.request.get("username", None)
     password = self.request.get("password", None)
     verify_password = self.request.get("verify_password", None)
     link_type = self.request.get("link_type", None)
@@ -36,21 +38,21 @@ class RegisterPage(RequestHandler):
 
     m = db.Query(models.Login).filter('username =', username).get()
 
-    if not password:
-      error_message = "Password can not be empty."
-
-    if password != verify_password:
-      error_message = "Passwords do not match"
-
     if m is not None:
       error_message = "Username is taken. Please choose another one."
-
-    if not username:
+    elif not re.match("^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*$", username):
+      error_message = "Invalid username. Please choose another one."
+    elif len(username) < 6 or len(username) > 20:
+      error_message = "Username should be between 6 and 20 characters long."
+    elif password != verify_password:
+      error_message = "Passwords do not match"
+    elif not password:
+      error_message = "Password can not be empty."
+    elif not username:
       error_message = "Please enter your desired username."
 
     if error_message:
       self.init()
-      self.template_values["username"] = user.username()
       self.template_values["login_username"] = username
       self.template_values["message"] = error_message
       self.template_values["link_type"] = link_type
