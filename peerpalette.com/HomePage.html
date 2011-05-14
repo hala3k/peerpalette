@@ -58,10 +58,10 @@ function context_save() {
 {% block content %}
 <div id="content" style="padding: 10px;font-family:sans-serif;color:#444444;">
   <div style="float: right;color: #080;font-weight:bold;margin-right:10px;">
-  {{num_online_users}} users online now
+  {{num_online_users}} people online now
   </div>
   <div>
-Peerpalette is a new way for one-on-one chat with strangers. Search by topic or let us pick someone at random for you.
+Peerpalette<sup>(beta)</sup> is a new website for one-on-one chatting with strangers. Search by topic or let us pick someone at random for you.
   <div>
   <div style="text-align:center;margin-top:30px;">
   {% include "_search.html" %}
@@ -82,6 +82,17 @@ Peerpalette is a new way for one-on-one chat with strangers. Search by topic or 
       </div>
     </div>
   </div>
+{% if conversations %}
+  <div style="margin-bottom: 20px;">
+    <span style="font-size: 14px; font-weight: bold;">New messages</span>
+    <br/>
+    {% for conversation in conversations %}
+    <div>
+      <div><b><a href="/chat/{{conversation.name}}" class="{{conversation.status_class}}">{{conversation.username}}</a></b><span style="color:#888;"> &mdash; {{conversation.title|escape}}</span></div>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
 {% if recent_searches %}
   <div>
     <span style="font-size: 14px; font-weight: bold;">Hot searches</span>
@@ -90,19 +101,7 @@ Peerpalette is a new way for one-on-one chat with strangers. Search by topic or 
       <a href="/search?q={{t.query_string|urlencode}}" style="margin-right:0.5em;">{{t.query_string|escape}}</a>
     {% endfor %}
   </div>
-  {% if conversations %}
-  <div>
-    <br/>
-    <b>New messages:</b>
-    <br/>
-    {% for conversation in conversations %}
-    <div>
-      <div><b><a href="/chat/{{conversation.name}}" class="{{conversation.status_class}}">{{conversation.username}}</a></b><span style="color:#888;"> &mdash; {{conversation.title|escape}}</span></div>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-</div>
 {% endif %}
+</div>
 {% endblock content%}
 

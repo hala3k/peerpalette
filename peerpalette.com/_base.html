@@ -32,14 +32,14 @@
 {% else %}
           <span id="username" class="menuitem" href="/">{{username}} (<a href="/logout">logout</a>)</span>
 {% endif %}
-          <a id="inbox" class="menuitem" href="/inbox">
+          <a id="inbox" class="menuitem" href="/chats">
 {% ifnotequal unread_count 0 %}
-          <b>inbox ({{unread_count}})</b>
+          <b>my chats ({{unread_count}})</b>
 {% else %}
-          inbox
+          my chats
 {% endifnotequal %}
           </a>
-          <a id="history" class="menuitem" href="/history">history</a>
+          <a id="history" class="menuitem" href="/searches">my searches</a>
           <a id="feedback" class="menuitem" href="/feedback">feedback</a>
       </div>
     </div>

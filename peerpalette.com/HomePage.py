@@ -10,7 +10,7 @@ def get_num_online_users():
   if num is None:
     from google.appengine.ext import db
     num = models.OnlineUser.all(keys_only = True).count()
-    memcache.set('num_online_users', num, 60)
+    memcache.set('num_online_users', num, 30)
   return num
 
 class HomePage(RequestHandler):
