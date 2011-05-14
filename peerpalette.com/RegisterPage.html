@@ -26,6 +26,11 @@ $(document).ready(function() {
           </td>
         </tr>
         <tr>
+          <td colspan=2>
+<span style="font-size: 12px;font-weight:bold;">Usernames are public. Choose wisely.</span>
+          </td>
+        </tr>
+        <tr>
           <td style="text-align:right">
             <label for="password">password</label>
           </td>
@@ -41,8 +46,21 @@ $(document).ready(function() {
             <input id="verify_password" type="password" name="verify_password" />
           </td>
         </tr>
+        <tr>
+          <td style="text-align:right">
+            <label for="email">email (optional)</label>
+          </td>
+          <td>
+            <input id="email" type="text" name="email" value="{{email}}" />
+          </td>
+        </tr>
+        <tr>
+          <td colspan=2>
+<span style="font-size: 12px;font-weight:bold;">Email is only for sending offline notifications. Nothing more.</span>
+          </td>
+        </tr>
       </table>
-      <input type="submit" value="Register" class="button"/>
+      <input type="submit" value="Finish Registration" class="button"/>
     </form>
   </div>
 </div>

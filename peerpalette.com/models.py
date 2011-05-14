@@ -46,6 +46,7 @@ class Login(db.Model):
   user = db.ReferenceProperty(User)
   username = db.StringProperty(required = True)
   password_hash = db.StringProperty(required = True)
+  email = db.StringProperty()
 
 class GoogleLogin(db.Model):
   google_user = db.UserProperty()
