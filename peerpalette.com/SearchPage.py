@@ -16,20 +16,13 @@ class SearchPage(RequestHandler):
       self.redirect("/")
       return
 
-    cursor = self.request.get('cursor')
-
     self.init()
 
     clean_string = search.clean_query_string(q)
     query_hash = common.get_query_hash(clean_string)
 
     query_key = db.Key.from_path('Query', query_hash, parent = self.user.key())
-    existing_query = self.fetcher.get(db.Key.from_path('User', self.user.key().id_or_name(), 'Query', query_hash)).get_model()
-
-    if existing_query is not None:
-      # TODO delete using transaction
-      existing_index = db.Query(models.QueryIndex, keys_only = True).filter('query =', existing_query).get()
-      db.delete([existing_query, existing_index])
+    existing_query = self.fetcher.get(query_key)
 
     keyword_hashes = search.get_keyword_hashes(clean_string)
     search_hashes = keyword_hashes[:config.MAX_SEARCH_KEYWORDS]
@@ -37,14 +30,19 @@ class SearchPage(RequestHandler):
     context = self.fetcher.get(db.Key.from_path('UserContext', self.user.key().id_or_name()))
 
     search_query = search.get_search_query(search_hashes)
-    if cursor is not None:
-      search_query.with_cursor(cursor)
+    cur = self.request.get('cursor')
+    if cur is not None:
+      search_query.with_cursor(cur)
 
     result_keys = []
     existing_chats = {}
     users_status = {}
 
-    for k in search_query:
+    res_keys = search_query.fetch(config.ITEMS_PER_PAGE)
+    if len(res_keys) >= config.ITEMS_PER_PAGE:
+      cursor = search_query.cursor()
+
+    for k in res_keys:
       q_key = common.decode_query_index_key_name(k.name())
       user_key = q_key.parent()
       if user_key != self.user.key():
@@ -52,8 +50,6 @@ class SearchPage(RequestHandler):
         chat_key_name = common.get_chat_key_name(self.user.key(), user_key)
         existing_chats[user_key] = self.fetcher.get(db.Key.from_path('User', self.user.key().id_or_name(), 'UserChat', chat_key_name))
         users_status[user_key] = self.fetcher.get(db.Key.from_path('UserStatus', user_key.id_or_name()))
-        if len(result_keys) >= config.ITEMS_PER_PAGE:
-          break
 
     results = self.fetcher.get(result_keys)
 
@@ -86,18 +82,28 @@ class SearchPage(RequestHandler):
       context_text = context.context
       keyword_hashes = list(keyword_hashes + search.get_keyword_hashes(search.clean_query_string(context_text)))[:config.MAX_KEYWORDS]
 
-    query = models.Query(key = query_key, query_string = q, context = context_text)
+    query = existing_query.get_model()
+    if query is not None:
+      existing_index = db.Query(models.QueryIndex, keys_only = True).filter('query =', query).get()
+      if existing_index is not None:
+        db.delete(existing_index)
+      query.query_string = q
+      query.context = context_text
+      query.date_time = self.now
+    else:
+      query = models.Query(key = query_key, query_string = q, context = context_text, date_time = self.now)
+
     index = models.QueryIndex(key_name = common.encode_query_index_key_name(query_key), query = query_key, keyword_hashes = keyword_hashes)
-
     recent_query = models.RecentSearch(key_name = query_key.name(), query_string = q, online_count = online_count)
-
     db.put([query, index, recent_query])
 
     self.template_values["results"] = result_values
     self.template_values["key"] = query.key()
     self.template_values["query"] = q
-    if len(result_values) >= config.ITEMS_PER_PAGE:
-      self.template_values["cursor"] = search_query.cursor()
+    try:
+      self.template_values["cursor"] = cursor
+    except NameError:
+      pass
 
     self.render_page('SearchPage.html')
 
