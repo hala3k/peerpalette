@@ -83,7 +83,7 @@ class RegisterPage(RequestHandler):
     user.put()
     login = models.Login(user = user, username = username, password_hash = password_hash)
     if validate_email(email):
-      google_login.email = email
+      login.email = email
     login.put()
 
     if google_user:

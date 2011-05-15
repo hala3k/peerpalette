@@ -9,6 +9,7 @@ from RequestHandler import RequestHandler
 
 import os
 from cgi import escape
+import time
 
 def get_peer_userchat_key(userchat_key):
   # TODO user with key name "1" will be confused with user with key id 1
@@ -63,8 +64,9 @@ class GetUpdate(RequestHandler):
         message = escape(message[:400]).replace("\n", "<br/>")
         msg = models.Message(parent = chat_key, message_string = message, sender = userchat_key)
         db.put(msg)
-        db.run_in_transaction(update_recipient_user, peer_userchat_key, self.now, msg.key().id_or_name())
-      if message or (chat_id in self.user.unread and self.timestamp < self.user.unread[chat_id]['last_timestamp']):
+        db.run_in_transaction(update_recipient_user, peer_userchat_key, msg.date_time, msg.key().id_or_name())
+        time.sleep(0.05)
+      if message or (chat_id in self.user.unread and chat_timestamp < self.user.unread[chat_id]['last_timestamp']):
         new_messages = db.Query(models.Message).ancestor(chat_key).filter('date_time >', chat_timestamp).order('-date_time').fetch(10)
         self.update['chat_timestamp'] = str(new_messages[0].date_time)
         new_messages.reverse()
