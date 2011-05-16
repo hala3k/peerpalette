@@ -55,7 +55,7 @@ function context_save() {
     data: ({context : text}),
     success: function(msg) {
       if (msg == "") {
-        $("#context").val("click to type a public message");
+        $("#context").val("Click to type a public message");
         $("#context").addClass('context-empty');
       }
       else {
