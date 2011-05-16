@@ -121,6 +121,12 @@ textarea.context-edit {
   @extend .shadowed;
   overflow: auto; }
 
+textarea.context-empty {
+  color: #0f4482;
+  &:hover {
+    cursor: pointer;
+    text-decoration: underline; } }
+
 #login {
   position: relative;
   #loginbox {

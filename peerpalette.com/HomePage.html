@@ -16,15 +16,27 @@ function context_edit() {
   c = $("#context[readonly]");
   if (c.length == 0)
     return;
-  context_text = $("#context").val();
+  if ($('#context').hasClass('context-empty')) {
+    context_text = "";
+    $('#context').val('');
+  }
+  else {
+    context_text = $("#context").val();
+  }
   $("#context-buttons").show();
   c.removeAttr('readonly');
-  c.removeClass('context-view').addClass('context-edit');
+  c.removeClass('context-view context-empty').addClass('context-edit');
   c.select();
 }
 
 function context_cancel() {
-  $("#context").val(context_text);
+  if (context_text == "") {
+    $("#context").val("Click to type a public message");
+    $("#context").addClass('context-empty');
+  }
+  else {
+    $("#context").val(context_text);
+  }
   $("#context").trigger("change");
   $("#context-buttons").hide();
   $("#context").attr('readonly','readonly');
@@ -42,7 +54,13 @@ function context_save() {
     type: "POST",
     data: ({context : text}),
     success: function(msg) {
-      $("#context").val(msg);
+      if (msg == "") {
+        $("#context").val("click to type a public message");
+        $("#context").addClass('context-empty');
+      }
+      else {
+        $("#context").val(msg);
+      }
       $("#context").trigger("change");
       $("#context-buttons").hide();
       $("#context").attr('readonly','readonly');
@@ -74,7 +92,7 @@ Peerpalette<sup>(beta)</sup> is a new website for one-on-one chatting with stran
   </div>
   <div style="margin-top: 10px;">
     <span style="font-size: 14px; font-weight: bold;">What are you up to?</span>
-    <div><textarea id="context" style="width:100%;height: 1em;" class="context-view" readonly=true onkeypress="context_edit();" onclick="context_edit();">{{context|escape}}</textarea></div>
+    <div><textarea id="context" style="width:100%;height: 1em;" class="context-view {% if not context %}context-empty{% endif %}" readonly=readonly onkeypress="context_edit();" onclick="context_edit();">{% if context %}{{context|escape}}{% else %}Click to type a public message{% endif %}</textarea></div>
     <div style="height: 20px;">
       <div id="context-buttons" style="display:none;">
         <a href="#" onclick="context_cancel();return false;" style="font-size:10px;">Cancel</a>

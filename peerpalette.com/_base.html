@@ -28,9 +28,9 @@
 
       <div id="menu">
 {% if anonymous %}
-          <span id="username" class="menuitem" href="/">{{username}} (<span id="login"><a href="/login">login</a>{% include "_loginbox.html" %}</span>/ <a href="/register">register</a>)</span>
+          <span id="username" class="menuitem">{{username}} (<span id="login"><a href="/login">login</a>{% include "_loginbox.html" %}</span>/ <a href="/register">register</a>)</span>
 {% else %}
-          <span id="username" class="menuitem" href="/">{{username}} (<a href="/logout">logout</a>)</span>
+          <span id="username" class="menuitem">{{username}} (<a href="/logout">logout</a>)</span>
 {% endif %}
           <a id="inbox" class="menuitem" href="/chats">
 {% ifnotequal unread_count 0 %}
@@ -40,14 +40,13 @@
 {% endifnotequal %}
           </a>
           <a id="history" class="menuitem" href="/searches">my searches</a>
-          <a id="feedback" class="menuitem" href="/feedback">feedback</a>
       </div>
     </div>
     {% block content %}
     {% endblock content %}
     {% block footer %}
       <div style="text-align:center; font-size:small;font-family:sans-serif;color:#444;">
-        &copy;2011 peerpalette.com | <a href="/privacy">Privacy</a> | <a href="http://www.facebook.com/pages/Peerpalette/131984143534795">Peerpalette on Facebook</a>
+        &copy;2011 peerpalette.com | <a href="/privacy">Privacy</a> | <a href="/feedback">Feedback</a> | <a href="http://www.facebook.com/pages/Peerpalette/131984143534795">Facebook Page</a>
     <div><img src="http://code.google.com/appengine/images/appengine-noborder-120x30.gif" 
 alt="Powered by Google App Engine" /></div>
       </div>

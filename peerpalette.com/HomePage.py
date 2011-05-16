@@ -9,8 +9,9 @@ def get_num_online_users():
   num = memcache.get('num_online_users')
   if num is None:
     from google.appengine.ext import db
-    num = models.OnlineUser.all(keys_only = True).count()
-    memcache.set('num_online_users', num, 30)
+    num = models.OnlineUser.all(keys_only = True).count(1000)
+    if num > 20:
+      memcache.set('num_online_users', num, 30)
   return num
 
 class HomePage(RequestHandler):
@@ -41,10 +42,9 @@ class HomePage(RequestHandler):
       conversations_value.append(c)
 
     context = common.get_user_context(self.user.key())
-    if not context:
-      context = "<click to type a public message>"
+    if context:
+      self.template_values['context'] = context
 
-    self.template_values['context'] = context
     self.template_values['recent_searches'] = recent_searches
     self.template_values['conversations'] = conversations_value
     self.template_values['num_online_users'] = get_num_online_users()
