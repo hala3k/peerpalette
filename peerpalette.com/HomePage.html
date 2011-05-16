@@ -92,7 +92,7 @@ Peerpalette<sup>(beta)</sup> is a new website for one-on-one chatting with stran
   </div>
   <div style="margin-top: 10px;">
     <span style="font-size: 14px; font-weight: bold;">What are you up to?</span>
-    <div><textarea id="context" style="width:100%;height: 1em;" class="context-view {% if not context %}context-empty{% endif %}" readonly=readonly onkeypress="context_edit();" onclick="context_edit();">{% if context %}{{context|escape}}{% else %}Click to type a public message{% endif %}</textarea></div>
+    <div><textarea id="context" style="width:100%;height: 1em;" class="context-view {% if not context %}context-empty{% endif %}" readonly=readonly onkeypress="context_edit();" onclick="context_edit();">{% if context %}{{context}}{% else %}Click to type a public message{% endif %}</textarea></div>
     <div style="height: 20px;">
       <div id="context-buttons" style="display:none;">
         <a href="#" onclick="context_cancel();return false;" style="font-size:10px;">Cancel</a>

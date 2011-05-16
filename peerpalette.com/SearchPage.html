@@ -17,13 +17,13 @@
     <div style="margin-right:0.5em;"><a href="/startchat?q={{key}}&q={{result.key}}" class="{{result.status_class}}">{{result.username}}</a><span style="color:#888;"> &mdash; {{result.query|escape}}</span></div>
     {% endif %}
     {% if result.context %}
-    <div style="padding-left:1em;color:#888;">{{result.context|escape}}</div>
+    <div style="padding-left:1em;color:#888;">{{result.context}}</div>
     {% endif %}
   </div>
   {% endfor %}
   {% if cursor %}
     <div style="margin-top:1em">
-      <a href="/search?q={{query}}&cursor={{cursor}}">More...</a>
+      <a href="/search?q={{query|urlencode}}&cursor={{cursor}}">More...</a>
     </div>
   {% endif %}
 {% else %}

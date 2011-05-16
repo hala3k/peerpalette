@@ -67,7 +67,7 @@ class SearchPage(RequestHandler):
         'key' : r.key(),
         'username' : models.User.get_username(user_key),
         'status_class' : status_class,
-        'context' : r.context,
+        'context' : common.htmlize_string(r.context),
       }
 
       if existing_chats[user_key].get_model() is not None:

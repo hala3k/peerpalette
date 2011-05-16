@@ -196,3 +196,10 @@ def decode_query_index_key_name(key_name):
   timestamp, username, query_id = key_name.split()
   return db.Key.from_path('User', decode_if_num(username), 'Query', decode_if_num(query_id))
 
+def sanitize_string(string, num_characters = 400, num_lines = 4):
+  return "\n".join(string[:num_characters].split("\n")[:num_lines])
+
+def htmlize_string(string):
+  from cgi import escape
+  return escape(string).replace("\n", "<br/>")
+
