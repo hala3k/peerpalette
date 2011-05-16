@@ -74,18 +74,13 @@ class RequestHandler(webapp.RequestHandler):
 
     last_been_online = memcache.get("last_been_online_%s" % self.user.key().id_or_name())
 
-    if last_been_online is None:
-      user_status = models.UserStatus.get(db.Key.from_path('UserStatus', self.user.key().id_or_name()))
-      if user_status:
-        last_been_online = user_status.last_been_online
-
-    if last_been_online is None or (self.now - last_been_online).seconds >= config.STATUS_UPDATE_THRESHOLD:
-      status_key = db.Key.from_path('UserStatus', self.user.key().id_or_name())
-      status = models.UserStatus(key = status_key)
-      status.put()
+    if last_been_online is None or (self.now - last_been_online).seconds > config.STATUS_UPDATE_THRESHOLD:
       memcache.set("last_been_online_%s" % self.user.key().id_or_name(), self.now, time = config.OFFLINE_THRESHOLD)
+      status_key = db.Key.from_path('UserStatus', self.user.key().id_or_name())
+      status = models.UserStatus(key = status_key, last_been_online = self.now)
+      status.put()
 
-    if last_been_online is None or (self.now - last_been_online).seconds >= config.OFFLINE_THRESHOLD:
+    if last_been_online is None:
       online_user_key = db.Key.from_path('OnlineUser', self.user.key().id_or_name())
       online_user = models.OnlineUser(key = online_user_key)
       online_user.put()
