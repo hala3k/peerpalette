@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /chat/
+Disallow: /chats
+Disallow: /searches
+Disallow: /startchat
+Disallow: /getupdate
+Disallow: /updatecontext
+Disallow: /logout
