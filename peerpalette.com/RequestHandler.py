@@ -61,10 +61,14 @@ class RequestHandler(webapp.RequestHandler):
       user_key = self.session["anon_user"]
 
     if user_key is not None:
-      if read_chat_id:
-        self.user, self.read_timestamp = db.run_in_transaction(_get_user, user_key, read_chat_id, self.now)
-      else:
-        self.user = models.User.get(user_key)
+      self.user = models.User.get(user_key)
+
+      if read_chat_id in self.user.unread:
+        try:
+          if self.user.unread[read_chat_id]['read_timestamp'] < self.user.unread[read_chat_id]['last_timestamp']:
+            self._update_read_timestamp(read_chat_id)
+        except KeyError:
+          self._update_read_timestamp(read_chat_id)
 
     if self.user is None:
       self.user = models.User()
@@ -149,23 +153,20 @@ class RequestHandler(webapp.RequestHandler):
     except AttributeError: pass
 
 
-def _get_user(user_key, read_chat_id, read_timestamp):
-  user = models.User.get(user_key)
-  if read_chat_id is None:
-    return user
-  elif read_chat_id in user.unread:
-    old_timestamp = None
+  def _update_read_timestamp(self, chat_id):
+    user = models.User.get(self.user.key())
     try:
-      old_timestamp = user.unread[read_chat_id]['read_timestamp']
-      if old_timestamp >= user.unread[read_chat_id]['last_timestmap']:
-        return user, old_timestamp
+      if 'read_timestamp' in user.unread[read_chat_id] and user.unread[read_chat_id]['read_timestamp'] < user.unread[read_chat_id]['last_timestmap']:
+        self.read_timestamp = user.unread[read_chat_id]['read_timestamp']
+
+      if 'read_timestamp' not in user.unread[read_chat_id] or user.unread[read_chat_id]['read_timestamp'] < user.unread[read_chat_id]['last_timestmap']:
+        user.unread[read_chat_id]['read_timestamp'] = user.unread[read_chat_id]['last_timestamp']
+        common.clear_old_unread_messages(user.unread)
+        user.put()
     except KeyError:
       pass
-    user.unread[read_chat_id]['read_timestamp'] = user.unread[read_chat_id]['last_timestamp']
-    common.clear_old_unread_messages(user.unread)
-    user.put()
-    return user, old_timestamp
-  return user, None
+
+    self.user = user
 
 def cookie_encode(v):
   from urllib import quote_plus
