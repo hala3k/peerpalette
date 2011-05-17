@@ -153,7 +153,7 @@ class RequestHandler(webapp.RequestHandler):
     except AttributeError: pass
 
 
-  def _update_read_timestamp(self, chat_id):
+  def _update_read_timestamp(self, read_chat_id):
     user = models.User.get(self.user.key())
     try:
       if 'read_timestamp' in user.unread[read_chat_id] and user.unread[read_chat_id]['read_timestamp'] < user.unread[read_chat_id]['last_timestmap']:
