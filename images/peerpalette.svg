@@ -13,7 +13,7 @@
    height="40"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.0 r9654"
+   inkscape:version="0.48.1 r9760"
    sodipodi:docname="peerpalette.svg"
    inkscape:export-filename="/home/zaid/peerpalette/peerpalette.com/static/peerpalette.png"
    inkscape:export-xdpi="90"
@@ -127,7 +127,7 @@
       <feGaussianBlur
          id="feGaussianBlur4532"
          in="SourceAlpha"
-         stdDeviation="1"
+         stdDeviation="2"
          result="blur" />
       <feColorMatrix
          id="feColorMatrix4534"
@@ -160,7 +160,7 @@
       <feGaussianBlur
          id="feGaussianBlur4546"
          in="SourceAlpha"
-         stdDeviation="1"
+         stdDeviation="2"
          result="blur" />
       <feColorMatrix
          id="feColorMatrix4548"
@@ -192,14 +192,14 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.8770833"
-     inkscape:cx="164.54036"
-     inkscape:cy="63.091785"
+     inkscape:cx="156.97903"
+     inkscape:cy="41.945943"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1366"
-     inkscape:window-height="691"
-     inkscape:window-x="0"
+     inkscape:window-width="1300"
+     inkscape:window-height="744"
+     inkscape:window-x="66"
      inkscape:window-y="24"
      inkscape:window-maximized="1" />
   <metadata
@@ -221,8 +221,8 @@
      transform="translate(0,-1012.3622)">
     <text
        xml:space="preserve"
-       style="font-size:24px;font-style:normal;font-weight:normal;fill:#0f4482;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Quicksand;filter:url(#filter4544)"
-       x="49.571426"
+       style="font-size:24px;font-style:normal;font-weight:normal;fill:#0f4482;fill-opacity:1;stroke:none;filter:url(#filter4544);font-family:Bitstream Vera Sans;-inkscape-font-specification:Quicksand"
+       x="47.571426"
        y="1040.2822"
        id="text2894"
        inkscape:export-filename="/home/zaid/peerpalette/images/text3001.png"
@@ -230,13 +230,15 @@
        inkscape:export-ydpi="90"><tspan
          sodipodi:role="line"
          id="tspan2896"
-         x="49.571426"
+         x="47.571426"
          y="1040.2822"
-         style="font-size:32px;font-style:normal;font-weight:normal;fill:#0f4482;fill-opacity:1;font-family:Quicksand;-inkscape-font-specification:Quicksand">peerpalette</tspan></text>
+         style="font-size:32px;font-style:normal;font-weight:normal;fill:#0f4482;fill-opacity:1;font-family:Quicksand;-inkscape-font-specification:Quicksand"><tspan
+   style="fill:#0f6b82;fill-opacity:1"
+   id="tspan3794">peer</tspan>palette</tspan></text>
     <g
        id="g3033"
-       style="stroke-width:1.50000000000000000;stroke-miterlimit:4;stroke-dasharray:none;filter:url(#filter4530)"
-       transform="matrix(0.9,0,0,0.9,1.5866212,103.2676)"
+       style="stroke-width:1.5;stroke-miterlimit:4;stroke-dasharray:none;filter:url(#filter4530)"
+       transform="matrix(0.84370626,0,0,0.84370626,3.2380706,161.38117)"
        inkscape:export-filename="/home/zaid/peerpalette/images/text3001.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90">
