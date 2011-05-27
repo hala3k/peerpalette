@@ -113,7 +113,7 @@ Peerpalette<sup>(beta)</sup> is a new website for one-on-one chatting with stran
 {% endif %}
 {% if recent_searches %}
   <div>
-    <span style="font-size: 14px; font-weight: bold;">Hot searches</span>
+    <span style="font-size: 14px; font-weight: bold;font-style: italic; color: #b00;">Hot searches NOW!</span>
     <br/>
     {% for t in recent_searches %}
       <a href="/search?q={{t.query_string|urlencode}}" style="margin-right:0.5em;">{{t.query_string|escape}}</a>

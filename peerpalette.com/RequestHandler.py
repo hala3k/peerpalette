@@ -32,6 +32,8 @@ class RequestHandler(webapp.RequestHandler):
     self.template_values = {}
     self.client_update = {}
 
+    batch_status_update = {}
+
     if self.session.has_key("user"):
       self.user_key = self.session["user"]
     elif self.session.has_key("anon_user"):
@@ -54,7 +56,7 @@ class RequestHandler(webapp.RequestHandler):
       open_chat = self.memcache_fetcher.get(config.MEMCACHE_USER_OPEN_CHAT(self.user_key.id_or_name(), chat_id))
 
     if last_been_online.get_result() is None or (self.now - last_been_online.get_result()).seconds > config.STATUS_UPDATE_THRESHOLD:
-      memcache.set(last_been_online.get_key(), self.now, time = config.OFFLINE_THRESHOLD)
+      batch_status_update[last_been_online.get_key()] = self.now
 
     if last_been_online.get_result() is None:
       online_user_key = db.Key.from_path('OnlineUser', self.user_key.id_or_name())
@@ -63,7 +65,7 @@ class RequestHandler(webapp.RequestHandler):
 
     if chat_id is not None:
       if open_chat.get_result() is None or (self.now - open_chat.get_result()).seconds > config.STATUS_UPDATE_THRESHOLD:
-        memcache.set(config.MEMCACHE_USER_OPEN_CHAT(self.user_key.id_or_name(), chat_id), self.now, time = config.OFFLINE_THRESHOLD)
+        batch_status_update[open_chat.get_key] = self.now
       if open_chat.get_result() is None:
         db.delete(db.Key.from_path('User', self.user_key.id_or_name(), 'UnreadChat', chat_id))
         refresh_unread_count = True
@@ -97,9 +99,12 @@ class RequestHandler(webapp.RequestHandler):
       elif int(chat_update_id.get_result()) != prev_chat_update_id:
         self.chat_update_id = int(chat_update_id.get_result())
 
+    if batch_status_update:
+      memcache.set_multi(batch_status_update, time = config.OFFLINE_THRESHOLD)
+
   def _refresh_unread_count(self):
     self.unread_count = db.Query(models.UnreadChat, keys_only = True).ancestor(self.user_key).count(config.MAX_UNREAD_CHATS + 1)
-    memcache.set(config.MEMCACHE_USER_UNREAD_COUNT(self.user_key.id_or_name()), self.unread_count, time = 60)
+    memcache.set(config.MEMCACHE_USER_UNREAD_COUNT(self.user_key.id_or_name()), self.unread_count, time = 120)
 
   def _get_client_update(self):
     self.client_update['unread_count'] = self.unread_count
