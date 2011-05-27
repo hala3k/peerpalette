@@ -1,5 +1,6 @@
 from google.appengine.ext import webapp
 from google.appengine.ext import db
+from google.appengine.api import memcache
 
 import models
 import common
@@ -9,14 +10,13 @@ import datetime
 
 class CleanupOnlineUsers(webapp.RequestHandler):
   def get(self):
-    online_users = models.OnlineUser.all(keys_only = True).fetch(5000)
-    users_status = common.get_user_status([db.Key.from_path('User', o.id_or_name()) for o in online_users])
+    online_users = models.OnlineUser.all(keys_only = True).fetch(3000)
+    users_status = memcache.get_multi([config.MEMCACHE_LAST_BEEN_ONLINE(u.id_or_name()) for u in online_users])
 
     todel = []
-    for st in users_status:
-      threshold = datetime.datetime.now() - datetime.timedelta(seconds = config.OFFLINE_THRESHOLD)
-      if st.last_been_online < threshold:
-        todel.append(db.Key.from_path('OnlineUser', st.key().id_or_name()))
+    for u in online_users:
+      if u.id_or_name() not in users_status:
+        todel.append(u)
 
     db.delete(todel)
 

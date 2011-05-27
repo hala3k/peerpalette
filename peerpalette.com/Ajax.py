@@ -3,6 +3,7 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from django.utils import simplejson
 
+import config
 import models
 import common
 from RequestHandler import RequestHandler
@@ -10,78 +11,101 @@ from RequestHandler import RequestHandler
 import os
 import time
 
-def get_peer_userchat_key(userchat_key):
-  # TODO user with key name "1" will be confused with user with key id 1
-  memcache_peer_userchat_key = "user_%s_userchat_%s_peer_userchat_key" % (userchat_key.parent().id_or_name(), userchat_key.id_or_name())
-  peer_userchat_key = memcache.get(memcache_peer_userchat_key)
-  if not peer_userchat_key:
-    userchat = models.UserChat.get(userchat_key)
-    peer_userchat_key = common.get_ref_key(userchat, 'peer_userchat')
-    memcache.set(memcache_peer_userchat_key, peer_userchat_key, time = 600)
-  return peer_userchat_key
-
-def update_recipient_user(peer_userchat_key, timestamp, message_id):
-    r = db.get([peer_userchat_key, peer_userchat_key.parent()])
-    userchat = r[0]
-    user = r[1]
-    chat_id = peer_userchat_key.id_or_name()
-    if chat_id in user.unread:
-      unread_chat = user.unread[chat_id]
-      unread_chat['last_timestamp'] = timestamp
-      if 'read_timestamp' in unread_chat and unread_chat['read_timestamp'] > unread_chat['first_timestamp']:
-        unread_chat['first_timestamp'] = timestamp
-
-      unread_chat['messages'].append((message_id, timestamp))
-    else:
-      user.unread[chat_id] = {'first_timestamp' : timestamp, 'last_timestamp' : timestamp, 'messages' : [(message_id, timestamp)]}
- 
-    common.clear_old_unread_messages(user.unread)
-    userchat.last_updated = timestamp
-    db.put(r)
-
 class GetUpdate(RequestHandler):
   def get_update(self):
+    update_id = self.request.get('update_id', None)
+    if update_id is not None:
+      update_id = int(update_id)
+
+    chat_update_id = self.request.get('chat_update_id', None)
+    if chat_update_id is not None:
+      chat_update_id = int(chat_update_id)
+
     userchat_key = db.Key(self.request.get("userchat_key", None))
 
-    timestamp = common.str2datetime(self.request.get("timestamp"))
     chat_id = userchat_key.id_or_name()
-    self.init(chat_id, timestamp)
+    if chat_id:
+      peer_id_holder = self.memcache_fetcher.get(config.MEMCACHE_PEER_ID(userchat_key.parent().id_or_name(), chat_id))
+    self.login(prev_update_id = update_id, chat_id = chat_id, prev_chat_update_id = chat_update_id)
 
     message = None
     if chat_id:
-      if userchat_key.parent() != self.user.key():
+      if userchat_key.parent() != self.user_key:
         self.response.set_status(404)
         return
-      message = self.request.get("message", None)
-
       chat_key = db.Key.from_path('Chat', chat_id)
       chat_timestamp = common.str2datetime(self.request.get('chat_timestamp'))
 
-      peer_userchat_key = get_peer_userchat_key(userchat_key)
-      peer_status = self.fetcher.get(db.Key.from_path('UserStatus', peer_userchat_key.parent().id_or_name()))
+      message = self.request.get("message", None)
+
+      peer_id = peer_id_holder.get_result()
+      if peer_id is None:
+        userchat = self.datastore_fetcher.get(userchat_key)
+        peer_userchat_key = common.get_ref_key(userchat.get_result(), 'peer_userchat')
+        peer_id = peer_userchat_key.parent().id_or_name()
+        memcache.set(peer_id_holder.get_key(), peer_id, time = 600)
+
+      peer_status = self.memcache_fetcher.get(config.MEMCACHE_LAST_BEEN_ONLINE(peer_id))
+      message_entity = None
       if message:
         message = common.htmlize_string(common.sanitize_string(message))
-        msg = models.Message(parent = chat_key, message_string = message, sender = userchat_key)
-        db.put(msg)
-        db.run_in_transaction(update_recipient_user, peer_userchat_key, msg.date_time, msg.key().id_or_name())
-        time.sleep(0.05)
-      if message or (chat_id in self.user.unread and chat_timestamp < self.user.unread[chat_id]['last_timestamp']):
+        message_entity = models.Message(parent = chat_key, message_string = message, sender = userchat_key)
+
+        peer_chat_open = self.memcache_fetcher.get(config.MEMCACHE_USER_OPEN_CHAT(peer_id, chat_id))
+        if peer_chat_open.get_result() is None:
+          peer_unreadchat_key = db.Key.from_path('User', peer_id, 'UnreadChat', chat_id)
+          peer_unreadchat = models.UnreadChat(key = peer_unreadchat_key)
+
+          userchat_holder = self.datastore_fetcher.get(userchat_key)
+          peer_userchat_holder = self.datastore_fetcher.get(db.Key.from_path('User', peer_id, 'UserChat', chat_id))
+          userchat = userchat_holder.get_result()
+          peer_userchat = peer_userchat_holder.get_result()
+          userchat.last_updated = self.now
+          peer_userchat.last_updated = self.now
+          db.put([message_entity, peer_unreadchat, peer_userchat, userchat])
+
+          peer_update_id = memcache.incr(config.MEMCACHE_USER_UPDATE_ID(peer_id), initial_value = 0)
+          memcache.set(
+            config.MEMCACHE_USER_NOTIFICATION(peer_id, peer_update_id),
+            {
+              'username' : models.User.get_username(self.user_key),
+              'chat_id' : chat_id,
+              'message' : message,
+              'link' : '/chat/%s' % models.User.get_username(self.user_key),
+              'timestamp' : message_entity.date_time,
+            },
+            time = config.NOTIFICATION_DURATION,
+          )
+        else:
+          db.put(message_entity)
+
+      if self.chat_update_id:
         new_messages = db.Query(models.Message).ancestor(chat_key).filter('date_time >', chat_timestamp).order('-date_time').fetch(10)
-        self.update['chat_timestamp'] = str(new_messages[0].date_time)
+        self.client_update['chat_timestamp'] = str(new_messages[0].date_time)
         new_messages.reverse()
 
         template_values = {
-          "username" : self.user.username(),
+          "username" : models.User.get_username(self.user_key),
           "messages" : [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in new_messages],
         }
         path = os.path.join(os.path.dirname(__file__), '_messages.html')
-        self.update['messages_html'] = template.render(path, template_values).decode('utf-8')
+        self.client_update['messages_html'] = template.render(path, template_values).decode('utf-8')
+      elif message_entity is not None:
+        self.client_update['chat_timestamp'] = str(message_entity.date_time)
+        template_values = {
+          "username" : models.User.get_username(self.user_key),
+          "messages" : [{'message_string': message_entity.message_string, 'username': models.User.get_username(common.get_ref_key(message_entity, 'sender').parent())}],
+        }
+        path = os.path.join(os.path.dirname(__file__), '_messages.html')
+        self.client_update['messages_html'] = template.render(path, template_values).decode('utf-8')
 
-      peer_idle_time = common.get_user_idle_time(peer_status)
-      self.update['status_class'] = common.get_status_class(peer_idle_time)
+      if chat_id and message_entity:
+        self.chat_update_id = memcache.incr(config.MEMCACHE_CHAT_UPDATE_ID(chat_id), delta = 1, initial_value = 0)
+
+      self.client_update['status_class'] = "offline" if peer_status.get_result() is None else "online"
 
     self._get_client_update()
-    return self.update
+    return self.client_update
 
   def get(self):
     self.response.headers['Content-Type'] = 'application/json; charset=utf-8'

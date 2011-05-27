@@ -76,16 +76,6 @@ def get_current_user_key():
 
   return None
 
-def get_user_status(user_keys):
-  if type(user_keys).__name__ == 'list':
-    ids = []
-    for u in user_keys:
-      ids.append(db.Key.from_path('UserStatus', u.id_or_name()))
-  else:
-    ids = db.Key.from_path('UserStatus', user_keys.id_or_name())
-
-  return models.UserStatus.get(ids)
-
 def get_user_context(user_key, cache_duration = 300):
   m = memcache.get("user_%s_context" % user_key.id_or_name())
   if m is None:
@@ -101,21 +91,6 @@ def set_user_context(user_key, context, cache_duration = 300):
   m = models.UserContext(key = context_key, context = context)
   m.put()
   memcache.set("user_%s_context" % user_key.id_or_name(), m, cache_duration)
-
-def get_user_idle_time(user_status):
-  if user_status is None:
-    return 5184000
-
-  timediff = datetime.datetime.now() - user_status.last_been_online
-  return (timediff.seconds) + (timediff.days * 24 * 60 * 60)
-
-def get_status_class(status):
-  if status < config.OFFLINE_THRESHOLD:
-    return "online"
-  elif status < config.INACTIVE_THRESHOLD:
-    return "offline"
-
-  return "inactive"
 
 # source: http://stackoverflow.com/questions/531157/parsing-datetime-strings-with-microseconds
 def str2datetime(s):

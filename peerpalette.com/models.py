@@ -3,20 +3,8 @@ import config
 import datetime
 import pickle
 
-# Source: http://stackoverflow.com/questions/3447071/storing-complex-object-on-datastore-with-pickle-any-faster-alternatives
-class PickleProperty(db.Property): 
-  data_type = db.Blob
-  def get_value_for_datastore(self, model_instance):
-    value = self.__get__(model_instance, model_instance.__class__)
-    if value is not None:
-      return db.Blob(pickle.dumps(value))
-  def make_value_from_datastore(self, value):
-    if value is not None:
-      return pickle.loads(str(value))
-
 class User(db.Model):
   join_date = db.DateTimeProperty(auto_now_add = True)
-  unread = PickleProperty(default = {})
   @staticmethod
   def is_anonymous(key):
     if key.id() is not None:
@@ -31,9 +19,6 @@ class User(db.Model):
     return key.name()
   def username(self):
     return User.get_username(self.key())    
-
-class UserStatus(db.Model):
-  last_been_online = db.DateTimeProperty(auto_now = True, indexed = False)
 
 class UserContext(db.Model):
   context = db.TextProperty()
@@ -66,7 +51,7 @@ class QueryIndex(db.Model):
   keyword_hashes = db.ListProperty(item_type = long, required = True)
 
 class Chat(db.Model):
-  create_time = db.DateTimeProperty(auto_now = True)
+  create_time = db.DateTimeProperty(auto_now_add = True)
 
 class UserChat(db.Model):
   # parent: User
@@ -74,8 +59,12 @@ class UserChat(db.Model):
   name = db.StringProperty(required = True)
   peer_userchat = db.SelfReferenceProperty()
   title = db.StringProperty(required = True, indexed = False)
-  excerpt = db.StringProperty(indexed = False)
   last_updated = db.DateTimeProperty()
+
+class UnreadChat(db.Model):
+  # parent: user
+  # key id or name: Chat
+  pass
 
 class Message(db.Model):
 # parent: Chat

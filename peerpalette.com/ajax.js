@@ -21,7 +21,7 @@ function sound_alert(type) {
   }
 
   disabled_alert = type;
-  setTimeout("disabled_alert = 0;", 1000);
+  setTimeout("disabled_alert = 0;", 2000);
 }
 
 function alert_new_chat() {
@@ -36,7 +36,7 @@ function refresh_unread_text(unread_count) {
     $("#inbox").html("my chats");
 }
 
-function alert_new_background_messages(background_messages) {
+function alert_new_notifications(notifications) {
   if (hasfocus)
     stayTime = 5000;
   else
@@ -47,9 +47,9 @@ function alert_new_background_messages(background_messages) {
   if (typeof update_request == "undefined")
     inEffectDuration = 0;
   
-  for (m in background_messages) {
-    msg = background_messages[m];
-    t = '<a style="color: black; text-decoration: none;" href="/chat/' + msg['username'] + '"><div><b>' + msg['username'] + ':</b><br/>' + msg['message'] + '</div></a>';
+  for (m in notifications) {
+    msg = notifications[m];
+    t = '<a style="color: black; text-decoration: none;" href="' + msg['link'] + '"><div><b>' + msg['username'] + ':</b><br/>' + msg['message'] + '</div></a>';
     sound_alert(1);
     jQuery.noticeAdd({
       text: t,
@@ -103,20 +103,23 @@ function request_update(msg) {
     update_request.abort();
     
   var method = "GET";
-  var data = {timestamp : update['timestamp']};
+  var data = {update_id : update['update_id']};
   if (msg) {
     data['message'] = msg;
     method = "POST";
   }
 
-  var timeout = 2000;
+  var timeout = 3000;
   if (typeof userchat_key != "undefined") {
     data["userchat_key"] = userchat_key;
-    timeout = 1000;
+    timeout = 2000;
   }
 
-  if (typeof update["chat_timestamp"] != "undefined")
-    data["chat_timestamp"] = update["chat_timestamp"];
+  if (typeof update['chat_update_id'] != 'undefined')
+    data['chat_update_id'] = update['chat_update_id'];
+
+  if (typeof update['chat_timestamp'] != 'undefined')
+    data['chat_timestamp'] = update['chat_timestamp'];
 
   update_request = $.ajax({
     url: "/getupdate",
@@ -157,8 +160,14 @@ function apply_update(data) {
     update_title_notification();
   }
 
-  if ("timestamp" in data)
-    update['timestamp'] = data['timestamp'];
+  if ('update_id' in data)
+    update['update_id'] = data['update_id'];
+
+  if ('chat_update_id' in data)
+    update['chat_update_id'] = data['chat_update_id'];
+
+  if ('chat_timestamp' in data)
+    update['chat_timestamp'] = data['chat_timestamp'];
 
   if ("messages_html" in data) {
     var messages_html = data["messages_html"];
@@ -172,8 +181,8 @@ function apply_update(data) {
     }
   }
 
-  if ("background_messages" in data)
-    alert_new_background_messages(data["background_messages"]);
+  if ("notifications" in data)
+    alert_new_notifications(data["notifications"]);
 
   if ("status_class" in data)
     refresh_chat_status(data['status_class']);
@@ -202,7 +211,7 @@ $(document).ready(function() {
       }
     });
     $("#log").scrollTop($("#log")[0].scrollHeight);
-    request_timeout = setTimeout("request_update();", 1000);
+    request_timeout = setTimeout("request_update();", 2000);
   }
 
   var focus_callback = function() {
@@ -257,7 +266,7 @@ function random_chat_retry() {
       else if (random_chat_canceled)
         random_chat_hide_waiting();
       else
-        setTimeout("random_chat_retry()", 1000);
+        setTimeout("random_chat_retry()", 2000);
     }
   });
 }

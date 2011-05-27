@@ -7,7 +7,7 @@ import datetime
 
 class FeedbackPage(RequestHandler):
   def get(self):
-    self.init()
+    self.login()
     self.render_page('FeedbackPage.html')
 
   def post(self):
@@ -24,7 +24,7 @@ class FeedbackPage(RequestHandler):
               subject = subject,
               body= message)
 
-    self.init()
+    self.login()
     self.template_values['submitted'] = True
     self.render_page('FeedbackPage.html')
 

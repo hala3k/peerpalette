@@ -27,7 +27,7 @@ class LoginPage(RequestHandler):
       self.redirect("/")
       return
 
-    self.init()
+    self.login()
     self.render_page('LoginPage.html')
 
   def post(self):
@@ -36,7 +36,7 @@ class LoginPage(RequestHandler):
 
     m = db.Query(models.Login).filter('username =', username).filter('password_hash =', password_hash).get()
     if m is None:
-      self.init()
+      self.login()
       self.template_values["login_username"] = username
       self.template_values["message"] = "Invalid username or password."
       self.render_page('LoginPage.html')

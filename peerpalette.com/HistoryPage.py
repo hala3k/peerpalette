@@ -6,9 +6,9 @@ from RequestHandler import RequestHandler
 
 class HistoryPage(RequestHandler):
   def get(self):
-    self.init()
+    self.login()
 
-    queries_query = db.Query(models.Query).ancestor(self.user).order('-date_time')
+    queries_query = db.Query(models.Query).ancestor(self.user_key).order('-date_time')
     cur = self.request.get('cursor')
     if cur:
       queries_query.with_cursor(start_cursor = cur)

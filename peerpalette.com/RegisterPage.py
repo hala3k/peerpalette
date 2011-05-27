@@ -22,7 +22,7 @@ def get_email_username(email):
 
 class RegisterPage(RequestHandler):
   def get(self):
-    self.init()
+    self.login()
     link_type = self.request.get("link_type", None)
     if link_type == "google":
       google_user = users.get_current_user()
@@ -70,7 +70,7 @@ class RegisterPage(RequestHandler):
       error_message = "Email is invalid." 
 
     if error_message:
-      self.init()
+      self.login()
       self.template_values["login_username"] = username
       self.template_values["message"] = error_message
       self.template_values["link_type"] = link_type

@@ -43,7 +43,7 @@ class ChatPage(RequestHandler):
       self.response.set_status(404)
       return
 
-    self.init(userchat.key().id_or_name())
+    self.login(chat_id = userchat.key().id_or_name())
 
     chat_key = db.Key.from_path('Chat', userchat.key().id_or_name())
     messages = db.Query(models.Message).ancestor(chat_key).order('-date_time').fetch(config.CHAT_HISTORY_MESSAGE_COUNT)
@@ -51,22 +51,20 @@ class ChatPage(RequestHandler):
     try:
       chat_timestamp = messages[0].date_time
     except IndexError:
-      chat_timestamp = self.timestamp
+      chat_timestamp = self.now
 
     messages.reverse()
 
     peer_key = common.get_ref_key(userchat, 'peer_userchat').parent()
-    peer_status = self.fetcher.get(db.Key.from_path('UserStatus', peer_key.id_or_name()))
-
-    idle_time = common.get_user_idle_time(peer_status)
+    peer_status = self.memcache_fetcher.get(config.MEMCACHE_LAST_BEEN_ONLINE(peer_key.id_or_name()))
 
     self.template_values["peer_username"] = models.User.get_username(peer_key)
-    self.template_values["peer_status_class"] = common.get_status_class(idle_time)
+    self.template_values["peer_status_class"] = "offline" if peer_status.get_result() is None else "online"
     self.template_values["title"] = userchat.title
     self.template_values["userchat_key"] = userchat.key()
     self.template_values["messages"] = [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in messages]
 
-    self.update['chat_timestamp'] = str(chat_timestamp)
+    self.client_update['chat_timestamp'] = str(chat_timestamp)
 
     self.render_page('ChatPage.html')
 

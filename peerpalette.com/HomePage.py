@@ -1,6 +1,7 @@
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
+import config
 import common
 import models
 from RequestHandler import RequestHandler
@@ -16,7 +17,7 @@ def get_num_online_users():
 
 class HomePage(RequestHandler):
   def get(self):
-    self.init()
+    self.login()
 
     recent_searches_query = db.Query(models.RecentSearch).order('-online_count')
 
@@ -24,24 +25,21 @@ class HomePage(RequestHandler):
     for r in recent_searches_query.fetch(10):
       recent_searches.append({'query_string' : r.query_string, 'online_count' : r.online_count})
 
-    conversations = []
-    for i in self.user.unread:
-      if self.is_unread(i):
-        conversations.append(self.fetcher.get(db.Key.from_path('User', self.user.key().id_or_name(), 'UserChat', i)))
+    conversations = [self.datastore_fetcher.get(db.Key.from_path('User', self.user_key.id_or_name(), 'UserChat', c.id_or_name()))
+      for c in db.Query(models.UnreadChat, keys_only = True).ancestor(self.user_key).fetch(5)]
 
-    peer_keys = [common.get_ref_key(c.get_model(), 'peer_userchat').parent() for c in conversations]
-    peers_status = common.get_user_status(peer_keys)
+    peer_keys = [common.get_ref_key(c.get_result(), 'peer_userchat').parent() for c in conversations]
+    peers_status = [self.memcache_fetcher.get(config.MEMCACHE_LAST_BEEN_ONLINE(pk.id_or_name())) for pk in peer_keys]
 
     conversations_value = []
     for i in range(len(conversations)):
-      conv = conversations[i]
-      idle_time = common.get_user_idle_time(peers_status[i])
-      status_class = common.get_status_class(idle_time)
+      conv = conversations[i].get_result()
+      status_class = "online" if peers_status[i].get_result() is not None else "offline"
       username = models.User.get_username(peer_keys[i])
       c = {'username' : username, 'title' : conv.title, 'name' : conv.name, 'status_class' : status_class}
       conversations_value.append(c)
 
-    context = common.get_user_context(self.user.key())
+    context = common.get_user_context(self.user_key)
     if context:
       self.template_values['context'] = context
 
