@@ -103,16 +103,20 @@ function request_update(msg) {
     update_request.abort();
     
   var method = "GET";
+  var url = '/getupdate';
   var data = {update_id : update['update_id']};
-  if (msg) {
-    data['message'] = msg;
-    method = "POST";
-  }
 
-  var timeout = 3000;
+  var timeout = 2000;
   if (typeof userchat_key != "undefined") {
     data["userchat_key"] = userchat_key;
     timeout = 2000;
+    url = '/getchatupdate';
+  }
+
+  if (msg) {
+    data['message'] = msg;
+    method = "POST";
+    url = '/sendmessage';
   }
 
   if (typeof update['chat_update_id'] != 'undefined')
@@ -122,7 +126,7 @@ function request_update(msg) {
     data['chat_timestamp'] = update['chat_timestamp'];
 
   update_request = $.ajax({
-    url: "/getupdate",
+    url: url,
     type: method,
     data: data,
     success: function(result) {

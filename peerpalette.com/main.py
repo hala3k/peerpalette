@@ -25,6 +25,8 @@ application = webapp.WSGIApplication([
                                       ('/search', SearchPage),
                                       ('/startchat', StartChatPage),
                                       ('/getupdate', Ajax.GetUpdate),
+                                      ('/getchatupdate', Ajax.GetUpdate),
+                                      ('/sendmessage', Ajax.GetUpdate),
                                       ('/updatecontext', Ajax.UpdateContext),
                                       ('/chats', InboxPage),
                                       ('/searches', HistoryPage),

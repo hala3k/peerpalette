@@ -65,7 +65,7 @@ class RequestHandler(webapp.RequestHandler):
 
     if chat_id is not None:
       if open_chat.get_result() is None or (self.now - open_chat.get_result()).seconds > config.STATUS_UPDATE_THRESHOLD:
-        batch_status_update[open_chat.get_key] = self.now
+        batch_status_update[open_chat.get_key()] = self.now
       if open_chat.get_result() is None:
         db.delete(db.Key.from_path('User', self.user_key.id_or_name(), 'UnreadChat', chat_id))
         refresh_unread_count = True
