@@ -1,15 +1,13 @@
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import template
 from google.appengine.ext import db
-from google.appengine.api import memcache
-
-import datetime
-import time
 
 import config
 import models
 import common
-import os
+from RequestHandler import RequestHandler
+from utils import create_chat
+
+import datetime
+import time
 
 def random_chat(user_key):
   def hookup(user_key, queue_key):
@@ -48,22 +46,21 @@ def random_chat(user_key):
     db.delete(q)
     time.sleep(0.05) # wait for peer to finish creating UserChat instances
 
-  my_userchat, peer_userchat = common.create_chat(user_key_1 = user_key, user_key_2 = peer_key, title_1 = "random", title_2 = "random")
+  my_userchat, peer_userchat = create_chat(user_key_1 = user_key, user_key_2 = peer_key, title_1 = "random", title_2 = "random")
 
   return my_userchat.name
 
-class RandomChat(webapp.RequestHandler):
+class RandomChat(RequestHandler):
   def get(self):
-    user_key = common.get_current_user_key()
+    user_key = self.get_current_user_key()
     userchat_name = random_chat(user_key)
     if userchat_name:
       self.redirect('/chat/%s' % userchat_name)
       return
-    path = os.path.join(os.path.dirname(__file__), 'RandomChat.html')
-    self.response.out.write(template.render(path, None))
+    self.render_page('RandomChat.html')
 
   def post(self):
-    user_key = common.get_current_user_key()
+    user_key = self.get_current_user_key()
     userchat_name = random_chat(user_key)
     if userchat_name:
       self.response.set_status(201)

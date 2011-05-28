@@ -16,6 +16,7 @@ from CleanupRecentSearches import CleanupRecentSearches
 from LoginPage import LoginPage
 from LogoutPage import LogoutPage
 from RegisterPage import RegisterPage
+from SettingsPage import SettingsPage
 import Ajax
 
 application = webapp.WSGIApplication([
@@ -37,6 +38,7 @@ application = webapp.WSGIApplication([
                                       ('/register', RegisterPage),
                                       ('/logout', LogoutPage),
                                       ('/chat/(.*)', ChatPage),
+                                      ('/settings', SettingsPage),
                                      ], debug=True)
 
 def main():

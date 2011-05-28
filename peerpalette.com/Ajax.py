@@ -116,8 +116,9 @@ class GetUpdate(RequestHandler):
 
 class UpdateContext(RequestHandler):
   def post(self):
+    from utils import set_user_context
     context = common.sanitize_string(self.request.get("context").strip())    
-    user_key = common.get_current_user_key()
-    common.set_user_context(user_key, context)
+    user_key = self.get_current_user_key()
+    set_user_context(user_key, context)
     self.response.out.write(context)
 

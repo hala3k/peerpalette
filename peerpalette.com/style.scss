@@ -180,6 +180,8 @@ textarea.context-empty {
 
 // source: http://webdesignerwall.com/tutorials/css3-gradient-buttons
 .button {
+  position: relative;
+  top: 0px;
   display: inline-block;
   zoom: 1; /* zoom and *display = ie7 hack for display:inline-block */
   *display: inline;

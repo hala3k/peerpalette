@@ -22,7 +22,6 @@ class RequestHandler(webapp.RequestHandler):
     self.memcache_fetcher = MemcacheFetcher()
     self.session = get_current_session()
 
-  def login(self, prev_update_id = None, chat_id = None, prev_chat_update_id = None):
     self.user_key = None
     self.update_id = None
     self.chat_update_id = None
@@ -32,6 +31,14 @@ class RequestHandler(webapp.RequestHandler):
     self.template_values = {}
     self.client_update = {}
 
+  def get_current_user_key(self):
+    if self.session.has_key("user"):
+      return self.session["user"]
+    elif self.session.has_key("anon_user"):
+      return self.session["anon_user"]
+    return None
+
+  def login(self, prev_update_id = None, chat_id = None, prev_chat_update_id = None):
     batch_status_update = {}
 
     if self.session.has_key("user"):
@@ -107,16 +114,26 @@ class RequestHandler(webapp.RequestHandler):
     memcache.set(config.MEMCACHE_USER_UNREAD_COUNT(self.user_key.id_or_name()), self.unread_count, time = 120)
 
   def _get_client_update(self):
-    self.client_update['unread_count'] = self.unread_count
-
-    try: self.client_update['new_chat_alert'] = self.new_chat_alert
+    try: self.client_update['unread_count'] = self.unread_count
     except AttributeError: pass
 
-    if self.update_id is not None:
-      self.client_update['update_id'] = self.update_id
+    try:
+      if self.new_chat_alert:
+        self.client_update['new_chat_alert'] = self.new_chat_alert
+    except AttributeError:
+      pass
 
-    if self.chat_update_id is not None:
-      self.client_update['chat_update_id'] = self.chat_update_id
+    try:
+      if self.update_id is not None:
+        self.client_update['update_id'] = self.update_id
+    except AttributeError:
+      pass
+    
+    try:
+      if self.chat_update_id is not None:
+        self.client_update['chat_update_id'] = self.chat_update_id
+    except AttributeError:
+      pass
 
     try: self.client_update['notifications'] = [{"username" : m['username'], "message" : m['message'], 'link' : m['link']} for m in self.notifications]
     except AttributeError: pass
@@ -124,10 +141,14 @@ class RequestHandler(webapp.RequestHandler):
   def render_page(self, template_filename):
     self._get_client_update()
 
-    self.template_values['unread_count'] = self.unread_count
-    self.template_values["username"] = models.User.get_username(self.user_key)
-    self.template_values["anonymous"] = models.User.is_anonymous(self.user_key)
-    self.template_values["update"] = simplejson.dumps(self.client_update)
+    try: self.template_values['unread_count'] = self.unread_count
+    except AttributeError: pass
+    try: self.template_values["username"] = models.User.get_username(self.user_key)
+    except AttributeError: pass
+    try: self.template_values["anonymous"] = models.User.is_anonymous(self.user_key)
+    except AttributeError: pass
+    try: self.template_values["update"] = simplejson.dumps(self.client_update)
+    except AttributeError: pass
 
     path = os.path.join(os.path.dirname(__file__), template_filename)
     self.response.out.write(template.render(path, self.template_values))

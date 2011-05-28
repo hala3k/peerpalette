@@ -1,0 +1,65 @@
+{% extends "_base.html" %}
+{% block title %}Peerpalette - Settings{% endblock title %}
+{% block headtags %}
+{% endblock headtags %}
+{% block content %}
+<div id="content" style="padding: 30px;font-family:sans-serif;color:#444444;">
+
+  <div style="width:400px;margin-left:auto;margin-right:auto;background-color:#eee;padding:10px;border:1px solid #aaa;text-align:center;">
+  {% if not anonymous %}
+    <div style="text-align:left;"><b>Change password</b></div>
+    <div style="text-align:left;color: red">{{message}}</div>
+    <form action="/settings" method="post">
+      <table style="margin:1em auto 1em auto;">
+        <tr>
+          <td style="text-align:right">
+            <label for="page_login_username">current password</label>
+          </td>
+          <td>
+            <input type="password" name="current_password" value="{{current_password}}" />
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:right">
+            <label for="new_password">new password</label>
+          </td>
+          <td>
+            <input type="password" name="new_password" />
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align:right">
+            <label for="verify_new_password">verify new password</label>
+          </td>
+          <td>
+            <input type="password" name="verify_new_password" />
+          </td>
+        </tr>
+      </table>
+      <div><input type="submit" name="action" value="Change Password" class="button"/></div>
+    </form>
+    <br/><hr/><br/>
+  {% endif %}
+  {% if linked_accounts %}
+    <div style="text-align:left;"><b>Unlink account</b></div>
+    <form action="/settings" method="post">
+      <div style="margin:1em auto 1em auto;text-align: left;">
+      {% for linked_account in linked_accounts %}
+        <div><input type="checkbox" name="linked_account"> {{linked_account}}</input></div>
+      {% endfor %}
+      </div>
+      <div><input type="submit" name="action" value="Unlink Account" class="button"/></div>
+    </form>
+    <br/><hr/><br/>
+  {% endif %}
+    <div style="text-align:left;"><b>Delete account</b></div>
+    <form action="/settings" method="post">
+      <div style="margin:1em auto 1em auto;text-align: left;">
+        <div><input type="checkbox" name="delete_account"> Delete this account and all the associated logins, chats, search history and cookies.</input></div>
+      </div>
+      <div><input type="submit" name="action" value="Delete Account" class="button"/></div>
+    </form>
+
+</div>
+{% endblock content%}
+

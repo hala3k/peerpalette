@@ -46,8 +46,9 @@ class Query(db.Model):
 
 class QueryIndex(db.Model):
   # parent: root
-  # key name: timestamp <timestamp> <User id or name> <Query id or name>
+  # key name: <timestamp> <User id or name> <Query id or name>
   query = db.ReferenceProperty(Query, required = True)
+  user = db.ReferenceProperty(User, required = True)
   keyword_hashes = db.ListProperty(item_type = long, required = True)
 
 class Chat(db.Model):

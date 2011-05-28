@@ -44,7 +44,7 @@ class SearchPage(RequestHandler):
       cursor = search_query.cursor()
 
     for k in res_keys:
-      q_key = common.decode_query_index_key_name(k.name())
+      q_key = search.decode_query_index_key_name(k.name())
       user_key = q_key.parent()
       if user_key != self.user_key:
         result_keys.append(q_key)
@@ -94,7 +94,7 @@ class SearchPage(RequestHandler):
     else:
       query = models.Query(key = query_key, query_string = q, context = context_text, date_time = self.now)
 
-    index = models.QueryIndex(key_name = common.encode_query_index_key_name(query_key), query = query_key, keyword_hashes = keyword_hashes)
+    index = models.QueryIndex(key_name = search.encode_query_index_key_name(query_key), query = query_key, user = self.user_key, keyword_hashes = keyword_hashes)
     recent_query = models.RecentSearch(key_name = query_key.name(), query_string = q, online_count = online_count)
     db.put([query, index, recent_query])
 

@@ -5,6 +5,7 @@ import config
 import common
 import models
 from RequestHandler import RequestHandler
+from utils import get_user_context
 
 def get_num_online_users():
   num = memcache.get('num_online_users')
@@ -39,7 +40,7 @@ class HomePage(RequestHandler):
       c = {'username' : username, 'title' : conv.title, 'name' : conv.name, 'status_class' : status_class}
       conversations_value.append(c)
 
-    context = common.get_user_context(self.user_key)
+    context = get_user_context(self.user_key)
     if context:
       self.template_values['context'] = context
 

@@ -58,7 +58,7 @@ class RegisterPage(RequestHandler):
       error_message = "Username is taken. Please choose another one."
     elif not re.match("^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*$", username):
       error_message = "Invalid username. Please choose another one."
-    elif len(username) < 6 or len(username) > 20:
+    elif len(username) < 3 or len(username) > 20:
       error_message = "Username should be between 6 and 20 characters long."
     elif password != verify_password:
       error_message = "Passwords do not match"
@@ -74,6 +74,7 @@ class RegisterPage(RequestHandler):
       self.template_values["login_username"] = username
       self.template_values["message"] = error_message
       self.template_values["link_type"] = link_type
+      self.template_values["email"] = email
 
       self.render_page("RegisterPage.html")
       return
