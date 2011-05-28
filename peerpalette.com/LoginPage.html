@@ -3,7 +3,7 @@
 {% block headtags %}
 <script type="text/javascript">
 $(document).ready(function() {
-  $("#login_username").focus();
+  $("#page_login_username").focus();
 });
 </script>
 {% endblock headtags %}
@@ -16,22 +16,22 @@ $(document).ready(function() {
       <table style="margin:1em auto 1em auto;">
         <tr>
           <td style="text-align:right">
-            <label for="login_username">username</label>
+            <label for="page_login_username">username</label>
           </td>
           <td>
-            <input id="login_username" type="text" name="username" value="{{login_username}}" />
+            <input id="page_login_username" type="text" name="username" value="{{login_username}}" />
           </td>
         </tr>
         <tr>
           <td style="text-align:right">
-            <label for="password">password</label>
+            <label for="page_password">password</label>
           </td>
           <td>
-            <input id="password" type="password" name="password" />
+            <input id="page_password" type="password" name="password" />
           </td>
         </tr>
       </table>
-      <input type="submit" value="Login" class="button"/>
+      <div><input type="submit" value="Login" class="button"/></div>
     </form>
   </div>
 </div>

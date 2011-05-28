@@ -28,18 +28,18 @@
 
       <div id="menu">
 {% if anonymous %}
-          <span id="username" class="menuitem">{{username}} (<span id="login"><a href="/login">login</a>{% include "_loginbox.html" %}</span>/ <a href="/register">register</a>)</span>
+          <div id="username" class="menuitem">{{username}} (<div style="display:inline" id="login"><a href="/login">login</a>{% include "_loginbox.html" %}</div>/ <a href="/register">register</a>)</div>
 {% else %}
-          <span id="username" class="menuitem">{{username}} (<a href="/logout">logout</a>)</span>
+          <div id="username" class="menuitem">{{username}} (<a href="/logout">logout</a>)</div>
 {% endif %}
-          <a id="inbox" class="menuitem" href="/chats">
+          <div class="menuitem"><a id="inbox" href="/chats">
 {% ifnotequal unread_count 0 %}
           <b>my chats ({{unread_count}})</b>
 {% else %}
           my chats
 {% endifnotequal %}
-          </a>
-          <a id="history" class="menuitem" href="/searches">my searches</a>
+          </a></div>
+          <div class="menuitem"><a id="history" href="/searches">my searches</a></div>
       </div>
     </div>
     {% block content %}

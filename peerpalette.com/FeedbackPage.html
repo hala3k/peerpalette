@@ -8,22 +8,22 @@
   <div style="width:600px;margin-left:auto;margin-right:auto;background-color:#eee;padding:10px;border:1px solid #aaa;">
     If you expect a reply, please provide your email address.
     <br/><br/>
-    <form method="post">
+    <form method="post" action="/feedback">
       <table style="margin-left: auto; margin-right: auto;">
         <tr>
           <td style="vertical-align: top">Message:</td>
-          <td><textarea name="message" type="text" rows="10" cols=50></textarea></td>
+          <td><textarea name="message" rows="10" cols="50"></textarea></td>
         </tr>
         <tr>
           <td style="vertical-align: top">Email (optional):</td>
-          <td><input name="email" type="text" size=30/></td>
+          <td><input name="email" type="text" size="30" /></td>
         </tr>
       </table>
       <div style="text-align: center;">
       <input type="submit" value="Send" style="padding: 5px 10px;"/>
       </div>
-    </div>
-  </form>
+    </form>
+  </div>
 </div>
 {% else %}
 <div id="content">
