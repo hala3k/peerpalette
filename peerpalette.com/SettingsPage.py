@@ -19,8 +19,12 @@ class SettingsPage(RequestHandler):
         self.redirect('/')
         return
     elif self.request.get('action') == 'Unlink Account':
-      # delete google login
-      pass
+      from google.appengine.api.users import User
+      accounts = self.request.get_all('linked_account')
+      todel = []
+      for acc in accounts:
+        todel.append(db.Query(models.GoogleLogin, keys_only=True).filter('user =', self.user_key).filter('google_user =', User(acc)).get())
+      db.delete(todel)
     elif self.request.get('action') == 'Change Password':
       pass
 

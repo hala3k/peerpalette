@@ -45,7 +45,7 @@
     <form action="/settings" method="post">
       <div style="margin:1em auto 1em auto;text-align: left;">
       {% for linked_account in linked_accounts %}
-        <div><input type="checkbox" name="linked_account"> {{linked_account}}</input></div>
+        <div><input type="checkbox" name="linked_account" value="{{linked_account}}"> {{linked_account}}</input></div>
       {% endfor %}
       </div>
       <div><input type="submit" name="action" value="Unlink Account" class="button"/></div>
