@@ -55,21 +55,29 @@ def delete_userchat(userchat_key):
   pass
 
 def delete_user(user_id):
-    user_key = db.Key.from_path('User', user_id)
-    todel = []
-    todel.append(user_key)
+  user_key = db.Key.from_path('User', user_id)
+  todel = []
+  todel.append(user_key)
 
-    # queries
-    todel.extend(db.Query(models.Query, keys_only = True).ancestor(user_key).fetch(5000))
+  # queries
+  todel.extend(db.Query(models.Query, keys_only = True).ancestor(user_key).fetch(5000))
 
-    # query indexes
-    todel.extend(db.Query(models.QueryIndex, keys_only = True).filter('user =', user_key).fetch(5000))
+  # query indexes
+  todel.extend(db.Query(models.QueryIndex, keys_only = True).filter('user =', user_key).fetch(5000))
 
-    # unread chats
-    todel.extend(db.Query(models.UnreadChat, keys_only = True).ancestor(user_key).fetch(5000))
+  # unread chats
+  todel.extend(db.Query(models.UnreadChat, keys_only = True).ancestor(user_key).fetch(5000))
 
-    # google logins
-    todel.extend(db.Query(models.GoogleLogin, keys_only = True).filter('user =', user_key).fetch(5000))
+  # google logins
+  todel.extend(db.Query(models.GoogleLogin, keys_only = True).filter('user =', user_key).fetch(5000))
 
-    db.delete(todel)
+  db.delete(todel)
+
+def get_top_searches(count = 10):
+  top_searches_query = db.Query(models.TopSearch).order('-rating')
+
+  top_searches = []
+  for r in top_searches_query.fetch(count):
+    top_searches.append(r.query_string)
+  return top_searches
 

@@ -4,6 +4,6 @@ cron:
   schedule: every 1 minutes
 
 - description: remove old items from recent searches
-  url: /cleanup_recent_searches
+  url: /cleanup_top_searches
   schedule: every 1 minutes
 

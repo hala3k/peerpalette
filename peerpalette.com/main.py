@@ -12,7 +12,7 @@ from RandomChat import RandomChat
 from PrivacyPage import PrivacyPage
 from FeedbackPage import FeedbackPage
 from CleanupOnlineUsers import CleanupOnlineUsers
-from CleanupRecentSearches import CleanupRecentSearches
+from CleanupTopSearches import CleanupTopSearches
 from LoginPage import LoginPage
 from LogoutPage import LogoutPage
 from RegisterPage import RegisterPage
@@ -32,7 +32,7 @@ application = webapp.WSGIApplication([
                                       ('/chats', InboxPage),
                                       ('/searches', HistoryPage),
                                       ('/cleanup_online_users', CleanupOnlineUsers),
-                                      ('/cleanup_recent_searches', CleanupRecentSearches),
+                                      ('/cleanup_top_searches', CleanupTopSearches),
                                       ('/random', RandomChat),
                                       ('/login', LoginPage),
                                       ('/register', RegisterPage),

@@ -5,6 +5,7 @@ import models
 import common
 import search
 from RequestHandler import RequestHandler
+from utils import get_top_searches
 
 import random
 
@@ -94,9 +95,12 @@ class SearchPage(RequestHandler):
     else:
       query = models.Query(key = query_key, query_string = q, context = context_text, date_time = self.now)
 
+    if not result_values:
+      self.template_values['top_searches'] = get_top_searches()
+
     index = models.QueryIndex(key_name = search.encode_query_index_key_name(query_key), query = query_key, user = self.user_key, keyword_hashes = keyword_hashes)
-    recent_query = models.RecentSearch(key_name = query_key.name(), query_string = q, online_count = online_count)
-    db.put([query, index, recent_query])
+    top_search = models.TopSearch(key_name = query_key.name(), query_string = q, rating = float(len(search_hashes) * online_count))
+    db.put([query, index, top_search])
 
     self.template_values["results"] = result_values
     self.template_values["key"] = query.key()

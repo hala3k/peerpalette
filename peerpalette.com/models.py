@@ -77,9 +77,9 @@ class RandomChatQueue(db.Model):
   peer = db.ReferenceProperty(User)
   timestamp = db.DateTimeProperty(auto_now_add = True, indexed = False)
 
-class RecentSearch(db.Model):
+class TopSearch(db.Model):
   # key name: query_hash
   query_string = db.StringProperty(required = True, indexed = False)
-  online_count = db.IntegerProperty(default = 1)
+  rating = db.FloatProperty(required = True)
   time = db.DateTimeProperty(auto_now = True)
 

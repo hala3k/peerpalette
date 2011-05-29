@@ -27,7 +27,14 @@
     </div>
   {% endif %}
 {% else %}
-  <span style="color: red;">Nothing here yet. But someone will find you when they search for this topic in the future. Meanwhile, why not enjoy a <a href="/random" onclick="random_chat_start(true);return false;">random chat</a>?</span>
+  <p style="color: red;">Nobody here yet. But someone will find you when they search for this topic in the future.</p>
+  {% if top_searches %}
+  <p>Meanwhile, why not try one of the following topics:<br/>
+    {% for t in top_searches %}
+    <a href="/search?q={{t|urlencode}}" style="margin-right:0.5em;">{{t|escape}}</a>
+    {% endfor %}
+  </p>
+  {% endif %}
 {% endif %}
 </div>
 {% endblock content%}
