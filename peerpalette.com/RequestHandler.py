@@ -27,6 +27,11 @@ class RequestHandler(webapp.RequestHandler):
     self.chat_update_id = None
     self.unread_count = 0
     self.notifications = []
+    self.action_feedback = []
+    for a in self.request.get_all('error'):
+      self.action_feedback.append({'class' : 'error', 'message' : a})
+    for a in self.request.get_all('notify'):
+      self.action_feedback.append({'class' : 'notify', 'message' : a})
 
     self.template_values = {}
     self.client_update = {}
@@ -143,11 +148,17 @@ class RequestHandler(webapp.RequestHandler):
 
     try: self.template_values['unread_count'] = self.unread_count
     except AttributeError: pass
+
     try: self.template_values["username"] = models.User.get_username(self.user_key)
     except AttributeError: pass
+
     try: self.template_values["anonymous"] = models.User.is_anonymous(self.user_key)
     except AttributeError: pass
+
     try: self.template_values["update"] = simplejson.dumps(self.client_update)
+    except AttributeError: pass
+
+    try: self.template_values['action_feedback'] = self.action_feedback
     except AttributeError: pass
 
     path = os.path.join(os.path.dirname(__file__), template_filename)

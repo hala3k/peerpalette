@@ -22,18 +22,27 @@ p {
   border: 1px solid #AAAAAA;
   padding: 5px;
   margin: 5px;
-}
 
-.you {
-  color: rgb(210, 20, 20);
-  font-weight: bold; }
+  .first-person {
+    color: rgb(210, 20, 20);
+    font-weight: bold; }
+  .second-person {
+    color: rgb(20, 20, 210);
+    font-weight: bold; }
+  .notify {
+    color: #771; }
+  .error {
+    color: #b00; } }
 
-.them {
-  color: rgb(20, 20, 210);
-  font-weight: bold; }
-
-.error {
-  color: red; }
+#action-feedback {
+  .notify {
+    margin: 5px;
+    padding: 3px;
+    background-color: #fff1a8; }
+  .error {
+    margin: 5px;
+    padding: 3px;
+    background-color: #febaaa; } }
 
 #menu {
   padding: 3px;

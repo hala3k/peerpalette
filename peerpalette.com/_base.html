@@ -43,6 +43,13 @@
           <div class="menuitem"><a id="settings" href="/settings">settings</a></div>
       </div>
     </div>
+{% if action_feedback %}
+    <div id="action-feedback">
+  {% for msg in action_feedback %}
+      <div class="{{msg.class}}">{{msg.message}}</div>
+  {% endfor %}
+    </div>
+{% endif %}
     {% block content %}
     {% endblock content %}
     {% block footer %}
