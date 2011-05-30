@@ -61,7 +61,14 @@ function alert_new_notifications(notifications) {
 }
 
 function refresh_chat_status(status_class) {
-  $('#status').removeClass('online offline inactive');
+  if (!$('#status').hasClass(status_class)) {
+    if (status_class == "online")
+      $("#log").append('<div style="color: #080;">' + peer_username + ' is now online</div>');
+    else
+      $("#log").append('<div style="color: #666;">' + peer_username + ' went offline</div>');
+    $('#log').animate({scrollTop: $('#log')[0].scrollHeight});
+  }
+  $('#status').removeClass('online offline');
   $('#status').addClass(status_class);
 }
 
