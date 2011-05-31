@@ -6,6 +6,7 @@ from HomePage import HomePage
 from SearchPage import SearchPage
 from ChatPage import ChatPage
 from ChatPage import StartChatPage
+from ChatPage import LoadMoreMessages
 from InboxPage import InboxPage
 from HistoryPage import HistoryPage
 from RandomChat import RandomChat
@@ -29,6 +30,7 @@ application = webapp.WSGIApplication([
                                       ('/getchatupdate', Ajax.GetUpdate),
                                       ('/sendmessage', Ajax.GetUpdate),
                                       ('/updatecontext', Ajax.UpdateContext),
+                                      ('/load_more_messages', LoadMoreMessages),
                                       ('/chats', InboxPage),
                                       ('/searches', HistoryPage),
                                       ('/cleanup_online_users', CleanupOnlineUsers),

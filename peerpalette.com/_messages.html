@@ -1,3 +1,6 @@
+{% if more_cursor %}
+<div id="load-more-messages" style="text-align: right;font-size: 14px;"><a href="#" onclick="load_more_messages('{{more_cursor}}');">&laquo;&nbsp;show older&nbsp;</a></div>
+{% endif %}
 {% for message in messages %}
 <div>
   {% ifequal username message.username %}

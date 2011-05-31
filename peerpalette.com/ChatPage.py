@@ -47,7 +47,8 @@ class ChatPage(RequestHandler):
     self.login(chat_id = userchat.key().id_or_name())
 
     chat_key = db.Key.from_path('Chat', userchat.key().id_or_name())
-    messages = db.Query(models.Message).ancestor(chat_key).order('-date_time').fetch(config.CHAT_HISTORY_MESSAGE_COUNT)
+    messages_query = db.Query(models.Message).ancestor(chat_key).order('-date_time')
+    messages = messages_query.fetch(config.CHAT_HISTORY_MESSAGE_COUNT)
 
     try:
       chat_timestamp = messages[0].date_time
@@ -64,8 +65,36 @@ class ChatPage(RequestHandler):
     self.template_values["title"] = userchat.title
     self.template_values["userchat_key"] = userchat.key()
     self.template_values["messages"] = [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in messages]
+    if len(messages) >= config.CHAT_HISTORY_MESSAGE_COUNT:
+      self.template_values['more_cursor'] = messages_query.cursor()
 
     self.client_update['chat_timestamp'] = str(chat_timestamp)
 
     self.render_page('ChatPage.html')
+
+class LoadMoreMessages(RequestHandler):
+  def get(self):
+    userchat_key = db.Key(self.request.get('userchat_key', None))
+    if self.get_current_user_key() != userchat_key.parent():
+      self.response.set_status(403)
+      return
+
+    cursor = self.request.get('cursor')
+    chat_key = db.Key.from_path('Chat', userchat_key.id_or_name())
+
+    messages_query = db.Query(models.Message).ancestor(chat_key).order('-date_time')
+    messages_query.with_cursor(cursor)
+    messages = messages_query.fetch(config.CHAT_HISTORY_MESSAGE_COUNT)
+    messages.reverse()
+
+    template_values = {'username' : models.User.get_username(userchat_key.parent())}
+
+    if len(messages) >= config.CHAT_HISTORY_MESSAGE_COUNT:
+      template_values['more_cursor'] = messages_query.cursor()
+
+    template_values["messages"] = [{'message_string': msg.message_string, 'username': models.User.get_username(common.get_ref_key(msg, 'sender').parent())} for msg in messages]
+
+    import os
+    path = os.path.join(os.path.dirname(__file__), '_messages.html')
+    self.response.out.write(template.render(path, template_values))
 

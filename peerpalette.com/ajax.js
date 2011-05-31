@@ -289,3 +289,18 @@ function random_chat_start(showDialog) {
     setTimeout("random_chat_show_waiting()", 300);
 }
 
+function load_more_messages(cursor) {
+  $('#load-more-messages').html('loading...');
+
+  $.ajax({
+    url: '/load_more_messages',
+    type: 'get',
+    data: {userchat_key : userchat_key, cursor : cursor},
+    success: function(result) {
+      $('#load-more-messages').remove();
+      $('#log').prepend(result);
+    },
+    error: function(jqxhr, textStatus, errorThrown) {
+    }
+  });
+}
