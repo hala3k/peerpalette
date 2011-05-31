@@ -1,10 +1,17 @@
 <div id="loginbox">
   <form action="/login" method="post">
-    <div><label for="login_username">username</label></div>
-    <div><input class="shadowed" id="login_username" type="text" name="username" value="{{login_username}}" /></div>
-    <div><label for="password">password</label></div>
-    <div><input class="shadowed" id="password" type="password" name="password" /></div>
-    <div style="text-align:right;margin-top:5px;"><input class="button medium" type="submit" value="Login" /></div>
+    <div style="margin-bottom: 5px;">
+      <label for="login_username">username</label><br/>
+      <input class="shadowed" id="login_username" type="text" name="username" value="{{login_username}}" />
+    </div>
+    <div style="margin-bottom: 5px;">
+      <label for="password">password</label><br/>
+      <input class="shadowed" id="password" type="password" name="password" />
+    </div>
+    <div style="margin-bottom: 5px;">
+      <input type="checkbox" id="keep" name="keep" /><label for="keep"> keep me logged in</label>
+    </div>
+    <div style="text-align:right;"><input class="button medium" type="submit" value="Login" /></div>
   </form>
   <div style="margin: 10px;">Or login with</div>
   <div style="text-align:center;">
