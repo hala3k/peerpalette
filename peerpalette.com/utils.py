@@ -81,3 +81,13 @@ def get_top_searches(count = 10):
     top_searches.append(r.query_string)
   return top_searches
 
+def get_login_hash():
+  import random
+  random.seed()
+  return common.get_hash(str(random.random()))
+
+def get_cookie_expiration(num_days):
+    from datetime import datetime, timedelta
+    d = datetime.now() + timedelta(days = num_days)
+    return d.strftime("%a, %d-%b-%Y %H:%M:%S GMT")
+

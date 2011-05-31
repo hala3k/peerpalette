@@ -43,12 +43,31 @@ class RequestHandler(webapp.RequestHandler):
       return self.session["anon_user"]
     return None
 
+  def login_user(self, user_key, remember = False):
+    from utils import get_login_hash, get_cookie_expiration
+    login_hash = get_login_hash()    
+    self.session['user'] = user_key
+    self.session['login_hash'] = login_hash
+    if remember:
+      expiration = get_cookie_expiration(config.LOGIN_EXPIRATION_DAYS)
+      self.response.headers.add_header("Set-Cookie", 'Set-Cookie: login_hash=%s; Expires=%s' % (login_hash, expiration))
+    else:
+      self.response.headers.add_header("Set-Cookie", 'Set-Cookie: login_hash=%s' % login_hash)
+
   def login(self, prev_update_id = None, chat_id = None, prev_chat_update_id = None):
     batch_status_update = {}
 
     if self.session.has_key("user"):
-      self.user_key = self.session["user"]
-    elif self.session.has_key("anon_user"):
+      try:
+        if self.request.cookies['login_hash'] == self.session['login_hash']:
+          self.user_key = self.session["user"]
+        else:
+          raise ValueError()
+      except (KeyError, ValueError):
+        self.session.pop('user')
+        self.session.pop('login_hash')
+
+    if self.user_key is None and self.session.has_key("anon_user"):
       self.user_key = self.session["anon_user"]
 
     if self.user_key is None:

@@ -19,6 +19,8 @@ MAX_UNREAD_CHATS = 20
 
 NOTIFICATION_DURATION = 3
 
+LOGIN_EXPIRATION_DAYS = 60
+
 def MEMCACHE_LAST_BEEN_ONLINE(user_id):
   return 'last_been_online_%s' % user_id
 

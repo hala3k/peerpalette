@@ -23,7 +23,7 @@ class LoginPage(RequestHandler):
         self.redirect("/register?link_type=google")
         return
 
-      get_current_session()["user"] = user.key()
+      self.login_user(user.key(), True if self.request.get('rememberme') else False)
       self.redirect("/")
       return
 
@@ -42,7 +42,7 @@ class LoginPage(RequestHandler):
       self.render_page('LoginPage.html')
       return
 
-    get_current_session()["user"] = common.get_ref_key(m, 'user')
+    self.login_user(common.get_ref_key(m, 'user'), True if self.request.get('rememberme') else False)
     self.redirect("/")
     return
 

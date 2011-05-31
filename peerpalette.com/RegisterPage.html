@@ -16,7 +16,7 @@ $(document).ready(function() {
   {% if link_type %}
       <input type="hidden" name="link_type" value="{{link_type}}" />
   {% endif %}
-      <table style="margin:1em auto 1em auto;">
+      <table style="margin:10px auto 5px auto;">
         <tr>
           <td style="text-align:right">
             <label for="page_login_username">username</label>
@@ -60,6 +60,9 @@ $(document).ready(function() {
           </td>
         </tr>
       </table>
+      <div style="margin-bottom: 10px;margin-top: 5px;">
+        <input type="checkbox" id="page_rememberme" name="rememberme" /><label for="page_rememberme"> remember me</label>
+      </div>
       <div><input type="submit" value="Finish Registration" class="button"/></div>
     </form>
   </div>

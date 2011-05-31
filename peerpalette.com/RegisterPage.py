@@ -96,6 +96,7 @@ class RegisterPage(RequestHandler):
       google_login = models.GoogleLogin(google_user = google_user, user = user)
       google_login.put()
 
-    get_current_session()["user"] = user.key()
+    self.login_user(user.key(), True if self.request.get('rememberme') else False)
+
     self.redirect("/")
 
