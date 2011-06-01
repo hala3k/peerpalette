@@ -54,6 +54,8 @@ p {
   border-top-left-radius: 7px;
   border-top-right-radius: 7px;
   div.menuitem {
+    .attention {
+      font-weight: bold; }
     display: inline;
     margin-left: 5px;
     margin-right: 5px; } }

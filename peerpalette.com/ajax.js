@@ -31,9 +31,9 @@ function alert_new_chat() {
 
 function refresh_unread_text(unread_count) {
   if (unread_count > 0)
-    $("#inbox").html("<b>my chats (" + unread_count + ")</b>");
+    $("#inbox").addClass("attention").html("my chats (" + unread_count + ")");
   else
-    $("#inbox").html("my chats");
+    $("#inbox").removeClass("attention").html("my chats");
 }
 
 function alert_new_notifications(notifications) {
