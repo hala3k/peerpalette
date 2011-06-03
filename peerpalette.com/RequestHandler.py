@@ -86,6 +86,14 @@ class RequestHandler(webapp.RequestHandler):
       chat_update_id = self.memcache_fetcher.get(config.MEMCACHE_CHAT_UPDATE_ID(chat_id))
       open_chat = self.memcache_fetcher.get(config.MEMCACHE_USER_OPEN_CHAT(self.user_key.id_or_name(), chat_id))
 
+    if last_been_online.get_result() is None:
+      # make sure the user exists in datastore
+      if db.Query(models.User, keys_only = True).filter('__key__ =', self.user_key).get() is None:
+        self.user_key = None
+        self.session.terminate()
+        self.redirect('/')
+        return
+
     if last_been_online.get_result() is None or (self.now - last_been_online.get_result()).seconds > config.STATUS_UPDATE_THRESHOLD:
       batch_status_update[last_been_online.get_key()] = self.now
 
