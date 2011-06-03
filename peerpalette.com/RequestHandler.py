@@ -142,12 +142,6 @@ class RequestHandler(webapp.RequestHandler):
     except AttributeError: pass
 
     try:
-      if self.new_chat_alert:
-        self.client_update['new_chat_alert'] = self.new_chat_alert
-    except AttributeError:
-      pass
-
-    try:
       if self.update_id is not None:
         self.client_update['update_id'] = self.update_id
     except AttributeError:

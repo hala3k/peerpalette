@@ -24,11 +24,6 @@ function sound_alert(type) {
   setTimeout("disabled_alert = 0;", 2000);
 }
 
-function alert_new_chat() {
-  sound_alert(2);
-  $("#inbox").blink({maxBlinks: 6, blinkPeriod: 200, speed: 'fast', onBlink: function(){}, onMaxBlinks: function(){}});
-}
-
 function refresh_unread_text(unread_count) {
   if (unread_count > 0)
     $("#inbox").addClass("attention").html("my chats (" + unread_count + ")");
@@ -50,7 +45,7 @@ function alert_new_notifications(notifications) {
   for (m in notifications) {
     msg = notifications[m];
     t = '<a style="color: black; text-decoration: none;" href="' + msg['link'] + '"><div><b>' + msg['username'] + ':</b><br/>' + msg['message'] + '</div></a>';
-    sound_alert(1);
+    sound_alert(2);
     jQuery.noticeAdd({
       text: t,
       inEffectDuration : inEffectDuration,
@@ -161,9 +156,10 @@ function apply_update(data) {
       refresh_unread_text(data["unread_count"]);
     }
   }
-  if ("new_chat_alert" in data && data["new_chat_alert"]) {
+
+  if ("notifications" in data && data["notifications"].length) {
+    alert_new_notifications(data["notifications"]);
     newChat = true;
-    alert_new_chat();
     update_title_notification();
   }
   else if (diff < 0) {
@@ -191,9 +187,6 @@ function apply_update(data) {
       update_title_notification();
     }
   }
-
-  if ("notifications" in data)
-    alert_new_notifications(data["notifications"]);
 
   if ("status_class" in data)
     refresh_chat_status(data['status_class']);

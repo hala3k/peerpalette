@@ -21,6 +21,7 @@ def set_user_context(user_key, context, cache_duration = 300):
   memcache.set("user_%s_context" % user_key.id_or_name(), m, cache_duration)
 
 def create_chat(query_1 = None, query_2 = None, user_key_1 = None, user_key_2 = None, title_1 = None, title_2 = None):
+  from datetime import datetime
   if query_1 is not None:
     user_key_1 = query_1.key().parent()
     title_2 = query_1.query_string
@@ -44,7 +45,7 @@ def create_chat(query_1 = None, query_2 = None, user_key_1 = None, user_key_2 = 
   userchat_name_1 = models.User.get_username(user_key_2)
   userchat_name_2 = models.User.get_username(user_key_1)
 
-  userchat_1 = models.UserChat(key = userchat_key_1, chat = chat_key, peer_userchat = userchat_key_2, name = userchat_name_1, title = title_1)
+  userchat_1 = models.UserChat(key = userchat_key_1, chat = chat_key, peer_userchat = userchat_key_2, name = userchat_name_1, title = title_1, last_updated = datetime.now())
   userchat_2 = models.UserChat(key = userchat_key_2, chat = chat_key, peer_userchat = userchat_key_1, name = userchat_name_2, title = title_2)
 
   db.put([chat, userchat_1, userchat_2])
