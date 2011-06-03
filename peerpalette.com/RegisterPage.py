@@ -16,9 +16,11 @@ def validate_email(email):
 	return False
 
 def get_email_username(email):
+  username = None
   if email:
-    return email.split('@')[0]
-  return None
+    username = email.split('@')[0]
+    username = re.sub('[^A-Za-z0-9_]', '', username)
+  return username
 
 class RegisterPage(RequestHandler):
   def get(self):
@@ -59,7 +61,7 @@ class RegisterPage(RequestHandler):
     elif not re.match("^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*$", username):
       error_message = "Invalid username. Please choose another one."
     elif len(username) < 3 or len(username) > 20:
-      error_message = "Username should be between 6 and 20 characters long."
+      error_message = "Username should be between 3 and 20 characters long."
     elif password != verify_password:
       error_message = "Passwords do not match"
     elif not password:
