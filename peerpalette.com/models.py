@@ -5,6 +5,7 @@ import pickle
 
 class User(db.Model):
   join_date = db.DateTimeProperty(auto_now_add = True)
+  last_activity = db.DateTimeProperty()
   @staticmethod
   def is_anonymous(key):
     if key.id() is not None:

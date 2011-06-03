@@ -88,11 +88,14 @@ class RequestHandler(webapp.RequestHandler):
 
     if last_been_online.get_result() is None:
       # make sure the user exists in datastore
-      if db.Query(models.User, keys_only = True).filter('__key__ =', self.user_key).get() is None:
+      user = self.datastore_fetcher.get(self.user_key).get_result()
+      if user is None:
         self.user_key = None
         self.session.terminate()
         self.redirect('/')
         return
+      user.last_activity = self.now
+      db.put(user)
 
     if last_been_online.get_result() is None or (self.now - last_been_online.get_result()).seconds > config.STATUS_UPDATE_THRESHOLD:
       batch_status_update[last_been_online.get_key()] = self.now
