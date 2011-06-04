@@ -16,7 +16,7 @@ class User(db.Model):
   @staticmethod
   def get_username(key):
     if key.id() is not None:
-      return "anonymous%d" % key.id()
+      return "user-%d" % key.id()
     return key.name()
   def username(self):
     return User.get_username(self.key())    
