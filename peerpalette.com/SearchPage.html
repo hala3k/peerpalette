@@ -5,6 +5,9 @@
 {% include "_search.html" %}
 <br/>
 {% if results %}
+  <p>
+    Here are other users who also want to chat about this topic. A green dot (<img src="/static/online.png" />) means they're currently online.
+  </p>
   {% for result in results %}
   <div style="clear:left">
     {% if result.existing_chat %}
