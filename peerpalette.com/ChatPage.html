@@ -25,6 +25,10 @@ $(document).ready(function() {
 {% include "_messages.html" %}
 {% ifequal peer_status_class "offline" %}
 <div style="color: #666;">{{peer_username}} is currently offline. Messages you send now will be delivered when he/she comes online.</div>
+{% else %}
+  {% if not messages %}
+<div style="color: #080;">{{peer_username}} is available. Say something to start the covnersation.</div>
+  {% endif %}
 {% endifequal %}
 </div>
 <div id="message_container" class="shadowed">
