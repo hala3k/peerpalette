@@ -23,6 +23,9 @@ $(document).ready(function() {
 </div>
 <div id="log" class="shadowed">
 {% include "_messages.html" %}
+{% ifequal peer_status_class "offline" %}
+<div style="color: #666;">{{peer_username}} is currently offline. Messages you send now will be delivered when he/she comes online.</div>
+{% endifequal %}
 </div>
 <div id="message_container" class="shadowed">
   <textarea id="message" cols="50" rows="2"></textarea>
