@@ -80,6 +80,9 @@ class SearchPage(RequestHandler):
 
       result_values.append(v)
 
+    if not result_values:
+      self.template_values['top_searches'] = get_top_searches()
+
     if not cursor:
       context_text = ""
       if context:
@@ -102,9 +105,6 @@ class SearchPage(RequestHandler):
         db.put([query, index, top_search])
       else:
         db.put([query, index])
-
-    if not result_values:
-      self.template_values['top_searches'] = get_top_searches()
 
     self.template_values["results"] = result_values
     self.template_values["key"] = query.key()
