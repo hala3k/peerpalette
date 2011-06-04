@@ -1,6 +1,8 @@
 <form action="/search" method="get">
-<div>
-  <input id="searchbox" type="text" tabindex="1" value="{{query|escape}}" name="q" size="30" class="search shadowed"/><input class="search button medium" type="submit" value="Search"/>
-</div>
+  <div class="search">
+  <label>
+    <span>What would you like to talk about?</span>
+    <input id="searchbox" type="text" tabindex="1" value="{{query|escape}}" name="q" size="30" class="shadowed"/></label><input class="button medium" type="submit" value="Search"/>
+  </div>
 </form>
 

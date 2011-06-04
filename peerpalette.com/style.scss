@@ -281,7 +281,7 @@ textarea.context-empty {
   background-position: 0% 50%; }
 
 .search {
-  &.button {
+  .button {
     height: 30px;
     -webkit-border-top-left-radius: 0;
     -webkit-border-bottom-left-radius: 0;
@@ -289,7 +289,7 @@ textarea.context-empty {
     -moz-border-radius-bottomleft: 0;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0; }
-  &#searchbox {
+  #searchbox {
     padding-top: 0;
     padding-bottom: 0;
     font-size: 18px;
@@ -300,7 +300,18 @@ textarea.context-empty {
     -moz-border-radius-topright: 0;
     -moz-border-radius-bottomright: 0;
     border-top-right-radius: 0;
-    border-bottom-right-radius: 0; } }
+    border-bottom-right-radius: 0; } 
+  label {
+    position: relative;
+    span {
+      line-height: 28px;
+      font-style: italic;
+      position: absolute;
+      left: 5px;
+      color: #999; } 
+    input {
+      position: relative;
+      background: transparent; } } }
 
 .notice-wrap {
 	position: fixed;
