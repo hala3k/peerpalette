@@ -10,7 +10,14 @@
   {% if with_cursor %}
   <span style="color: red;">No more items in your search history. Return to <a href="/topics">first page</a>.</span>
   {% else %}
-  <span style="color: red;">You haven't searched for any topic yet. Go to <a href="/">home page</a> to enter a search query.</span>
+  <p style="color: red;">You haven't searched for any topic yet.</p>
+    {% if top_searches %}
+    <p>Why not try one of the following topics:<br/>
+      {% for t in top_searches %}
+      <a href="/search?q={{t|urlencode}}" style="margin-right:0.5em;">{{t|escape}}</a>
+      {% endfor %}
+    </p>
+    {% endif %}
   {% endif %}
 {% endif %}
 {% if cursor %}

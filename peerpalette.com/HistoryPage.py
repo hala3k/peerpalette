@@ -31,5 +31,9 @@ class HistoryPage(RequestHandler):
     self.template_values["cursor"] = cursor
     self.template_values["with_cursor"] = with_cursor
 
+    if not queries:
+      from utils import get_top_searches
+      self.template_values['top_searches'] = get_top_searches()
+
     self.render_page('HistoryPage.html')
 
