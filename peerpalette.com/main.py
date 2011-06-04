@@ -32,7 +32,7 @@ application = webapp.WSGIApplication([
                                       ('/updatecontext', Ajax.UpdateContext),
                                       ('/load_more_messages', LoadMoreMessages),
                                       ('/chats', InboxPage),
-                                      ('/searches', HistoryPage),
+                                      ('/topics', HistoryPage),
                                       ('/cleanup_online_users', CleanupOnlineUsers),
                                       ('/cleanup_top_searches', CleanupTopSearches),
                                       ('/random', RandomChat),

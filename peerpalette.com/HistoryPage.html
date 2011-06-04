@@ -8,14 +8,14 @@
   {% endfor %}
 {% else %}
   {% if with_cursor %}
-  <span style="color: red;">No more items in your search history. Return to <a href="/history">first page</a>.</span>
+  <span style="color: red;">No more items in your search history. Return to <a href="/topics">first page</a>.</span>
   {% else %}
   <span style="color: red;">You haven't searched for any topic yet. Go to <a href="/">home page</a> to enter a search query.</span>
   {% endif %}
 {% endif %}
 {% if cursor %}
   <div style="margin-top:1em">
-    <a href="/searches?cursor={{cursor}}">More...</a>
+    <a href="/topics?cursor={{cursor}}">More...</a>
   </div>
 {% endif %}
 </div>
