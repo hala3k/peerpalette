@@ -345,3 +345,21 @@ textarea.context-empty {
 	    padding-left: 3px;
 	    padding-right: 3px; } } }
 
+.help {
+  display: inline;
+  position: relative;
+  &:hover .bottom-right {
+      display: block;
+  }
+  .bottom-right {
+    -webkit-border-radius: .5em; 
+    -moz-border-radius: .5em;
+    border-radius: .5em;
+    @extend .shadowed;
+    display: none;
+    padding: .25em;
+    background-color: #fff1a8;
+    position: absolute;
+    width: 15em;
+    top: .25em;
+    left: .25em; } }

@@ -31,7 +31,7 @@ function context_edit() {
 
 function context_cancel() {
   if (context_text == "") {
-    $("#context").val("Click to type a public message");
+    $("#context").val("Click to type a note");
     $("#context").addClass('context-empty');
   }
   else {
@@ -55,7 +55,7 @@ function context_save() {
     data: ({context : text}),
     success: function(msg) {
       if (msg == "") {
-        $("#context").val("Click to type a public message");
+        $("#context").val("Click to type a note");
         $("#context").addClass('context-empty');
       }
       else {
@@ -91,8 +91,8 @@ Peerpalette<sup>(beta)</sup> is a new website for one-on-one chatting with stran
     <a id="random" href="/random" class="button blue" style="padding-top: .8em; padding-bottom: .8em;">Random Chat</a>
   </div>
   <div style="margin-top: 10px;">
-    <span style="font-size: 14px; font-weight: bold;">What are you up to?</span>
-    <div><textarea id="context" style="width:100%;height: 1em;" cols="50" rows="4" class="context-view {% if not context %}context-empty{% endif %}" readonly="readonly" onkeypress="context_edit();" onclick="context_edit();">{% if context %}{{context}}{% else %}Click to type a public message{% endif %}</textarea></div>
+    <span style="font-size: 14px; font-weight: bold;">Leave a note</span> <div class="help"><img src="/static/help.png"/><div class="bottom-right" style="width: 20em;">Leave a note that shows up under your username when people find you in search results.</div></div>
+    <div><textarea id="context" style="width:100%;height: 1em;" cols="50" rows="4" class="context-view {% if not context %}context-empty{% endif %}" readonly="readonly" onkeypress="context_edit();" onclick="context_edit();">{% if context %}{{context}}{% else %}Click to type a note{% endif %}</textarea></div>
     <div style="height: 20px;">
       <div id="context-buttons" style="display:none;">
         <a href="#" onclick="context_save();return false;" style="font-size:10px;">Save</a>
