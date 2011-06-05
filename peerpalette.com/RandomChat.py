@@ -46,7 +46,7 @@ def random_chat(user_key):
     db.delete(q)
     time.sleep(0.05) # wait for peer to finish creating UserChat instances
 
-  my_userchat, peer_userchat = create_chat(user_key_1 = user_key, user_key_2 = peer_key, title_1 = "random", title_2 = "random")
+  my_userchat, peer_userchat = create_chat(user_key, peer_key, title_1 = "random", title_2 = "random")
 
   return my_userchat.name
 

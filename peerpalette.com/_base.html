@@ -27,7 +27,7 @@
 
       <div id="menu">
 {% if anonymous %}
-          <div id="username" class="menuitem">{{username}} (<div style="display:inline" id="login"><a href="/login">login</a>{% include "_loginbox.html" %}</div>/ <a href="/register">register</a>)</div>
+          <div id="username" class="menuitem">{{username}} (<div style="display:inline" id="login"><a href="/login">login</a>{% include "_loginbox.html" %}</div>/ <a href="/register">register</a> <div class="help"><img src="/static/help.png"/><div class="bottom-left" style="width: 20em;">You're now using a temporary account that's tied to this computer only. Register your own username to be able to access all your chats from anywhere. And to be able to log in and out of your account without losing your data.</div></div>)</div>
 {% else %}
           <div id="username" class="menuitem">{{username}} (<a href="/logout">logout</a>)</div>
 {% endif %}

@@ -320,7 +320,6 @@ textarea.context-empty {
 	width: 350px;
 	z-index: 20;
   .notice-item {
-	  background: #fff6a5;
     background: rgba(255, 246, 165, 0.9);
 	  color: black;
 	  padding: 6px 6px 6px 6px;
@@ -348,18 +347,33 @@ textarea.context-empty {
 .help {
   display: inline;
   position: relative;
-  &:hover .bottom-right {
-      display: block;
-  }
+  color: black;
+  &:hover {
+    .bottom-right, .bottom-left {
+      display: block; } }
   .bottom-right {
+    z-index: 15;
     -webkit-border-radius: .5em; 
     -moz-border-radius: .5em;
     border-radius: .5em;
     @extend .shadowed;
     display: none;
     padding: .25em;
-    background-color: #fff1a8;
+    background: rgba(255, 246, 165, 0.8);
     position: absolute;
     width: 15em;
     top: .25em;
-    left: .25em; } }
+    left: .25em; }
+  .bottom-left {
+    z-index: 15;
+    -webkit-border-radius: .5em; 
+    -moz-border-radius: .5em;
+    border-radius: .5em;
+    @extend .shadowed;
+    display: none;
+    padding: .25em;
+    background: rgba(255, 246, 165, 0.8);
+    position: absolute;
+    width: 15em;
+    top: .25em;
+    right: 0; } }

@@ -31,7 +31,10 @@ class StartChatPage(RequestHandler):
       peer_query = queries[0]
       peer_key = user_key_0
 
-    my_userchat, peer_userchat = create_chat(query_1 = my_query, query_2 = peer_query)
+    title_1 = peer_query.query_string
+    title_2 = my_query.query_string
+
+    my_userchat, peer_userchat = create_chat(user_key, peer_key, title_1 = title_1, title_2 = title_2)
 
     self.redirect('/chat/' + my_userchat.name)
 

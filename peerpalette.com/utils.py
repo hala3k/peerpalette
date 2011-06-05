@@ -20,16 +20,8 @@ def set_user_context(user_key, context, cache_duration = 300):
   m.put()
   memcache.set("user_%s_context" % user_key.id_or_name(), m, cache_duration)
 
-def create_chat(query_1 = None, query_2 = None, user_key_1 = None, user_key_2 = None, title_1 = None, title_2 = None):
+def create_chat(user_key_1, user_key_2, title_1 = None, title_2 = None):
   from datetime import datetime
-  if query_1 is not None:
-    user_key_1 = query_1.key().parent()
-    title_2 = query_1.query_string
-  
-  if query_2 is not None:
-    user_key_2 = query_2.key().parent()
-    title_1 = query_2.query_string
-
   chat_id = common.get_chat_key_name(user_key_1, user_key_2)
 
   userchat_key_1 = db.Key.from_path('User', user_key_1.id_or_name(), 'UserChat', chat_id)
@@ -91,4 +83,14 @@ def get_cookie_expiration(num_days):
     from datetime import datetime, timedelta
     d = datetime.now() + timedelta(days = num_days)
     return d.strftime("%a, %d-%b-%Y %H:%M:%S GMT")
+
+def get_online_users():
+  online_users = memcache.get('online_users')
+  if online_users is None:
+    from random import shuffle
+    online_users = [db.Key('User', k.id_or_name()) for k in models.OnlineUser.all(keys_only = True).fetch(200)]
+    shuffle(online_users)
+    if len(online_users) > 20:
+      memcache.set('online_users', online_users, 30)
+  return online_users
 
