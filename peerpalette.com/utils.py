@@ -71,7 +71,7 @@ def get_top_searches(count = 10):
 
   top_searches = []
   for r in top_searches_query.fetch(count):
-    top_searches.append(r.query_string)
+    top_searches.append(r.query_string.encode('utf-8'))
   return top_searches
 
 def get_login_hash():

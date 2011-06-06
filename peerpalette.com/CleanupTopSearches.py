@@ -7,7 +7,7 @@ import datetime
 
 class CleanupTopSearches(webapp.RequestHandler):
   def get(self):
-    threshold = datetime.datetime.now() - datetime.timedelta(seconds = 60)
+    threshold = datetime.datetime.now() - datetime.timedelta(seconds = 120)
     query = db.Query(models.TopSearch, keys_only = True).filter('time <', threshold)
     keys = query.fetch(60)
     db.delete(keys)
