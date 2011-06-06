@@ -81,7 +81,10 @@ class GetUpdate(RequestHandler):
 
       if self.chat_update_id:
         new_messages = db.Query(models.Message).ancestor(chat_key).filter('date_time >', chat_timestamp).order('-date_time').fetch(10)
-        self.client_update['chat_timestamp'] = str(new_messages[0].date_time)
+        try:
+          self.client_update['chat_timestamp'] = str(new_messages[0].date_time)
+        except:
+          pass
         new_messages.reverse()
 
         template_values = {
