@@ -100,11 +100,9 @@ class SearchPage(RequestHandler):
         query = models.Query(key = query_key, query_string = q, context = context_text, date_time = self.now)
 
       index = models.QueryIndex(key_name = search.encode_query_index_key_name(query_key), query = query_key, user = self.user_key, keyword_hashes = keyword_hashes)
-      if online_count < 5:
-        top_search = models.TopSearch(key_name = query_key.name(), query_string = q, rating = float(len(search_hashes) * online_count))
-        db.put([query, index, top_search])
-      else:
-        db.put([query, index])
+
+      top_search = models.TopSearch(key_name = query_key.name(), query_string = q, rating = float(len(search_hashes) * online_count))
+      db.put([query, index, top_search])
 
     self.template_values["results"] = result_values
     self.template_values["key"] = query.key()
