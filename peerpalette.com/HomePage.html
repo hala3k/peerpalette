@@ -113,7 +113,7 @@ Peerpalette<sup>(beta)</sup> is a new website for one-on-one chatting with stran
 {% endif %}
 {% if top_searches %}
   <div>
-    <span style="font-size: 14px; font-weight: bold;font-style: italic; color: #b00;">Hot topics!</span> <div class="help"><img src="/static/help.png"/><div class="bottom-right" style="width: 20em;">This is a list of common topics people are currently searching for right now.</div></div>
+    <span style="font-size: 14px; font-weight: bold;font-style: italic; color: #b00;">Hot topics!</span> <div class="help"><img src="/static/help.png"/><div class="bottom-right" style="width: 20em;">This is a list of popular topics people are currently searching for right now.</div></div>
     <br/>
     {% for t in top_searches %}
       <a href="/search?q={{t|urlencode}}" style="margin-right:0.5em;">{{t|escape}}</a>
