@@ -1,7 +1,7 @@
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 from google.appengine.api import memcache
-import json
+from django.utils import simplejson
 
 import config
 import models
@@ -112,10 +112,10 @@ class GetUpdate(RequestHandler):
 
   def get(self):
     self.response.headers['Content-Type'] = 'application/json; charset=utf-8'
-    self.response.out.write(json.dumps(self.get_update()))
+    self.response.out.write(simplejson.dumps(self.get_update()))
   def post(self):
     self.response.headers['Content-Type'] = 'application/json; charset=utf-8'
-    self.response.out.write(json.dumps(self.get_update()))
+    self.response.out.write(simplejson.dumps(self.get_update()))
 
 class UpdateContext(RequestHandler):
   def post(self):

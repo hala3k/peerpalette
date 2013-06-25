@@ -179,7 +179,7 @@ class RequestHandler(webapp.RequestHandler):
     try: self.template_values["anonymous"] = models.User.is_anonymous(self.user_key)
     except AttributeError: pass
 
-    try: self.template_values["update"] = json.dumps(self.client_update)
+    try: self.template_values["update"] = simplejson.dumps(self.client_update)
     except AttributeError: pass
 
     try: self.template_values['action_feedback'] = self.action_feedback
